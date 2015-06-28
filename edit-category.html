@@ -1,0 +1,23 @@
+<!-- Category Form -->
+<form name="categoryForm" ng-submit="cateCtrl.submitCategory()">
+        
+    <!-- Category Insert Form --> 
+    <h3>Submit a Category</h3> 
+    <fieldset class="form-group">
+        <label class="col-sm-2 control-label">Name</label>
+        <input ng-model="cateCtrl.cateObject.name" type="text" class="form-control" placeholder="Write a category name" title="Name">
+    </fieldset>
+    <fieldset class="form-group">
+        <label class="col-sm-2 control-label">Path</label>
+        <input ng-model="cateCtrl.cateObject.path" type="text" class="form-control" placeholder="Write a category path" title="Path">
+    </fieldset>
+    <fieldset class="form-group">
+        <input type="submit" class="btn btn-primary pull-right" value="Submit Category"> 
+    </fieldset>
+    
+    <!-- Live Preview  -->
+    <h5 ng-show="cateCtrl.cateObject.name">category name: {{cateCtrl.cateObject.name}}</h5>
+    <h5 ng-show="cateCtrl.cateObject.path">category path: {{cateCtrl.cateObject.path}}</h5>
+    <h5 ng-show="cateCtrl.cateObject.path">category relative path: {{"not yet"}}</h5>
+
+</form>

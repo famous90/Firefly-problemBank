@@ -1,0 +1,13 @@
+<!-- Select Category -->
+<h3>Select Category</h3>
+<div class="row">
+    <div class="col-sm-6">
+        <div ui-tree id="tree-root" data-drag-enabled="false" data-drop-enabled="false">
+            <ol ui-tree-nodes ng-model="bank.categories">
+                <li ng-repeat="item in bank.categories" ui-tree-node>
+                    <nodes-renderer></nodes-renderer>
+                </li>
+            </ol>
+        </div>
+    </div>
+</div>
