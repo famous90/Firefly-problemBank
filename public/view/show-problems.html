@@ -1,0 +1,18 @@
+<!-- Problems Container -->
+<section class="list-group">
+
+    <h3 ng-show="problems.length">Show Problems</h3>
+
+    <div class="list-group-item" ng-repeat="problem in problems">
+        <h4>Problem id: {{problem.pid}}</h4>
+        <h5>question {{problem.question}}</h5>
+        <h6>Answer {{problem.answer}}</h6>
+    </div>
+    
+    <form name="loadProblemsForm">
+        <fieldset class="form-group">
+            <input type="button" class="btn btn-primary pull-right" value="Load Problems" ng-click="masterProblemsCtrl.loadProblems()">
+        </fieldset>
+    </form>
+    
+</section>

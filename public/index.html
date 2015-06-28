@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html ng-app="problemBank">
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>        
+        <link rel="stylesheet" type="text/css" href="css/angular-ui-tree.min.css"/>
+        <link rel="stylesheet" type="text/css" href="css/bank.css"/>
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="js/angular.min.js"></script>
+        <script type="text/javascript" src="js/app.js"></script>
+        <script type="text/javascript" src="js/ng-flow-standalone.min.js"></script>
+        <script type="text/javascript" src="js/mathjax_dynamic.js" async></script>
+        <script type="text/javascript" src="js/angular-ui-tree.min.js"></script>
+        <script type="text/javascript" src="js/ui-bootstrap-tpls-0.13.0.min.js"></script>
+        <script>
+            $("#selectable").selectable();
+        </script>
+    </head>
+    
+    <body ng-controller="BankController as bank">        
+        
+        <!-- Bank Header -->
+        <header>
+            <h1 class="text-center">{{"초롱불"}}</h1>
+            <h2 class="text-center">- an Angular Bank-</h2>
+        </header>
+        <hr/>
+        
+        <insert-problem></insert-problem>
+        <hr/>
+        
+        <edit-category></edit-category>
+        <hr/>
+        <!--  
+        데이터입력 시 카테고리 path자동 배정
+        어느 카테고리에 추가 또는 삭제할지 고를 수 있도록    
+        -->
+        
+        <select-category></select-category>
+        <hr/>
+        <!--        
+        카테고리 선택할 수 있도록 - 복수선택 가능(라디오버튼)
+        -->
+        
+        <show-problems></show-problems>
+        <hr/>
+        
+        
+        
+        
+        <!-- Image Upload Container -->
+<!--
+        <section ng-controller="ImageController as imageCtrl">
+            <div flow-init flow-drop flow-drag-enter="style={border:'4px solid green'}" flow-drag-leave="style={}" ng-style="style" flow-drop-enabled="config.enabled">
+                <input type="file" flow-btn flow-directory />
+                <img flow-img="$flow.files[$flow.files.length-1]" height="100"/>
+            </div>
+        </section>
+-->
+        
+        <!-- Problem Form -->
+<!--        <form name="problemForm" ng-controller="ProblemController as proCtrl" ng-submit="proCtrl.addProblem(bank)">-->
+            
+<!--             Live Preview -->
+<!--
+            <blockquote>
+                <strong ng-show="proCtrl.pId">Problem Id: {{proCtrl.pId}}</strong>
+                <h3>Question!</h3>
+                <div id="MathPreview"></div>
+                <div id="MathBuffer"></div>
+                <em ng-show="proCtrl.answer">Answer : {{proCtrl.answer}}</em>
+            </blockquote>
+            
+             Problem Form 
+            <h4>Submit a Problem</h4>
+            <fieldset class="form-group">
+                <input ng-model="proCtrl.pId" type="number" class="form-control" placeholder="problem Id" title="ProblemId"/>
+            </fieldset>
+            <fieldset class="form-group">
+                <textarea ng-model="proCtrl.question" class="form-control" placeholder="Write a question" title="Question" id="MathInput" onkeyup="Preview.Update()">
+                </textarea>
+            </fieldset>
+            <fieldset class="form-group">
+                <textarea ng-model="proCtrl.answer" class="form-control" placeholder="Write a answer" title="Answer" id="ProblemAnswerInput" ></textarea>
+            </fieldset>
+            <fieldset class="form-group">
+                <input type="submit" class="btn btn-primary pull-right" value="Submit Problem"/>
+            </fieldset>
+        </form>
+-->
+        
+        <!-- Bank Footer -->
+        <footer>
+        </footer>
+    </body>
+</html>

@@ -1,0 +1,36 @@
+<h3>Insert Problem</h3>
+
+<form name="problemForm" ng-submit="proCtrl.addProblem(bank)">
+            
+<!-- Live Preview -->
+<blockquote ng-show="problemCtrl.pid || problemCtrl.question || problemCtrl.answer">
+    <strong ng-show="problemCtrl.pid">Problem Id: {{problemCtrl.pid}}</strong>
+    <h3>Question!</h3>
+    <div id="MathPreview"></div>
+    <div id="MathBuffer"></div>
+    <em ng-show="problemCtrl.answer">Answer : {{problemCtrl.answer}}</em>
+</blockquote>
+            
+<!-- Problem Form -->
+            <fieldset class="form-group">
+                <input ng-model="problemCtrl.pid" type="number" class="form-control" placeholder="problem Id" title="pid"/>
+            </fieldset>
+            <fieldset class="form-group">
+                <textarea ng-model="problemCtrl.question" class="form-control" placeholder="Write a question" title="question" id="MathInput" onkeyup="Preview.Update()">
+                </textarea>
+            </fieldset>
+            <fieldset class="form-group">
+                <textarea ng-model="problemCtrl.answer" class="form-control" placeholder="Write a answer" title="Answer" id="ProblemAnswerInput" ></textarea>
+            </fieldset>
+            
+            <fieldset class="form-group">
+                <input type="submit" class="btn btn-primary pull-right" value="Submit Problem"/>
+            </fieldset>
+        </form>
+
+<section ng-controller="ImageController as imageCtrl">
+            <div flow-init flow-drop flow-drag-enter="style={border:'4px solid green'}" flow-drag-leave="style={}" ng-style="style" flow-drop-enabled="config.enabled">
+                <input type="file" flow-btn flow-directory />
+                <img flow-img="$flow.files[$flow.files.length-1]" height="100"/>
+            </div>
+        </section>
