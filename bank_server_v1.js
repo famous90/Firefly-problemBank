@@ -2,6 +2,7 @@
 var http = require('http');
 var express = require('express');
 var mysql = require('mysql');
+var fs = require('fs');
 
 // connect with DB
 var client = mysql.createConnection({
@@ -22,6 +23,10 @@ app.get('/problems', function(request, response){
     client.query('select * from problems', function(error, data){
         response.send(data);
     });
+});
+
+app.get('/images', function(request, response){
+    fs.readFile(    );
 });
 
 app.get('/categories', function(request, response){

@@ -57,15 +57,27 @@
             bank.categories = masterCategory.categories;
         });
     }]);
+    
+    app.directive('insertProblem', function(){
+        return {
+            restrict: 'E',
+            templateUrl: 'view/insert-problem.html',
+            controller: ['$scope', function($scope){
+//                this.images = new Array();
+                this.problem = {};
+                
+                this.submitProblem = function(){
+                    
+                };
+                
+//                this.addImage = function(image){
+//                    this.images.push(image);
+//                };
+            }],
+            controllerAs: 'problemCtrl'
+        };
+    });
 
-//    app.controller('ImageController', function(){
-//        this.image = [];
-//        
-//        this.addImage = function(image){
-//            this.image = image;
-//        };
-//    });
-//    
     app.directive('editCategory', function(){
         return {
             restrict: 'E',
@@ -140,26 +152,14 @@
                         var data = response.data;        
                         $scope.problems = data;
                     });
+                    
+                    $http.get(url+'/images').then(function(response){
+                        var images = response.data;
+                        $scope.images = images;
+                    });
                 };
             }],
             controllerAs: 'masterProblemsCtrl'
         };
     });
-    
-    app.directive('insertProblem', function(){
-        return {
-            restrict: 'E',
-            templateUrl: 'view/insert-problem.html',
-            controller: ['$scope', '$http', function($scope, $http){
-                this.images = new Array();
-                this.problem = [];
-                
-                this.addImage = function(image){
-                    this.images.push(image);
-                };
-            }],
-            controllerAs: 'problemCtrl'
-        };
-    });
-    
 })();

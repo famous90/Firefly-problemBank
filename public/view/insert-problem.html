@@ -1,36 +1,75 @@
-<h3>Insert Problem</h3>
+<h3>{{"Insert Problem"}}</h3>
 
-<form name="problemForm" ng-submit="proCtrl.addProblem(bank)">
-            
+<form name="insertProblemForm" ng-submit="problemCtrl.submitProblem()">
+<!--
+      flow-init flow-prevent-drop
+      flow-drag-enter="style={border: '5px solid green'}"
+      flow-drag-leave="style={}"
+      ng-style="style" flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
+-->
+    
+<!--Live Preview-->
+    <h4 ng-show="problemCtrl.problem.question" class="text-center"><strong>Q: </strong></h4>
+    <div class="text-center" id="MathPreview"></div>
+    <div class="text-center" id="MathBuffer"></div>
+    <h4 ng-show="problemCtrl.problem.answer" class="text-center"><strong>A: </strong>{{problemCtrl.problem.answer}}</h4>
+    
+        
+<!--Form-->
+    <fieldset class="form-group">
+        <textarea ng-model="problemCtrl.problem.question" class="form-control" placeholder="Write a question" title="Question" id="MathInput" onkeyup="Preview.Update()"></textarea>
+    </fieldset>
+    <fieldset class="form-group">
+        <textarea ng-model="problemCtrl.problem.answer" class="form-control" placeholder="Write an answer" title="Answer"></textarea>
+    </fieldset>
+    <fieldset>
+        <input type="file" class="btn btn-primary"/>
+    </fieldset>
+    
+<!--
+    <div class="thumbnail" style="max-width: 200px; max-height: 150px; line-height: 20px; margin-bottom: 5px;" ng-hide="$flow.files.length">
+      <img src="http://www.placehold.it/200x150/EFEFEF/AAAAAA&text=no+image" />
+    </div>
+    <div class="thumbnail" style="max-width: 200px; max-height: 150px; line-height: 20px; margin-bottom: 5px;" ng-show="$flow.files.length">
+      <img flow-img="$flow.files[0]" />
+    </div>
+    <div>
+      <a href="#" class="btn btn-primary" ng-hide="$flow.files.length" flow-btn flow-attrs="{accept:'image/*'}">Select image</a>
+      <a href="#" class="btn btn-primary" ng-show="$flow.files.length" flow-btn flow-attrs="{accept:'image/*'}">Change</a>
+      <a href="#" class="btn btn-danger" ng-show="$flow.files.length"
+         ng-click="$flow.cancel()">
+        Remove
+      </a>
+    </div>
+-->
+
 <!-- Live Preview -->
-<blockquote ng-show="problemCtrl.pid || problemCtrl.question || problemCtrl.answer">
-    <strong ng-show="problemCtrl.pid">Problem Id: {{problemCtrl.pid}}</strong>
-    <h3>Question!</h3>
-    <div id="MathPreview"></div>
-    <div id="MathBuffer"></div>
-    <em ng-show="problemCtrl.answer">Answer : {{problemCtrl.answer}}</em>
-</blockquote>
-            
-<!-- Problem Form -->
-            <fieldset class="form-group">
-                <input ng-model="problemCtrl.pid" type="number" class="form-control" placeholder="problem Id" title="pid"/>
-            </fieldset>
-            <fieldset class="form-group">
-                <textarea ng-model="problemCtrl.question" class="form-control" placeholder="Write a question" title="question" id="MathInput" onkeyup="Preview.Update()">
-                </textarea>
-            </fieldset>
-            <fieldset class="form-group">
-                <textarea ng-model="problemCtrl.answer" class="form-control" placeholder="Write a answer" title="Answer" id="ProblemAnswerInput" ></textarea>
-            </fieldset>
-            
-            <fieldset class="form-group">
-                <input type="submit" class="btn btn-primary pull-right" value="Submit Problem"/>
-            </fieldset>
-        </form>
+<!--
+    <blockquote>
+        <h3>{{"Question"}}</h3>
+        <div id="MathPreview"></div>
+        <div id="MathBuffer"></div>
+        <img flow-img="$flow.files[$flow.files.length-1]" height="100"/>
+        <em>Answer : {{problemCtrl.answer}}</em>
+    </blockquote>
+-->
 
-<section ng-controller="ImageController as imageCtrl">
-            <div flow-init flow-drop flow-drag-enter="style={border:'4px solid green'}" flow-drag-leave="style={}" ng-style="style" flow-drop-enabled="config.enabled">
-                <input type="file" flow-btn flow-directory />
-                <img flow-img="$flow.files[$flow.files.length-1]" height="100"/>
-            </div>
-        </section>
+<!-- Problem Form -->
+<!--
+    <fieldset class="form-group">
+        <textarea ng-model="question" class="form-control" placeholder="Write a question" title="question" id="MathInput" onkeyup="Preview.Update()">
+        </textarea>
+    </fieldset>
+    <fieldset class="form-group">
+        <textarea ng-model="answer" class="form-control" placeholder="Write a answer" title="answer"></textarea>
+        <input ng-model=""/>
+    </fieldset>
+    <fieldset class="form-group">
+        <input type="file" flow-btn flow-directory />
+    </fieldset>
+
+    <fieldset class="form-group">
+        <input type="submit" class="btn btn-primary pull-right" value="Submit Problem"/>
+    </fieldset>
+-->
+</form>

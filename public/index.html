@@ -12,9 +12,6 @@
         <script type="text/javascript" src="js/mathjax_dynamic.js" async></script>
         <script type="text/javascript" src="js/angular-ui-tree.min.js"></script>
         <script type="text/javascript" src="js/ui-bootstrap-tpls-0.13.0.min.js"></script>
-        <script>
-            $("#selectable").selectable();
-        </script>
     </head>
     
     <body ng-controller="BankController as bank">        
@@ -44,51 +41,7 @@
         
         <show-problems></show-problems>
         <hr/>
-        
-        
-        
-        
-        <!-- Image Upload Container -->
-<!--
-        <section ng-controller="ImageController as imageCtrl">
-            <div flow-init flow-drop flow-drag-enter="style={border:'4px solid green'}" flow-drag-leave="style={}" ng-style="style" flow-drop-enabled="config.enabled">
-                <input type="file" flow-btn flow-directory />
-                <img flow-img="$flow.files[$flow.files.length-1]" height="100"/>
-            </div>
-        </section>
--->
-        
-        <!-- Problem Form -->
-<!--        <form name="problemForm" ng-controller="ProblemController as proCtrl" ng-submit="proCtrl.addProblem(bank)">-->
-            
-<!--             Live Preview -->
-<!--
-            <blockquote>
-                <strong ng-show="proCtrl.pId">Problem Id: {{proCtrl.pId}}</strong>
-                <h3>Question!</h3>
-                <div id="MathPreview"></div>
-                <div id="MathBuffer"></div>
-                <em ng-show="proCtrl.answer">Answer : {{proCtrl.answer}}</em>
-            </blockquote>
-            
-             Problem Form 
-            <h4>Submit a Problem</h4>
-            <fieldset class="form-group">
-                <input ng-model="proCtrl.pId" type="number" class="form-control" placeholder="problem Id" title="ProblemId"/>
-            </fieldset>
-            <fieldset class="form-group">
-                <textarea ng-model="proCtrl.question" class="form-control" placeholder="Write a question" title="Question" id="MathInput" onkeyup="Preview.Update()">
-                </textarea>
-            </fieldset>
-            <fieldset class="form-group">
-                <textarea ng-model="proCtrl.answer" class="form-control" placeholder="Write a answer" title="Answer" id="ProblemAnswerInput" ></textarea>
-            </fieldset>
-            <fieldset class="form-group">
-                <input type="submit" class="btn btn-primary pull-right" value="Submit Problem"/>
-            </fieldset>
-        </form>
--->
-        
+
         <!-- Bank Footer -->
         <footer>
         </footer>
