@@ -1,6 +1,6 @@
 (function(){
     
-    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'flow']);
+    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'flow', 'ngFileUpload']);
     var url = 'http://127.0.0.1:52273';
     
     function Category(cid, name, path, relPath) {
@@ -62,17 +62,24 @@
         return {
             restrict: 'E',
             templateUrl: 'view/insert-problem.html',
-            controller: ['$scope', function($scope){
-//                this.images = new Array();
-                this.problem = {};
-                
-                this.submitProblem = function(){
-                    
+            controller: ['$scope', '$http', function ($scope, $http) {
+                $scope.filesChanged = function(elm){
+                    $scope.files = elm.files;
+                    $scope.$apply(); 
                 };
                 
-//                this.addImage = function(image){
-//                    this.images.push(image);
-//                };
+                $scope.upload = function(){
+                    var fd = new FormData();
+                    angular.forEach($scope.files, function(file){
+                        fd.append('file', file);
+                    });
+                    $http.post('http://127.0.0.1:52273/problem', fd, {
+                        transformRequest:angular.identity,
+                        headers:{'Content-Type':undefined}
+                    }).success(function(d){
+                        alert('success');
+                    });
+                };
             }],
             controllerAs: 'problemCtrl'
         };
@@ -146,16 +153,13 @@
             templateUrl: 'view/show-problems.html',
             controller: ['$scope', '$http', function($scope, $http){
                 
+                this.problemImage = {};
+                
                 this.loadProblems = function(){
                     $http.get(url+'/problems').
                     then(function(response){
                         var data = response.data;        
                         $scope.problems = data;
-                    });
-                    
-                    $http.get(url+'/images').then(function(response){
-                        var images = response.data;
-                        $scope.images = images;
                     });
                 };
             }],
