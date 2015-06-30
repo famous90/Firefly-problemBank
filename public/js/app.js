@@ -73,7 +73,7 @@
                     angular.forEach($scope.files, function(file){
                         fd.append('file', file);
                     });
-                    $http.post('http://127.0.0.1:52273/problem', fd, {
+                    $http.post(url+'/problem', fd, {
                         transformRequest:angular.identity,
                         headers:{'Content-Type':undefined}
                     }).success(function(d){
