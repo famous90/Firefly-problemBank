@@ -9,13 +9,16 @@
 -->
     
 <!--Live Preview-->
-    <h4 ng-show="problemCtrl.problem.question" class="text-center"><strong>Q: </strong></h4>
-    <div class="text-center" id="MathPreview"></div>
-    <div class="text-center" id="MathBuffer"></div>
-    <h4 ng-show="problemCtrl.problem.answer" class="text-center"><strong>A: </strong>{{problemCtrl.problem.answer}}</h4>
+<!--    <h4 ng-show="problemCtrl.problem.question"><strong>Q: </strong>{{problemCtrl.problem.question}}</h4>-->
+    <h4 ng-show="problemCtrl.problem.answer" ><strong>A: </strong>{{problemCtrl.problem.answer}}</h4>
+    
     
         
 <!--Form-->
+    
+    <div id="MathPreview"></div>
+    <div id="MathBuffer"></div>
+
     <fieldset class="form-group">
         <textarea ng-model="problemCtrl.problem.question" class="form-control" placeholder="Write a question" title="Question" id="MathInput" onkeyup="Preview.Update()"></textarea>
     </fieldset>
