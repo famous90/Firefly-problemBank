@@ -33,7 +33,7 @@ app.post('/problem', function(request, response){
     var hasImage = false;
     var insertId = {};
     
-    console.log('INSERT PROBLEM http post request : start with '+question+', '+answer+);
+    console.log('INSERT PROBLEM http post request : start with '+question+', '+answers);
 
     
     // case for problem with image
