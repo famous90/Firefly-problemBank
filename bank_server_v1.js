@@ -33,6 +33,9 @@ app.post('/problem', function(request, response){
     var hasImage = false;
     var insertId = {};
     
+    console.log('INSERT PROBLEM http post request : start with '+question+', '+answer+);
+
+    
     // case for problem with image
     if(request.files.uploadImage.size){
         hasImage = true;
@@ -43,7 +46,7 @@ app.post('/problem', function(request, response){
         client.query('INSERT INTO problems (question, answer, hasImage) VALUES(?, ?, ?)', [question, answer, hasImage], function(error, info){
             
             insertId = info.insertId;    
-            console.log('INSERT PROBLEM http post request : complete and insert them to db completely with insert id :'+insertId);
+            console.log('INSERT PROBLEM http post request : complete and insert them to db completely with problem id :'+insertId);
             
             if(hasImage){
 
@@ -75,7 +78,10 @@ app.post('/problem', function(request, response){
                         }
                     });        
                 });
-            }        
+            } else {
+                console.log('INSERT PROBLEM http post request : image upload complete');
+                response.redirect('back');  
+            }
 
             
         });        

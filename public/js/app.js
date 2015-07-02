@@ -1,8 +1,6 @@
 (function(){
     
     var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'flow']);
-    var url = 'http://52.68.29.112:52273';
-//    var url = 'http://127.0.0.1:52273';
     
     function Category(cid, name, path, relPath) {
         this.cid = cid;
@@ -51,7 +49,7 @@
     app.controller('BankController', ['$http', function($http){
         var bank = this;
         
-        $http.get(url+'/categories').then(function(response){
+        $http.get('/categories').then(function(response){
             var data = response.data;
             var masterCategory = new Category(0, '', '', '');
             masterCategory.makeCategory(data);
@@ -80,7 +78,7 @@
                     var cname = this.cateObject.name;
                     var cpath = this.cateObject.path;
                 
-                    $http.post(url+'/category', {'path':cpath, 'name':cname}).then(function(){
+                    $http.post('/category', {'path':cpath, 'name':cname}).then(function(){
                         alert('request complete');
                         this.cateObject = {};
                     });
@@ -140,7 +138,7 @@
                 this.problemImage = {};
                 
                 this.loadProblems = function(){
-                    $http.get(url+'/problems').
+                    $http.get('/problems').
                     then(function(response){
                         var data = response.data;        
                         $scope.problems = data;
