@@ -1,7 +1,8 @@
 (function(){
     
-    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'flow', 'ngFileUpload']);
-    var url = 'http://52.68.87.103:52273';
+    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'flow']);
+//    var url = 'http://52.68.87.103:52273';
+    var url = 'http://127.0.0.1:52273';
     
     function Category(cid, name, path, relPath) {
         this.cid = cid;
@@ -62,25 +63,8 @@
         return {
             restrict: 'E',
             templateUrl: 'view/insert-problem.html',
-            controller: ['$scope', '$http', function ($scope, $http) {
-                $scope.filesChanged = function(elm){
-                    $scope.files = elm.files;
-                    $scope.$apply(); 
-                };
-                
-                $scope.upload = function(){
-                    var fd = new FormData();
-                    angular.forEach($scope.files, function(file){
-                        fd.append('file', file);
-                    });
-                    $http.post(url+'/problem', fd, {
-                        transformRequest:angular.identity,
-                        headers:{'Content-Type':undefined}
-                    }).success(function(d){
-                        alert('success');
-                    });
-                };
-            }],
+            controller: function(){
+            },
             controllerAs: 'problemCtrl'
         };
     });

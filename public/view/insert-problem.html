@@ -1,10 +1,37 @@
 <h3>{{"Insert Problem"}}</h3>
 
-<form class="form-group">
-    <input type="file" onchange="angular.element(this).scope().filesChanged(this)" multiple />
+<form action="http://127.0.0.1:52273/problem" method="post" enctype="multipart/form-data">
+    
+    <div ng-show="question">
+        <pre><strong>Q: </strong>{{question}}</pre>
+    </div>
+    <div ng-show="answer">
+        <pre><strong>A: </strong>{{answer}}</pre>
+    </div>
+    
+    <fieldset class="form-group">
+        <textarea ng-model="question" name="question" class="form-control text" placeholder="Write a question" title="question" required>
+        </textarea>
+    </fieldset>
+    <fieldset class="form-group">
+        <textarea ng-model="answer" name="answer" class="form-control text" placeholder="Write a answer" title="answer" required></textarea>
+    </fieldset>
+    <fieldset>
+        <label>insert a picture: </label>
+        <input type="file" name="uploadImage" ng-model="uploadImage" class="btn" />
+    </fieldset>
+    <fieldset>
+        <input type="submit" class="btn btn-primary pull-right" value="Submit" />
+    </fieldset>
+    
+<!--
+    <input type="file" name="file" onchange="angular.element(this).scope().filesChanged(this)" multiple />
     <button ng-click="upload()">Upload</button>
     <li ng-repeat="file in files">{{file.name}}</li>
+-->
+<!--    <input class="btn btn-primary" type="file" ngf-select accept="image/*" ngf-change="upload($files)" ng-model="imageFile"/>-->
 </form>
+
 
 
 <!--

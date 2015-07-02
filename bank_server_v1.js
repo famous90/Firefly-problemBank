@@ -3,8 +3,7 @@ var http = require('http');
 var express = require('express');
 var mysql = require('mysql');
 var fs = require('fs');
-var multiparty = require('connect-multiparty');
-var multipartyMiddleware = multiparty();
+var path = require('path');
 
 // connect with DB
 var client = mysql.createConnection({
@@ -29,52 +28,62 @@ app.get('/problems', function(request, response){
 
 app.post('/problem', function(request, response){
     
-       var dirname = 'public/asset/images/';
-    var filePath = dirname + request.files.file.name;
-    fs.readFile(filePath, function(error, data){
+    var question = request.param('question');
+    var answer = request.param('answer');
+    var hasImage = false;
+    var insertId = {};
+    
+    // case for problem with image
+    if(request.files.uploadImage.size){
+        hasImage = true;
+    }
+    
+    if(question && answer){
         
-           fs.writeFile(filePath, data, function(err){
-               if(err) throw err;
-               else response.redirect('back');
-           });
-    });
-     
-});
+        client.query('INSERT INTO problems (question, answer, hasImage) VALUES(?, ?, ?)', [question, answer, hasImage], function(error, info){
+            
+            insertId = info.insertId;    
+            console.log('INSERT PROBLEM http post request : complete and insert them to db completely with insert id :'+insertId);
+            
+            if(hasImage){
 
-app.post('/upload-full-form', function (req, res) {
-    
-    console.log('uploaded');
-    res.setHeader('Content-Type', 'text/html');
+                var imageFileName = 'problem_image_'+insertId;
+                var imageFileExtension = path.extname(request.files.uploadImage.path);
+                var newPath = 'public/asset/images/'+imageFileName + imageFileExtension;
 
-    var pictureUrl = '/path/to/default/pictures';
-    var fileUploadMessage = '';
-    
-    // process file
-    if (!req.files.file || req.files.file.size == 0) {
-      fileUploadMessage = 'No file uploaded at ' + new Date().toString();
-      res.send(fileUploadMessage);
+                console.log('image upload path :'+newPath);
+
+                fs.readFile(request.files.uploadImage.path, function(err, data){
+
+                    fs.writeFile(newPath, data, 'binary', function(saveError){
+                        if(saveError){ 
+                            response.statusCode = 400;
+                            console.log('INSERT PROBLEM http post request : saving image error');
+                            throw saveError;
+                        }else{
+
+                            client.query('INSERT INTO problemImages (name, pid) VALUES(?, ?)', [imageFileName, insertId], function(imageQueryError, imageQueryInfo){
+                                if(imageQueryError){
+                                    response.statusCode = 400;
+                                    console.log('INSERT PROBLEM http post request : image query error');
+                                    throw imageQueryError;
+                                }else{
+                                    console.log('INSERT PROBLEM http post request : image upload complete');
+                                    response.redirect('back');  
+                                }
+                            });
+                        }
+                    });        
+                });
+            }        
+
+            
+        });        
+    }else{
+        console.log('INSERT PROBLEM http post request : parameter missing');
+        response.statusCode = 400;
     }
-    else {
-        var file = req.files.file;
-       
-        fs.unlink(file.path, function (err) {
-            if (err)
-                throw err;
-            else
-            {
-                fileUploadMessage = '<b>"' + file.name + '"<b> uploaded to the server at ' + new Date().toString();
-                pictureUrl = '/picture-uploads/' + file.name;
-
-                var responseObj = {
-                    fullname: req.param('fullname'),
-                    gender: req.param('gender'),
-                    color: req.param('color'),
-                    pictureUrl: pictureUrl
-                }
-                res.send(JSON.stringify(responseObj));
-            }             
-        });
-    }
+    
 });
 
 app.get('/categories', function(request, response){
@@ -85,15 +94,15 @@ app.get('/categories', function(request, response){
 
 app.post('/category', function(request, response){
     
-    var path = request.param('path');
+    var categoryPath = request.param('path');
     var name = request.param('name');
     
-    console.log('post category path,name: ' + path +','+ name);
+    console.log('post category path,name: ' + categoryPath +','+ name);
     
     var query = 'INSERT INTO categories (path, name) VALUES(?, ?)';
     
-    client.query(query, [path, name], function(error, data){
-//        response.writeHead(200, {"Content-Type": "text/plain"});
+    client.query(query, [categoryPath, name], function(error, data){
+        response.statusCode = 200;
     });
 });
 
