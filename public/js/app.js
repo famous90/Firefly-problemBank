@@ -1,8 +1,8 @@
 (function(){
     
     var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'flow']);
-//    var url = 'http://52.68.87.103:52273';
-    var url = 'http://127.0.0.1:52273';
+    var url = 'http://52.68.29.112:52273';
+//    var url = 'http://127.0.0.1:52273';
     
     function Category(cid, name, path, relPath) {
         this.cid = cid;
