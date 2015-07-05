@@ -93,6 +93,35 @@
             templateUrl: 'view/insert-problem.html',
             controller: ['$scope', '$http', function($scope, $http){
                 
+                this.submitForm = function(image){
+                    var question = $scope.question;
+                    var answer = $scope.answer;
+                    var uploadImage = image;
+                    var stringWithCategories = '';
+                    
+                    for(var i=0; i<selectedCategories.length; i++){
+                        stringWithCategories = stringWithCategories + selectedCategories[i].cid.toString() + '/';
+                    }
+                    
+                    var request = {
+                        method: 'POST',
+                        url: '/problem',
+                        headers: {
+                        'Content-Type': undefined
+                        },
+                        params: {
+                            question: question,
+                            answer: answer,
+                            categories: stringWithCategories
+                        }
+//                        File: uploadImage
+                    };
+                    
+                    $http(request).success(function(response){
+                        alert('upload success');
+                    });
+                };
+                
             }],
             controllerAs: 'problemCtrl'
         };

@@ -4,6 +4,29 @@
 <select-category type=0></select-category>
 
 
+<form ng-submit="problemCtrl.submitForm(uploadImage)">
+    <fieldset class="form-group">
+        <textarea ng-model="question" name="question" class="form-control text col-sm-9" placeholder="Write a question" title="question" required>
+        </textarea>
+    </fieldset>
+    <fieldset class="form-group">
+        <textarea ng-model="answer" name="answer" class="form-control text" placeholder="Write a answer" title="answer" required></textarea>
+    </fieldset>
+    <fieldset>
+        <input type="file" name="uploadImage" ng-model="uploadImage" class="btn" />
+    </fieldset>
+    <fieldset>
+        <input type="submit" class="btn btn-primary pull-right" value="Submit" />
+    </fieldset>
+    
+</form>
+<!--
+<h3>{{"Insert Problem"}}</h3>
+
+Select Category
+<select-category type=0></select-category>
+
+
 <form action="/problem" method="post" enctype="multipart/form-data">
     
     <div ng-show="question">
@@ -26,8 +49,12 @@
         <label>insert a picture: </label>
         <input type="file" name="uploadImage" ng-model="uploadImage" class="btn" />
     </fieldset>
+    <fieldset ng-show="false">
+        <input type="text" value="{{selections}}" ng-model="selections" name="selections">
+    </fieldset>
     <fieldset>
         <input type="submit" class="btn btn-primary pull-right" value="Submit" />
     </fieldset>
     
 </form>
+-->

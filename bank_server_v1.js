@@ -32,16 +32,27 @@ app.post('/problem', function(request, response){
     
     var question = request.param('question');
     var answer = request.param('answer');
+    var stringWithCategories = request.param('categories');
+    var categories = [];
     var hasImage = false;
     var insertId = {};
     
-    console.log('INSERT PROBLEM http post request : start with '+question+', '+answer);
-
-    
-    // case for problem with image
-    if(request.files.uploadImage.size){
-        hasImage = true;
+    var tempId = '';
+    for(var i=0; i<stringWithCategories.length; i++){
+        if(stringWithCategories.charAt(i) == '/'){
+            categories.push(tempId);
+            tempId = '';
+        }else{
+            tempId = tempId.concat(stringWithCategories[i]);
+        }
     }
+    
+    console.log('INSERT PROBLEM http post request : start with '+question+', '+answer + ', '+categories);
+
+    // case for problem with image
+//    if(request.files.uploadImage.size){
+//        hasImage = true;
+//    }
     
     if(question && answer){
         
@@ -49,6 +60,18 @@ app.post('/problem', function(request, response){
             
             insertId = info.insertId;    
             console.log('INSERT PROBLEM http post request : complete and insert them to db completely with problem id :'+insertId);
+            
+            for(i=0; i<categories.length; i++){
+                var cid = categories[i];
+                client.query('INSERT INTO pcLinks (pid, cid) VALUES(?, ?)', [insertId, cid], function(cateError){
+                    if(cateError){
+                        console.log('INSERT PROBLEM http post request : insert problem_category_link error with ('+insertId+', '+cid+')');
+                        throw cateError;
+                    }else{
+                        console.log('INSERT PROBLEM http post request : insert problem_category_link complete');                 
+                    }
+                });
+            }
             
             if(hasImage){
 
