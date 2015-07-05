@@ -1,7 +1,10 @@
 <h3>{{"Insert Problem"}}</h3>
 
+<!--Select Category-->
+<select-category type=0></select-category>
+
+
 <form action="/problem" method="post" enctype="multipart/form-data">
-<!--<form action="http://ec2-52-68-29-112.ap-northeast-1.compute.amazonaws.com:52273/problem" method="post" enctype="multipart/form-data">-->
     
     <div ng-show="question">
         <pre><strong>Q: </strong>{{question}}</pre>
@@ -11,10 +14,12 @@
     </div>
     
     <fieldset class="form-group">
-        <textarea ng-model="question" name="question" class="form-control text" placeholder="Write a question" title="question" required>
+        <label>문제</label>
+        <textarea ng-model="question" name="question" class="form-control text col-sm-9" placeholder="Write a question" title="question" required>
         </textarea>
     </fieldset>
     <fieldset class="form-group">
+        <label>정답</label>
         <textarea ng-model="answer" name="answer" class="form-control text" placeholder="Write a answer" title="answer" required></textarea>
     </fieldset>
     <fieldset>
@@ -25,159 +30,4 @@
         <input type="submit" class="btn btn-primary pull-right" value="Submit" />
     </fieldset>
     
-<!--
-    <input type="file" name="file" onchange="angular.element(this).scope().filesChanged(this)" multiple />
-    <button ng-click="upload()">Upload</button>
-    <li ng-repeat="file in files">{{file.name}}</li>
--->
-<!--    <input class="btn btn-primary" type="file" ngf-select accept="image/*" ngf-change="upload($files)" ng-model="imageFile"/>-->
 </form>
-
-
-
-<!--
-<div>
-    <input type="text" ng-model="username"></br></br>
-    <input type="checkbox" ng-model="multiple">upload multiple file</br></br>
-    watching model:
-    <div class="button" ngf-select ng-model="files">Upload using model $watch</div>
-    <div class="btn btn-primary" type="file" ngf-select accept="image/*" ngf-change="upload($files)" ng-model="imageFile">Upload on file change</div>
-<input class="btn btn-primary" type="file" ngf-select accept="image/*" ngf-change="upload($files)" ng-model="imageFile"/>
-<img ng-src="'{{imageFile}}'"> 
--->
-<!--
-    Drop File:
-    <div ngf-drop ng-model="files" class="drop-box" 
-        ngf-drag-over-class="dragover" ngf-multiple="true" ngf-allow-dir="true"
-        ngf-accept="'image/*,application/pdf'">Drop Images or PDFs files here</div>
-    <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
-
-    Image thumbnail: <img ngf-src="files[0]" ngf-default-src="'/thumb.jpg'" ngf-accept="'image/*'">
--->
-<!--</div>-->
-
-<!--
-<div>
-    <h1>
-      Example 4 - Processing a full form (requirement: v0.2.0)
-    </h1>Post a full form with a file and other inputs (text, etc) to the server and get a JSON result.<br>
-    <br>
-    <form ng-upload="uploadComplete(content)" action="http://127.0.0.1:52273/problem" method="post">
-    <form ng-upload="uploadComplete(content)" ng-submit="problemCtrl.submitProblem()">
-      <p>
-        <label>Fullname:</label> <input type="text" name="fullname" ng-model="fullname">
-      </p>
-      <p>
-        <label>Gender:</label> <input type="text" name="gender" ng-model="gender">
-      </p>
-      <p>
-        <label>Favourite Color:</label> <input type="text" name="color" ng-model="color">
-      </p>
-      <p>
-        <label>Your picture (file will not be saved on the server):</label> <input type="file" name="file" ng-model="file">
-      </p>
-      <p>
-        <input type="submit" class="btn" value="Submit" ng-disabled="$isUploading">
-      </p>
-    </form>
-    <div class="alert alert-info">
-      Server Response: {{response | json}}
-    </div>
-    <div>
-      Fullname: <b>{{response.fullname}}</b><br>
-      Gender: <b>{{response.gender}}</b><br>
-      Favourite Color: <span ng-style="response.style">{{response.color}}</span><br>
-      Picture: {{response.pictureUrl}}
-    </div>
-    <h6>parse : {{explainParse}}</h6>
-</div>
--->
-
-
-<!--<form name="insertProblemForm" ng-submit="problemCtrl.submitProblem(problemCtrl.problem.image)">-->
-    
-<!--Live Preview-->
-<!--
-    <h4 ng-show="problemCtrl.problem.question" class="text-center"><strong>Q: </strong>{{problemCtrl.problem.question}}</h4>
-    <h4 ng-show="problemCtrl.problem.answer" class="text-center"><strong>A: </strong>{{problemCtrl.problem.answer}}</h4>
--->
-        
-    
-    
-<!--Form-->
-<!--
-    <fieldset class="form-group">
-        <textarea ng-model="problemCtrl.problem.question" class="form-control" placeholder="Write a question" title="Question" id="MathInput" onkeyup="Preview.Update()"></textarea>
-    </fieldset>
-    <fieldset class="form-group">
-        <textarea ng-model="problemCtrl.problem.answer" class="form-control" placeholder="Write an answer" title="Answer"></textarea>
-    </fieldset>
-    <fieldset>
-        <input type="file" ng-model="problemCtrl.problem.image" class="btn btn-primary"/>
-    </fieldset>
-    <fieldset>
-        <input type="submit" class="btn btn-primary"/>
-    </fieldset>
--->
-    
-    
-<!--
-    <input type="text" ng-model="myModelObj">
-  <input type="file" ng-file-select="onFileSelect($files)">
-  <input type="file" ng-file-select="onFileSelect($files)" multiple accept="image/*">
-  <div class="button" ng-file-select="onFileSelect($files)" data-multiple="true"></div>
-  <div ng-file-drop="onFileSelect($files)" ng-file-drag-over-class="optional-css-class-name-or-function"
-        ng-show="dropSupported">drop files here</div>
-  <div ng-file-drop-available="dropSupported=true" 
-        ng-show="!dropSupported">HTML5 Drop File is not supported!</div>
-  <button ng-click="upload.abort()">Cancel Upload</button>
-    <input type="submit">
--->
-    
-<!--
-    <div class="thumbnail" style="max-width: 200px; max-height: 150px; line-height: 20px; margin-bottom: 5px;" ng-hide="$flow.files.length">
-      <img src="http://www.placehold.it/200x150/EFEFEF/AAAAAA&text=no+image" />
-    </div>
-    <div class="thumbnail" style="max-width: 200px; max-height: 150px; line-height: 20px; margin-bottom: 5px;" ng-show="$flow.files.length">
-      <img flow-img="$flow.files[0]" />
-    </div>
-    <div>
-      <a href="#" class="btn btn-primary" ng-hide="$flow.files.length" flow-btn flow-attrs="{accept:'image/*'}">Select image</a>
-      <a href="#" class="btn btn-primary" ng-show="$flow.files.length" flow-btn flow-attrs="{accept:'image/*'}">Change</a>
-      <a href="#" class="btn btn-danger" ng-show="$flow.files.length"
-         ng-click="$flow.cancel()">
-        Remove
-      </a>
-    </div>
--->
-
-<!-- Live Preview -->
-<!--
-    <blockquote>
-        <h3>{{"Question"}}</h3>
-        <div id="MathPreview"></div>
-        <div id="MathBuffer"></div>
-        <img flow-img="$flow.files[$flow.files.length-1]" height="100"/>
-        <em>Answer : {{problemCtrl.answer}}</em>
-    </blockquote>
--->
-
-<!-- Problem Form -->
-<!--
-    <fieldset class="form-group">
-        <textarea ng-model="question" class="form-control" placeholder="Write a question" title="question" id="MathInput" onkeyup="Preview.Update()">
-        </textarea>
-    </fieldset>
-    <fieldset class="form-group">
-        <textarea ng-model="answer" class="form-control" placeholder="Write a answer" title="answer"></textarea>
-        <input ng-model=""/>
-    </fieldset>
-    <fieldset class="form-group">
-        <input type="file" flow-btn flow-directory />
-    </fieldset>
-
-    <fieldset class="form-group">
-        <input type="submit" class="btn btn-primary pull-right" value="Submit Problem"/>
-    </fieldset>
--->
-<!--</form>-->

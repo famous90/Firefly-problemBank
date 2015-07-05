@@ -2,12 +2,14 @@
 <html ng-app="problemBank">
     <head>
         <meta charset="utf-8">
-        <link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>        
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="css/angular-ui-tree.min.css"/>
         <link rel="stylesheet" type="text/css" href="css/bank.css"/>
         <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/javascript" src="js/angular.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.1/angular-route.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
         <script type="text/javascript" src="js/bank_jquery.js"></script>
         <script type="text/javascript" src="js/ng-flow-standalone.min.js"></script>
         <script type="text/javascript" src="js/mathjax_dynamic.js"></script>
@@ -15,7 +17,7 @@
         <script type="text/javascript" src="js/ui-bootstrap-tpls-0.13.0.min.js"></script>
 </head>
     
-    <body ng-controller="BankController as bank">        
+    <body ng-controller="BankController as bank">     
         
         <!-- Bank Header -->
         <header>
@@ -23,6 +25,14 @@
             <h2 class="text-center">- an Angular Bank-</h2>
         </header>
         <hr/>
+        
+<!--
+        <select-category></select-category>
+        <hr/>
+-->
+        <!--        
+        카테고리 선택할 수 있도록 - 복수선택 가능(라디오버튼)
+        -->
         
         <insert-problem></insert-problem>
 <!--        <div insert-problem></div>-->
@@ -33,12 +43,6 @@
         <!--  
         데이터입력 시 카테고리 path자동 배정
         어느 카테고리에 추가 또는 삭제할지 고를 수 있도록    
-        -->
-        
-        <select-category></select-category>
-        <hr/>
-        <!--        
-        카테고리 선택할 수 있도록 - 복수선택 가능(라디오버튼)
         -->
         
         <show-problems></show-problems>

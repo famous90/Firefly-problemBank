@@ -1,11 +1,37 @@
-<div class="tree-node tree-node-content bg-warning">
-    <a class="btn btn-default btn-xs" ng-if="item.categories && item.categories.length > 0" data-nodrag ng-click="toggle(this)">
+<div ng-class="{selected:selectCategoryCtrl.isSelected(item)&&!type, unselected:!selectCategoryCtrl.isSelected(item)&&!type, unselectable: type}" style="height: 30px; margin-bottom:5px;" ng-click="!type && selectCategoryCtrl.selectCategory(item)">
+    <a class="btn btn-default btn-xs" ng-if="item.categories && item.categories.length > 0">
         <span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed,'glyphicon-chevron-down':!collapsed}"></span>
     </a>
     {{item.name}}
-    <button class="pull-right btn btn-default btn-sm" ng-click=""></button>
+    <a class="pull-right btn btn-danger btn-xs" ng-show="type" ng-click="selectCategoryCtrl.deleteCategory(item); $event.stopPropagation();">
+        <span class="glyphicon glyphicon-remove"></span>
+    </a>
+    <a class="pull-right btn btn-primary btn-xs" style="margin-right: 8px;" ng-show="type" ng-click="item.isCollapsed = !item.isCollapsed; $event.stopPropagation();">
+        <span class="glyphicon glyphicon-plus"></span>
+    </a>
+    <a class="pull-right btn btn-primary btn-xs" style="margin-right: 8px;" ng-show="type" ng-click="item.isChildCollapsed = !item.isChildCollapsed; $event.stopPropagation();">
+        <span class="glyphicon glyphicon-list"></span>
+    </a>
+</div>  
+<div collapse="!item.isCollapsed">
+    <div class="well well-lg">
+        <h6>추가할 카테고리 이름을 입력하세요</h6>
+        <form ng-submit="selectCategoryCtrl.addCategory(categoryName, item)">
+            <input type="text" class="col-sm-10" name="categoryName" ng-model="categoryName" placeholder="Write a category name" />
+            <input type="submit" value="추가" />
+        </form>
+    </div> 
 </div>
-<ol ui-tree-nodes="" ng-model="item.categories" ng-class="{hidden: !collapsed}">
-    <li ng-repeat="item in item.categories" ng-include="'view/nodes-renderer.html'" ui-tree-node>
+<ol ng-model="item.categories" ng-class="{hidden: !collapsed}">
+    <li collapse="!item.isChildCollapsed">
+            <div class="well well-lg">
+                <h6>추가할 자식 카테고리 이름을 입력하세요</h6>
+                <form ng-submit="selectCategoryCtrl.addChildCategory(categoryName, item)">
+                    <input type="text" class="col-sm-10" name="categoryName" ng-model="categoryName" placeholder="Write a category name" />
+                    <input type="submit" value="추가" />
+                </form>
+            </div> 
+    </li>
+    <li ng-repeat="item in item.categories" ng-include="'view/nodes-renderer.html'" >
     </li>
 </ol>
