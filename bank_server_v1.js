@@ -43,7 +43,7 @@ app.post('/problem', function(request, response){
             categories.push(tempId);
             tempId = '';
         }else{
-            tempId = tempId.concat(stringWithCategories[i]);
+            tempId = tempId.concat(stringWithCategories.charAt[i]);
         }
     }
     
@@ -148,7 +148,6 @@ app.post('/category', function(request, response){
     var insertCategoryOrder = 0;
     
     
-//    var query = 'select * from categories where path = "' + categoryPath + '"';
     client.query('select * from categories where path = ?', [categoryPath], function(error, results){
 
         insertCategoryOrder = results.length;
