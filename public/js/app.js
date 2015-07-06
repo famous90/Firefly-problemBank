@@ -14,22 +14,29 @@
         for(var k=0; k<data.length; k++){
             var item = data[k];
             var category = new Category(item.cid, item.name, item.path, item.relativePath);
+            
             var relativePath = item.relativePath;
-            var depth = 0;
-            depth = (relativePath.length)/2;
             var relativePathArray = new Array();
             relativePathArray.push(0);
-            for(var i=0; i<depth; i++){
-                relativePathArray.push(relativePath.charAt(2*i));
+            
+            var tempId = '';
+            for(i=0 ;i<relativePath.length; i++){
+                if(relativePath.charAt(i)=='/'){
+                    relativePathArray.push(tempId);
+                    tempId = '';
+                }else{
+                    tempId = tempId.concat(relativePath.charAt(i));
+                }
             }
-
+            
+            var depth = relativePathArray.length -1;
+            
             var parentCategory = this;
-
             for(var j=0; j<=depth; j++){
                 var order = relativePathArray[j];
 
-                if(j!=0){
-                    if(depth==1){
+                if(j != 0){
+                    if(depth == 1){
                         this.categories.push(category);
                     }else{
                         // last leaf
@@ -42,6 +49,36 @@
                     parentCategory = this;
                 }
             }
+//            var item = data[k];
+//                var category = new Category(item.cid, item.name, item.path, item.relativePath);
+//                var relativePath = item.relativePath;
+//                var depth = 0;
+//                depth = (relativePath.length)/2;
+//                var relativePathArray = new Array();
+//                relativePathArray.push(0);
+//                for(var i=0; i<depth; i++){
+//                    relativePathArray.push(relativePath.charAt(2*i));
+//                }
+//
+//                var parentCategory = this;
+//
+//                for(var j=0; j<=depth; j++){
+//                    var order = relativePathArray[j];
+//
+//                    if(j!=0){
+//                        if(depth==1){
+//                            this.categories.push(category);
+//                        }else{
+//                            // last leaf
+//                            if(j == depth){
+//                                parentCategory.categories.push(category);
+//                            }   
+//                        }
+//                        parentCategory = parentCategory.categories[order];
+//                    }else{
+//                        parentCategory = this;
+//                    }
+//                }
         }
     };
     Category.prototype.getParentId = function(){
@@ -216,14 +253,12 @@
                 };
                 
                 this.deleteCategory = function(item){
-//                    if(item.cid != 1){
-                        $http.delete('/category/'+item.cid)
-                        .success(function(response){
-                            alert('delete category SUCCESS');
-                        }).error(function(response){
-                            alert('delete category ERROR');
-                        });
-//                    }
+                    $http.delete('/category/'+item.cid)
+                    .success(function(response){
+                        alert('delete category SUCCESS');
+                    }).error(function(response){
+                        alert('delete category ERROR');
+                    });
                 };
                 
                 this.selectCategory = function(item){
