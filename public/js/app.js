@@ -44,7 +44,7 @@
                             parentCategory.categories.push(category);
                         }   
                     }
-                    parentCategory = parentCategory.categories[order];
+                    parentCategory = parentCategory.categories[parentCategory.categories.length-1];
                 }else{
                     parentCategory = this;
                 }
