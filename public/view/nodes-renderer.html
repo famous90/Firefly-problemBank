@@ -3,13 +3,13 @@
         <span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed,'glyphicon-chevron-down':!collapsed}"></span>
     </a>
     {{item.name}}
-    <a class="pull-right btn btn-danger btn-xs" ng-show="type && item.cid != '1'" ng-click="selectCategoryCtrl.deleteCategory(item); $event.stopPropagation();">
+    <a class="pull-right btn btn-danger btn-xs" style="margin-left: 8px;" ng-show="type && item.cid != '1'" ng-click="selectCategoryCtrl.deleteCategory(item); $event.stopPropagation();">
         <span class="glyphicon glyphicon-remove"></span>
     </a>
-    <a class="pull-right btn btn-primary btn-xs" style="margin-right: 8px;" ng-show="type" ng-click="item.isCollapsed = !item.isCollapsed; $event.stopPropagation();">
+    <a class="pull-right btn btn-primary btn-xs" style="margin-left: 8px;" ng-show="type && item.cid == '1'" ng-click="item.isCollapsed = !item.isCollapsed; $event.stopPropagation();">
         <span class="glyphicon glyphicon-plus"></span>
     </a>
-    <a class="pull-right btn btn-primary btn-xs" style="margin-right: 8px;" ng-show="type" ng-click="item.isChildCollapsed = !item.isChildCollapsed; $event.stopPropagation();">
+    <a class="pull-right btn btn-primary btn-xs" style="margin-left: 8px;" ng-show="type" ng-click="item.isChildCollapsed = !item.isChildCollapsed; $event.stopPropagation();">
         <span class="glyphicon glyphicon-list"></span>
     </a>
 </div>  
