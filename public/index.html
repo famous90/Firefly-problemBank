@@ -15,6 +15,9 @@
         <script type="text/javascript" src="js/mathjax_dynamic.js"></script>
         <script type="text/javascript" src="js/angular-ui-tree.min.js"></script>
         <script type="text/javascript" src="js/ui-bootstrap-tpls-0.13.0.min.js"></script>
+        
+        <script type="text/javascript" src="js/ng-file-upload-shim.min.js"></script> 
+        <script type="text/javascript" src="js/ng-file-upload.min.js"></script> 
 </head>
     
     <body ng-controller="BankController as bank">     
@@ -25,17 +28,8 @@
             <h2 class="text-center">- an Angular Bank-</h2>
         </header>
         <hr/>
-        
-<!--
-        <select-category></select-category>
-        <hr/>
--->
-        <!--        
-        카테고리 선택할 수 있도록 - 복수선택 가능(라디오버튼)
-        -->
-        
+                
         <insert-problem></insert-problem>
-<!--        <div insert-problem></div>-->
         <hr/>
         
         <edit-category></edit-category>

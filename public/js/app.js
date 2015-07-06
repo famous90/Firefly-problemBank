@@ -1,6 +1,6 @@
 (function(){
     
-    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'flow', 'ngRoute']);
+    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'flow', 'ngRoute', 'ngFileUpload']);
     
     function Category(cid, name, path, relPath) {
         this.cid = cid;
@@ -93,6 +93,38 @@
             templateUrl: 'view/insert-problem.html',
             controller: ['$scope', '$http', function($scope, $http){
                 
+//                $scope.upload = function (files) {
+//                    
+//                    var question = $scope.question;
+//                    var answer = $scope.answer;
+//                    var stringWithCategories = '';
+//                    
+//                    for(var i=0; i<selectedCategories.length; i++){
+//                        stringWithCategories = stringWithCategories + selectedCategories[i].cid.toString() + '/';
+//                    }
+//                    
+//                    if (files && files.length) {
+//                        for (var i = 0; i < files.length; i++) {
+//                            var file = files[i];
+//                            Upload.upload({
+//                                url: '/problem',
+//                                fields: {
+//                                    question: question,
+//                                    answer: answer,
+//                                    categories: stringWithCategories
+//                                },
+//                                file: file
+//                            }).progress(function (evt) {
+////                                var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+////                                console.log('progress: ' + progressPercentage + '% ' + evt.config.file.name);
+//                            }).success(function (data, status, headers, config) {
+////                                console.log('file ' + config.file.name + 'uploaded. Response: ' + data);
+//                                
+//                            });
+//                        }
+//                    }
+//                };
+                                
                 this.submitForm = function(image){
                     var question = $scope.question;
                     var answer = $scope.answer;
@@ -114,7 +146,6 @@
                             answer: answer,
                             categories: stringWithCategories
                         }
-//                        File: uploadImage
                     };
                     
                     $http(request).success(function(response){
@@ -185,12 +216,14 @@
                 };
                 
                 this.deleteCategory = function(item){
-                    $http.delete('/category/'+item.cid)
-                    .success(function(response){
-                        alert('delete category SUCCESS');
-                    }).error(function(response){
-                        alert('delete category ERROR');
-                    });
+//                    if(item.cid != 1){
+                        $http.delete('/category/'+item.cid)
+                        .success(function(response){
+                            alert('delete category SUCCESS');
+                        }).error(function(response){
+                            alert('delete category ERROR');
+                        });
+//                    }
                 };
                 
                 this.selectCategory = function(item){

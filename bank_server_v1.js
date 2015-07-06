@@ -47,67 +47,81 @@ app.post('/problem', function(request, response){
         }
     }
     
-    console.log('INSERT PROBLEM http post request : start with '+question+', '+answer + ', '+categories);
+    console.log('INSERT PROBLEM http post request : start with '+question+', '+answer);
 
     // case for problem with image
-//    if(request.files.uploadImage.size){
-//        hasImage = true;
-//    }
+    if(request.file){
+        hasImage = true;
+        console.log('IMAGE CONTAINED');
+    }else console.log('IMAGE NOT CONTAINED');
     
     if(question && answer){
         
         client.query('INSERT INTO problems (question, answer, hasImage) VALUES(?, ?, ?)', [question, answer, hasImage], function(error, info){
             
-            insertId = info.insertId;    
-            console.log('INSERT PROBLEM http post request : complete and insert them to db completely with problem id :'+insertId);
-            
-            for(i=0; i<categories.length; i++){
-                var cid = categories[i];
-                client.query('INSERT INTO pcLinks (pid, cid) VALUES(?, ?)', [insertId, cid], function(cateError){
+            if(error){
+                console.log('INSERT PROBLEM http post request : insert problem error with problem');    
+                throw error;
+                
+            }else{
+                
+                insertId = info.insertId;    
+                console.log('INSERT PROBLEM http post request : insert problem complete with id :'+insertId);
+
+                var pclinkQuery = 'INSERT INTO pcLinks (pid, cid) VALUES ';
+                for(i=0; i<categories.length; i++){
+                    if(i != 0){
+                        pclinkQuery += ',';
+                    }
+                    var cid = categories[i];
+                    pclinkQuery += '('+insertId+','+cid+')';
+                }
+                console.log('pclink query : '+pclinkQuery);
+
+                client.query(pclinkQuery, [insertId, cid], function(cateError){
                     if(cateError){
                         console.log('INSERT PROBLEM http post request : insert problem_category_link error with ('+insertId+', '+cid+')');
                         throw cateError;
                     }else{
                         console.log('INSERT PROBLEM http post request : insert problem_category_link complete');                 
-                    }
-                });
-            }
-            
-            if(hasImage){
+                    }                
 
-                var imageFileName = 'problem_image_'+insertId;
-                var imageFileExtension = path.extname(request.files.uploadImage.path);
-                var newPath = 'public/asset/images/'+imageFileName + imageFileExtension;
+                    if(hasImage){
 
-                console.log('image upload path :'+newPath);
+                        var imageFileName = 'problem_image_'+insertId;
+                        var imageFileExtension = path.extname(request.files.uploadImage.path);
+                        var newPath = 'public/asset/images/'+imageFileName + imageFileExtension;
 
-                fs.readFile(request.files.uploadImage.path, function(err, data){
+                        console.log('image upload path :'+newPath);
 
-                    fs.writeFile(newPath, data, 'binary', function(saveError){
-                        if(saveError){ 
-                            response.statusCode = 400;
-                            console.log('INSERT PROBLEM http post request : saving image error');
-                            throw saveError;
-                        }else{
+                        fs.readFile(request.files.uploadImage.path, function(err, data){
 
-                            client.query('INSERT INTO problemImages (name, pid) VALUES(?, ?)', [imageFileName, insertId], function(imageQueryError, imageQueryInfo){
-                                if(imageQueryError){
+                            fs.writeFile(newPath, data, 'binary', function(saveError){
+                                if(saveError){ 
                                     response.statusCode = 400;
-                                    console.log('INSERT PROBLEM http post request : image query error');
-                                    throw imageQueryError;
+                                    console.log('INSERT PROBLEM http post request : saving image error');
+                                    throw saveError;
                                 }else{
-                                    console.log('INSERT PROBLEM http post request : image upload complete');
-                                    response.redirect('back');  
-                                }
-                            });
-                        }
-                    });        
-                });
-            } else {
-                console.log('INSERT PROBLEM http post request : image upload complete');
-                response.redirect('back');  
-            }
 
+                                    client.query('INSERT INTO problemImages (name, pid) VALUES(?, ?)', [imageFileName, insertId], function(imageQueryError, imageQueryInfo){
+                                        if(imageQueryError){
+                                            response.statusCode = 400;
+                                            console.log('INSERT PROBLEM http post request : image query error');
+                                            throw imageQueryError;
+                                        }else{
+                                            console.log('INSERT PROBLEM http post request : image upload complete');
+                                            response.redirect('back');  
+                                        }
+                                    });
+                                }
+                            });        
+                        });
+                    } else {
+                        console.log('INSERT PROBLEM http post request : image upload complete');
+                        response.redirect('back');  
+                    }
+                });                
+            }
             
         });        
     }else{
