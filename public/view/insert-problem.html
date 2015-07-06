@@ -4,18 +4,12 @@
 <select-category type=0></select-category>
 
 
-<form ng-submit="problemCtrl.submitForm(uploadImage)">
+<form ng-submit="submitForm(uploadImage)">
     <fieldset class="form-group">
         <textarea ng-model="question" name="question" class="form-control text col-sm-9" placeholder="Write a question" title="question" required>
         </textarea>
-    </fieldset>
-    <fieldset class="form-group">
         <textarea ng-model="answer" name="answer" class="form-control text" placeholder="Write a answer" title="answer" required></textarea>
-    </fieldset>
-    <fieldset>
-        <input type="file" ng-model="uploadImage" accept="image/*" class="btn" />
-    </fieldset>
-    <fieldset>
+        <input type="file" ng-model="uploadImage" ngf-select name="uploadImage" accept="image/*" class="btn" />
         <input type="submit" class="btn btn-primary pull-right" value="Submit" />
     </fieldset>
     

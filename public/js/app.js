@@ -97,66 +97,54 @@
         return {
             restrict: 'E',
             templateUrl: 'view/insert-problem.html',
-            controller: ['$scope', '$http', function($scope, $http){
+            controller: ['$scope', '$http', 'Upload', function($scope, $http, Upload){
                 
-//                $scope.upload = function (files) {
-//                    
-//                    var question = $scope.question;
-//                    var answer = $scope.answer;
-//                    var stringWithCategories = '';
-//                    
-//                    for(var i=0; i<selectedCategories.length; i++){
-//                        stringWithCategories = stringWithCategories + selectedCategories[i].cid.toString() + '/';
-//                    }
-//                    
-//                    if (files && files.length) {
-//                        for (var i = 0; i < files.length; i++) {
-//                            var file = files[i];
-//                            Upload.upload({
-//                                url: '/problem',
-//                                fields: {
-//                                    question: question,
-//                                    answer: answer,
-//                                    categories: stringWithCategories
-//                                },
-//                                file: file
-//                            }).progress(function (evt) {
-////                                var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
-////                                console.log('progress: ' + progressPercentage + '% ' + evt.config.file.name);
-//                            }).success(function (data, status, headers, config) {
-////                                console.log('file ' + config.file.name + 'uploaded. Response: ' + data);
-//                                
-//                            });
-//                        }
-//                    }
-//                };
-                                
-                this.submitForm = function(image){
+                $scope.submitForm = function(files){
                     var question = $scope.question;
                     var answer = $scope.answer;
-                    var uploadImage = image;
                     var stringWithCategories = '';
                     
                     for(var i=0; i<selectedCategories.length; i++){
                         stringWithCategories = stringWithCategories + selectedCategories[i].cid.toString() + '/';
                     }
                     
-                    var request = {
-                        method: 'POST',
-                        url: '/problem',
-                        headers: {
-                        'Content-Type': undefined
-                        },
-                        params: {
-                            question: question,
-                            answer: answer,
-                            categories: stringWithCategories
-                        }
-                    };
-                    
-                    $http(request).success(function(response){
-                        alert('upload success');
-                    });
+                    if(files){
+                        var file = files[0];
+                        file.upload = Upload.upload({
+                            url: '/problem',
+                            method: 'POST',
+                            headers: {
+                                'my-header': 'my-header-value'
+                            },
+                            fields: {
+                                question: question,
+                                answer: answer,
+                                categories:stringWithCategories
+                            },
+                            file: file,
+                            fileFormDataName: 'myFile'
+                        }).success(function(response){
+                            alert('upload SUCCESS');
+                        });   
+                        
+                    }else{
+                        var request = {
+                            method: 'POST',
+                            url: '/problem',
+                            headers: {
+                                'Content-Type': undefined
+                            },
+                            params: {
+                                question: question,
+                                answer: answer,
+                                categories: stringWithCategories
+                            }
+                        };
+                        
+                        $http(request).success(function(response){
+                            alert('upload SUCCESS');
+                        });
+                    }
                 };
                 
             }],

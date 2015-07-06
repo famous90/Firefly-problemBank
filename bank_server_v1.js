@@ -43,17 +43,20 @@ app.post('/problem', function(request, response){
             categories.push(tempId);
             tempId = '';
         }else{
-            tempId = tempId.concat(stringWithCategories.charAt[i]);
+            tempId = tempId.concat(stringWithCategories.charAt(i));
         }
     }
     
-    console.log('INSERT PROBLEM http post request : start with '+question+', '+answer);
-
+//    console.log(JSON.parse(JSON.stringify(request.files)));
+//    console.log('files '+ request.files.myFile.path);
+    
     // case for problem with image
-    if(request.file){
+    if(request.files.myFile){
         hasImage = true;
-        console.log('IMAGE CONTAINED');
-    }else console.log('IMAGE NOT CONTAINED');
+//        console.log('IMAGE CONTAINED');
+    }else{
+//        console.log('IMAGE NOT CONTAINED');  
+    } 
     
     if(question && answer){
         
@@ -87,14 +90,15 @@ app.post('/problem', function(request, response){
                     }                
 
                     if(hasImage){
-
+                        
+                        var filePath = request.files.myFile.path;
                         var imageFileName = 'problem_image_'+insertId;
-                        var imageFileExtension = path.extname(request.files.uploadImage.path);
+                        var imageFileExtension = path.extname(filePath);
                         var newPath = 'public/asset/images/'+imageFileName + imageFileExtension;
 
                         console.log('image upload path :'+newPath);
-
-                        fs.readFile(request.files.uploadImage.path, function(err, data){
+                        
+                        fs.readFile(filePath, function(err, data){
 
                             fs.writeFile(newPath, data, 'binary', function(saveError){
                                 if(saveError){ 
@@ -117,7 +121,7 @@ app.post('/problem', function(request, response){
                             });        
                         });
                     } else {
-                        console.log('INSERT PROBLEM http post request : image upload complete');
+                        console.log('INSERT PROBLEM http post request : insert problem with only category complete');
                         response.redirect('back');  
                     }
                 });                
