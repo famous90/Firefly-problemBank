@@ -32,9 +32,11 @@ app.post('/problem', function(request, response){
     
     var question = request.param('question');
     var answer = request.param('answer');
+    var explanation = request.param('explanation');
     var stringWithCategories = request.param('categories');
     var categories = [];
-    var hasImage = false;
+    var hasQuestionImage = false;
+    var hasExplanationImage = false;
     var insertId = {};
     
     var tempId = '';
@@ -47,20 +49,29 @@ app.post('/problem', function(request, response){
         }
     }
     
-//    console.log(JSON.parse(JSON.stringify(request.files)));
-//    console.log('files '+ request.files.myFile.path);
+    console.log(JSON.parse(JSON.stringify(request.files)));
     
-    // case for problem with image
-    if(request.files.myFile){
-        hasImage = true;
-//        console.log('IMAGE CONTAINED');
-    }else{
-//        console.log('IMAGE NOT CONTAINED');  
-    } 
+    // case for problem/explanation with image
+    if(request.files.questionAttached){
+        hasQuestionImage = true;
+        console.log('QUESTION IMAGE CONTAINED');
+    }
     
+    if(request.files.explanationAttached){
+        hasExplanationImage = true;
+        console.log('EXPLANATION IMAGE CONTAINED');
+    }
+    
+    var hasImage = hasQuestionImage || hasExplanationImage;
+    if(!hasImage){
+        console.log('IMAGE NOT CONTAINED');
+    }
+    
+    
+    // insert problem to db
     if(question && answer){
         
-        client.query('INSERT INTO problems (question, answer, hasImage) VALUES(?, ?, ?)', [question, answer, hasImage], function(error, info){
+        client.query('INSERT INTO problems (question, answer, explanation, hasQImage, hasExplnImage) VALUES(?, ?, ?, ?, ?)', [question, answer, explanation, hasQuestionImage, hasExplanationImage], function(error, info){
             
             if(error){
                 console.log('INSERT PROBLEM http post request : insert problem error with problem');    
@@ -79,47 +90,98 @@ app.post('/problem', function(request, response){
                     var cid = categories[i];
                     pclinkQuery += '('+insertId+','+cid+')';
                 }
-                console.log('pclink query : '+pclinkQuery);
 
                 client.query(pclinkQuery, [insertId, cid], function(cateError){
                     if(cateError){
                         console.log('INSERT PROBLEM http post request : insert problem_category_link error with ('+insertId+', '+cid+')');
                         throw cateError;
                     }else{
-                        console.log('INSERT PROBLEM http post request : insert problem_category_link complete');                 
+                        console.log('INSERT PROBLEM http post request : insert problem_category_link complete');
                     }                
 
                     if(hasImage){
                         
-                        var filePath = request.files.myFile.path;
-                        var imageFileName = 'problem_image_'+insertId;
-                        var imageFileExtension = path.extname(filePath);
-                        var newPath = 'public/asset/images/'+imageFileName + imageFileExtension;
-
-                        console.log('image upload path :'+newPath);
+                        var filePaths = [];
+                        var newImageFilePaths = [];
+                        var defaultPath = 'public/asset/images/';
                         
-                        fs.readFile(filePath, function(err, data){
+                        if(hasQuestionImage){
+                            
+                            if(request.files.questionAttached.length){
+                                for(var i=0; i<request.files.questionAttached.length; i++){
+                                    var attachedFilePath = request.files.questionAttached[i].path;
+                                    filePaths.push(attachedFilePath);
+                                    newImageFilePaths.push( defaultPath + 'question_image_' + insertId + '_' + i + path.extname(attachedFilePath));
+                                }                                
+                            }else{
+                                var attachedFilePath = request.files.questionAttached.path;
+                                filePaths.push(attachedFilePath);
+                                newImageFilePaths.push( defaultPath + 'question_image_' + insertId + '_' + i + path.extname(attachedFilePath));
+                            }
+                        }
 
-                            fs.writeFile(newPath, data, 'binary', function(saveError){
-                                if(saveError){ 
+                        if(hasExplanationImage){
+                            
+                            if(request.files.explanationAttached.length){
+                                for(var i=0; i<request.files.explanationAttached.length; i++){
+                                    var attachedFilePath = request.files.explanationAttached[i].path;
+                                    filePaths.push(attachedFilePath);
+                                    newImageFilePaths.push( defaultPath + 'question_image_' + insertId + '_' + i + path.extname(attachedFilePath));
+                                }                                
+                            }else{
+                                var attachedFilePath = request.files.explanationAttached.path;
+                                filePaths.push(attachedFilePath);
+                                newImageFilePaths.push( defaultPath + 'explanation_image_' + insertId + '_' + i + path.extname(attachedFilePath));
+                            }
+                        }
+                        
+                        
+                        var index = 0;
+                        for(var i=0; i<filePaths.length; i++){
+//                            (function(i){
+                            var oldPath = '';
+                            var newPath = '';
+                            oldPath = filePaths[i];
+                            newPath = newImageFilePaths[i];
+                            
+                            fs.readFile(oldPath, function(err, data){
+                                
+                                if(err){
                                     response.statusCode = 400;
-                                    console.log('INSERT PROBLEM http post request : saving image error');
-                                    throw saveError;
-                                }else{
-
-                                    client.query('INSERT INTO problemImages (name, pid) VALUES(?, ?)', [imageFileName, insertId], function(imageQueryError, imageQueryInfo){
-                                        if(imageQueryError){
+                                    console.log('INSERT PROBLEM http post request : file read error ' + oldPath);
+                                    throw err;
+                                }else{                                
+                                    console.log('INSERT PROBLEM http post request : file read complete ' + oldPath);
+                                    fs.writeFile(newPath, data, 'binary', function(saveError){
+                                    
+                                        if(saveError){ 
                                             response.statusCode = 400;
-                                            console.log('INSERT PROBLEM http post request : image query error');
-                                            throw imageQueryError;
+                                            console.log('INSERT PROBLEM http post request : saving image error');
+                                            throw saveError;
+
                                         }else{
-                                            console.log('INSERT PROBLEM http post request : image upload complete');
-                                            response.redirect('back');  
+
+                                            client.query('INSERT INTO problemImages (name, pid) VALUES(?, ?)', [newPath, insertId], function(imageQueryError, imageQueryInfo){
+                                                if(imageQueryError){
+                                                    response.statusCode = 400;
+                                                    console.log('INSERT PROBLEM http post request : image query error');
+                                                    throw imageQueryError;
+                                                }else{
+                                                    console.log('INSERT PROBLEM http post request : image upload complete');
+                                                    index++;
+                                                    if(index == filePaths.length-1){
+                                                        response.send('OK');
+                                                    }
+                                                }
+                                            });
                                         }
-                                    });
-                                }
-                            });        
-                        });
+                                    });     
+                                }   
+                            });                            
+//                            })(i);
+                        }
+                        
+                        
                     } else {
                         console.log('INSERT PROBLEM http post request : insert problem with only category complete');
                         response.redirect('back');  

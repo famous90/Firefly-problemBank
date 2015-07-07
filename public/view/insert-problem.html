@@ -1,27 +1,35 @@
-<h3>{{"Insert Problem"}}</h3>
+<h3 class="text-center">{{"문제 입력하기"}}</h3>
 
-<!--Select Category-->
+<h4 style="padding: 10px">카테고리를 선택해주세요</h4>
 <select-category type=0></select-category>
 
-
-<form ng-submit="submitForm(uploadImage)">
+<form ng-submit="submitForm(questionImages, explanationImages)" class="col-sm-12">
     <fieldset class="form-group">
-        <textarea ng-model="question" name="question" class="form-control text col-sm-9" placeholder="Write a question" title="question" required>
-        </textarea>
-        <textarea ng-model="answer" name="answer" class="form-control text" placeholder="Write a answer" title="answer" required></textarea>
-        <input type="file" ng-model="uploadImage" ngf-select name="uploadImage" accept="image/*" class="btn" />
+        <label for="question" class="col-sm-1">문제 :</label>
+        <div class="col-sm-11">
+            <textarea ng-model="question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text col-sm-9" id="MathInput" placeholder="문제를 입력해주세요" title="question" required></textarea>
+            <label for="questionImages">문제에 첨부할 이미지를 넣어주세요</label>
+            <input type="file" name="questionImages" ng-model="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
+        </div>
+    </fieldset>
+
+    <fieldset class="form-group">
+        <label for="answer" class="col-sm-1">정답 :</label>
+        <div class="col-sm-11">
+            <textarea ng-model="answer" style="padding: 10px; margin-bottom:10px;" name="answer" class="form-control text" placeholder="정답을 입력해주세요" title="answer" required></textarea>
+        </div>
+    </fieldset>
+    <fieldset class="form-group">
+        <label for="explanation" class="col-sm-1">해설 :</label>
+        <div class="col-sm-11">
+            <textarea ng-model="explanation" style="padding: 10px; margin-bottom:10px;" rows="5" name="explanation" class="form-control text" placeholder="해설을 입력해주세요" title="explanation" required></textarea>
+            <label for="explanationImages">해설에 첨부할 이미지를 넣어주세요</label>
+            <input type="file" ng-model="explanationImages" name="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
+        </div>
+    </fieldset>
+    <fieldset class="form-group">
         <input type="submit" class="btn btn-primary pull-right" value="Submit" />
     </fieldset>
-    
-</form>
-<!--
-<h3>{{"Insert Problem"}}</h3>
-
-Select Category
-<select-category type=0></select-category>
-
-
-<form action="/problem" method="post" enctype="multipart/form-data">
     
     <div ng-show="question">
         <pre><strong>Q: </strong>{{question}}</pre>
@@ -29,26 +37,8 @@ Select Category
     <div ng-show="answer">
         <pre><strong>A: </strong>{{answer}}</pre>
     </div>
-    
-    <fieldset class="form-group">
-        <label>문제</label>
-        <textarea ng-model="question" name="question" class="form-control text col-sm-9" placeholder="Write a question" title="question" required>
-        </textarea>
-    </fieldset>
-    <fieldset class="form-group">
-        <label>정답</label>
-        <textarea ng-model="answer" name="answer" class="form-control text" placeholder="Write a answer" title="answer" required></textarea>
-    </fieldset>
-    <fieldset>
-        <label>insert a picture: </label>
-        <input type="file" name="uploadImage" ng-model="uploadImage" class="btn" />
-    </fieldset>
-    <fieldset ng-show="false">
-        <input type="text" value="{{selections}}" ng-model="selections" name="selections">
-    </fieldset>
-    <fieldset>
-        <input type="submit" class="btn btn-primary pull-right" value="Submit" />
-    </fieldset>
+    <div ng-show="explanation">
+        <pre><strong>A: </strong>{{explanation}}</pre>
+    </div>
     
 </form>
--->

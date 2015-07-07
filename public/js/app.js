@@ -1,6 +1,6 @@
 (function(){
     
-    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'flow', 'ngRoute', 'ngFileUpload']);
+    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload']);
     
     function Category(cid, name, path, relPath) {
         this.cid = cid;
@@ -99,52 +99,62 @@
             templateUrl: 'view/insert-problem.html',
             controller: ['$scope', '$http', 'Upload', function($scope, $http, Upload){
                 
-                $scope.submitForm = function(files){
+//                $scope.$watch('problemImages', function (files) {
+//                    alert('images '+files.length);
+//                });
+
+                $scope.submitForm = function(questionImages, explanationImages){
                     var question = $scope.question;
                     var answer = $scope.answer;
+                    var explanation = $scope.explanation;
                     var stringWithCategories = '';
+                    var params = {
+                        question: question,
+                        answer: answer,
+                        explanation: explanation,
+                        categories:stringWithCategories
+                    };
                     
                     for(var i=0; i<selectedCategories.length; i++){
                         stringWithCategories = stringWithCategories + selectedCategories[i].cid.toString() + '/';
                     }
                     
-                    if(files){
-                        var file = files[0];
-                        file.upload = Upload.upload({
-                            url: '/problem',
-                            method: 'POST',
-                            headers: {
-                                'my-header': 'my-header-value'
-                            },
-                            fields: {
-                                question: question,
-                                answer: answer,
-                                categories:stringWithCategories
-                            },
-                            file: file,
-                            fileFormDataName: 'myFile'
-                        }).success(function(response){
-                            alert('upload SUCCESS');
-                        });   
-                        
-                    }else{
-                        var request = {
-                            method: 'POST',
-                            url: '/problem',
-                            headers: {
-                                'Content-Type': undefined
-                            },
-                            params: {
-                                question: question,
-                                answer: answer,
-                                categories: stringWithCategories
-                            }
-                        };
-                        
-                        $http(request).success(function(response){
-                            alert('upload SUCCESS');
-                        });
+//                    var file = [];
+//                    if(problemImages){
+//                        file = problemImages[0];
+//                    }
+                    var formDataNames = [];
+                    var imageFiles = [];
+                    if(questionImages){
+                        for(var i=0; i<questionImages.length; i++){
+                            formDataNames.push('questionAttached');    
+                            imageFiles.push(questionImages[i]);
+                        }                        
                     }
+                    if(explanationImages){
+                        for(var i=0; i<explanationImages.length; i++){
+                            formDataNames.push('explanationAttached');
+                            imageFiles.push(explanationImages[i]);
+                        }                        
+                    }
+                    
+                    $scope.upload = Upload.upload({
+                        url: '/problem',
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': undefined
+                        },
+                        fields: {
+                            question: question,
+                            answer: answer,
+                            explanation: explanation,
+                            categories:stringWithCategories
+                        },
+                        file: imageFiles,
+                        fileFormDataName: formDataNames
+                    }).success(function(response){
+                        alert('upload SUCCESS');
+                    });   
                 };
                 
             }],
@@ -180,7 +190,7 @@
             scope: {
                 type: '='
             },
-            controller: ['$scope', '$http', '$route', function($scope, $http, $route){
+            controller: ['$scope', '$http', function($scope, $http){
                 
                 var rowData = [];
                 var masterCategory = [];
