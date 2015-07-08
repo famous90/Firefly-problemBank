@@ -1,6 +1,6 @@
 <div ng-class="{selected:selectCategoryCtrl.isSelected(item)&&!type, unselected:!selectCategoryCtrl.isSelected(item)&&!type, unselectable: type}" style="padding: 5px; margin-bottom:5px;" ng-click="!type && selectCategoryCtrl.selectCategory(item)">
-    <a class="btn btn-default btn-xs" ng-if="item.categories && item.categories.length > 0">
-        <span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed,'glyphicon-chevron-down':!collapsed}"></span>
+    <a class="btn btn-default btn-xs" ng-if="item.categories && item.categories.length > 0" ng-click="item.nodeCollapsed = !item.nodeCollapsed; $event.stopPropagation();">
+        <span class="glyphicon" ng-class="{'glyphicon-chevron-right': item.nodeCollapsed ,'glyphicon-chevron-down':!item.nodeCollapsed}"></span>
     </a>
     {{item.name}}
     <a class="pull-right btn btn-danger btn-xs" style="margin-left: 8px;" ng-show="type && item.cid != '1'" ng-click="selectCategoryCtrl.deleteCategory(item); $event.stopPropagation();">
@@ -21,8 +21,8 @@
             <input type="submit" value="추가" />
         </form>
     </div> 
-</div>
-<ol ng-model="item.categories" ng-class="{hidden: collapsed}">
+</div>    
+<ol ng-model="item.categories" collapse="item.nodeCollapsed">
     <li collapse="!item.isChildCollapsed">
             <div class="well well-lg">
                 <h6>추가할 자식 카테고리 이름을 입력하세요</h6>
