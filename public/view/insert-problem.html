@@ -1,12 +1,17 @@
 <h3 class="text-center">{{"문제 입력하기"}}</h3>
 
-<h4 style="padding: 10px">카테고리를 선택해주세요</h4>
-<select-category type=0></select-category>
+<div class="row">
+    <label class="col-md-1">카테고리:</label>
+    <div class="col-md-11">
+        <select-category type=0></select-category>
+    </div>
+</div>
+
 
 <form ng-submit="submitForm(questionImages, explanationImages)" class="col-sm-12">
     <fieldset class="form-group">
-        <label for="question" class="col-sm-1">문제 :</label>
-        <div class="col-sm-11">
+        <label for="question" class="col-md-1">문제:</label>
+        <div class="col-md-11">
             <textarea ng-model="question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text col-sm-9" id="MathInput" placeholder="문제를 입력해주세요" title="question" required></textarea>
             <label for="questionImages">문제에 첨부할 이미지를 넣어주세요</label>
             <input type="file" name="questionImages" ng-model="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
@@ -14,8 +19,8 @@
     </fieldset>
 
     <fieldset class="form-group">
-        <label for="answer" class="col-sm-1">정답 :</label>
-        <div class="col-sm-11">
+        <label for="answer" class="col-md-1">정답:</label>
+        <div class="col-md-11">
             <div class="btn-group" style="margin-bottom: 10px">
                 <label class="btn btn-primary" ng-model="answerType" ng-click="answerTypeButtonTapped(answerType)" btn-radio="'single'" uncheckable>주관식</label>
                 <label class="btn btn-primary" ng-model="answerType" ng-click="answerTypeButtonTapped(answerType)" btn-radio="'multiple'" uncheckable>객관식</label>
@@ -31,8 +36,8 @@
         </div>
     </fieldset>
     <fieldset class="form-group">
-        <label for="explanation" class="col-sm-1">해설 :</label>
-        <div class="col-sm-11">
+        <label for="explanation" class="col-md-1">해설:</label>
+        <div class="col-md-11">
             <textarea ng-model="explanation" style="padding: 10px; margin-bottom:10px;" rows="5" name="explanation" class="form-control text" placeholder="해설을 입력해주세요" title="explanation" required></textarea>
             <label for="explanationImages">해설에 첨부할 이미지를 넣어주세요</label>
             <input type="file" ng-model="explanationImages" name="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">

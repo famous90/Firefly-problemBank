@@ -22,7 +22,7 @@
         </form>
     </div> 
 </div>    
-<ol ng-model="item.categories" collapse="item.nodeCollapsed">
+<ol ng-model="item.categories" collapse="!item.nodeCollapsed" style="list-style-type:none;">
     <li collapse="!item.isChildCollapsed">
             <div class="well well-lg">
                 <h6>추가할 자식 카테고리 이름을 입력하세요</h6>
