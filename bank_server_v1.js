@@ -37,6 +37,7 @@ app.post('/problem', function(request, response){
     var categories = [];
     var hasQuestionImage = false;
     var hasExplanationImage = false;
+    var stringWithExamples = request.param('examples');
     var insertId = {};
     
     var tempId = '';
@@ -68,10 +69,11 @@ app.post('/problem', function(request, response){
     }
     
     
+    
     // insert problem to db
     if(question && answer){
         
-        client.query('INSERT INTO problems (question, answer, explanation, hasQImage, hasExplnImage) VALUES(?, ?, ?, ?, ?)', [question, answer, explanation, hasQuestionImage, hasExplanationImage], function(error, info){
+        client.query('INSERT INTO problems (question, answer, explanation, hasQImage, hasExplnImage, examples) VALUES(?, ?, ?, ?, ?, ?)', [question, answer, explanation, hasQuestionImage, hasExplanationImage, stringWithExamples], function(error, info){
             
             if(error){
                 console.log('INSERT PROBLEM http post request : insert problem error with problem');    

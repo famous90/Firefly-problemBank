@@ -99,30 +99,30 @@
             templateUrl: 'view/insert-problem.html',
             controller: ['$scope', '$http', 'Upload', function($scope, $http, Upload){
                 
-//                $scope.$watch('problemImages', function (files) {
-//                    alert('images '+files.length);
-//                });
-
+                $scope.answerType = 'single';
+                $scope.answerPlaceHolder = '정답을 입력해 주세요';
+                
+                $scope.answerTypeButtonTapped = function(answerType){
+                    if($scope.answerType == 'single'){
+                        $scope.answerPlaceHolder = '정답인 보기를 입력해 주세요';
+                    }else $scope.answerPlaceHolder = '정답을 입력해 주세요';
+                };
+                
                 $scope.submitForm = function(questionImages, explanationImages){
                     var question = $scope.question;
                     var answer = $scope.answer;
                     var explanation = $scope.explanation;
-                    var stringWithCategories = '';
-                    var params = {
-                        question: question,
-                        answer: answer,
-                        explanation: explanation,
-                        categories:stringWithCategories
-                    };
                     
+                    var stringWithCategories = '';
                     for(var i=0; i<selectedCategories.length; i++){
                         stringWithCategories = stringWithCategories + selectedCategories[i].cid.toString() + '/';
                     }
                     
-//                    var file = [];
-//                    if(problemImages){
-//                        file = problemImages[0];
-//                    }
+                    var stringWithExamples = '';
+                    if($scope.answerType == 'multiple'){
+                        stringWithExamples = $scope.example1 + '@@' + $scope.example2 + '@@' + $scope.example3 + '@@' + $scope.example4 + '@@';
+                    }
+                    
                     var formDataNames = [];
                     var imageFiles = [];
                     if(questionImages){
@@ -148,7 +148,8 @@
                             question: question,
                             answer: answer,
                             explanation: explanation,
-                            categories:stringWithCategories
+                            categories:stringWithCategories,
+                            examples:stringWithExamples
                         },
                         file: imageFiles,
                         fileFormDataName: formDataNames

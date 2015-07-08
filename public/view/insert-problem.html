@@ -16,7 +16,18 @@
     <fieldset class="form-group">
         <label for="answer" class="col-sm-1">정답 :</label>
         <div class="col-sm-11">
-            <textarea ng-model="answer" style="padding: 10px; margin-bottom:10px;" name="answer" class="form-control text" placeholder="정답을 입력해주세요" title="answer" required></textarea>
+            <div class="btn-group" style="margin-bottom: 10px">
+                <label class="btn btn-primary" ng-model="answerType" ng-click="answerTypeButtonTapped(answerType)" btn-radio="'single'" uncheckable>주관식</label>
+                <label class="btn btn-primary" ng-model="answerType" ng-click="answerTypeButtonTapped(answerType)" btn-radio="'multiple'" uncheckable>객관식</label>
+            </div>
+            <textarea ng-model="answer" style="padding: 10px; margin-bottom:10px;" name="answer" class="form-control text" placeholder="{{answerPlaceHolder}}" rows="1" title="answer" required></textarea>
+            <div ng-show="answerType == 'multiple'">
+                <hr/>
+                <textarea ng-model="example1" style="padding: 10px; margin-bottom:10px;" name="example1" class="form-control text" placeholder="정답이 아닌 보기1을 입력해주세요" rows="1" title="example1" required></textarea>
+                <textarea ng-model="example2" style="padding: 10px; margin-bottom:10px;" name="example2" class="form-control text" placeholder="정답이 아닌 보기2를 입력해주세요" rows="1" title="example2" required></textarea>
+                <textarea ng-model="example3" style="padding: 10px; margin-bottom:10px;" name="example3" class="form-control text" placeholder="정답이 아닌 보기3을 입력해주세요" rows="1" title="example3" required></textarea>
+                <textarea ng-model="example4" style="padding: 10px; margin-bottom:10px;" name="example4" class="form-control text" placeholder="정답이 아닌 보기4를 입력해주세요" rows="1" title="example4" required></textarea>
+            </div>
         </div>
     </fieldset>
     <fieldset class="form-group">
