@@ -293,7 +293,7 @@ app.del('/category/:cid', function(request, response){
 
 
 // check server running
-http.createServer(app).listen(52273, function(){
+http.createServer(app).listen(8080, function(){
     
     var ifaces = os.networkInterfaces();
 
