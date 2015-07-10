@@ -26,6 +26,11 @@
             <p class="text-center">math string test : $$ x^2 $$</p>
         </header>
         <hr/>
+        
+        <div ng-controller="ExampleCtrl">
+    <p ng-model="mjx" mathjax>{{mjx}}</p>
+    <button type="button" ng-click="changeModel()">Change Code</button>
+</div>
                 
         <insert-problem></insert-problem>
         <hr/>

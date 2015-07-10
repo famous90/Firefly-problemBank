@@ -87,6 +87,15 @@
         }else return 0;
     };
     
+//    MathJax.Hub.Config({
+//        skipStartupTypeset: true,
+//        messageStyle: "none",
+//        "HTML-CSS": {
+//            showMathMenu: false
+//        }
+//    });
+//    MathJax.Hub.Configured();
+    
     var selectedCategories = new Array();
         
     app.controller('BankController', ['$scope', '$http', function($scope, $http){
@@ -112,6 +121,8 @@
                     var question = $scope.question;
                     var answer = $scope.answer;
                     var explanation = $scope.explanation;
+                    
+                    alert('Q: '+question + ' A: '+answer +' E: '+explanation);
                     
                     var stringWithCategories = '';
                     for(var i=0; i<selectedCategories.length; i++){
@@ -279,8 +290,18 @@
     
     app.directive('nodesRenderer', function(){
         return {
-            restrict: 'E',
-            templateUrl: 'view/nodes-renderer.html'
+            restrict: 'A',
+            templateUrl: 'view/nodes-renderer.html',
+            controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs){
+                $scope.$watch($attrs.mathjaxBind, function(texExpression) {
+                var texScript = angular.element("<script type='math/tex'>")
+                    .html(texExpression ? texExpression :  "");
+                $element.html("");
+                $element.append(texScript);
+                MathJax.Hub.Queue(["Reprocess", MathJax.Hub, $element[0]]);
+            });
+            }],
+            controllerAs: 'nodeCtrl'
         };
     });
     
@@ -303,4 +324,21 @@
             controllerAs: 'masterProblemsCtrl'
         };
     });
+    
+    app.directive('mathjax',function(){
+        return {
+            restrict: 'EA',
+            link: function(scope, element, attrs) {
+                scope.$watch(attrs.ngModel, function () {
+                    MathJax.Hub.Queue(['Typeset',MathJax.Hub,element.get(0)]);
+                });
+            }
+        };
+    });
+
+//    function ExampleCtrl($scope){
+//        $scope.changeModel = function(){
+//             $scope.mjx = '\sum_{i=0}^\infty i^2';
+//        }
+//    }
 })();
