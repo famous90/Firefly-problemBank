@@ -3,17 +3,20 @@
 
     <h3 ng-show="problems.length">Show Problems</h3>
 
-    <div class="list-group-item" ng-repeat="problem in problems">
-        <h4>Problem id: {{problem.pid}}</h4>
-        <h5>question </h5> 
-        {{problem.question}}
-        <h6>Answer </h6> 
-        {{problem.answer}}
+    <div class="list-group-item" ng-repeat="problemItem in problems">
+        <h4>Problem id: {{problemItem.pid}}</h4>
+<!--        <mathjax ng-model="problem.question">{{problem.question}}</mathjax>-->
+<!--        <p ng-model="problem.question" mathjax>{{problem.question}}</p> -->
+<!--        <h6 ng-model="problem.answer" mathjax>{{problem.answer}}</h6> -->
+        <div>
+            <p ng-model="problemItem.question" mathjax>{{problemItem.question}}</p>
+            <p ng-model="problemItem.answer" mathjax>{{problemItem.answer}}</p>
+        </div>
     </div>
         
     <form name="loadProblemsForm">
         <fieldset class="form-group">
-            <input type="button" class="btn btn-primary pull-right" value="Load Problems" ng-click="masterProblemsCtrl.loadProblems()">
+            <input type="button" class="btn btn-primary pull-right" value="Load Problems" ng-click="loadProblems()">
         </fieldset>
     </form>
     

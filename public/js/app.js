@@ -157,8 +157,8 @@
                     }).success(function(response){
                         
                         if(imageFiles.length){
-                            alert(imageFiles.length + '개 이미지와 문제 업로드 성공');
-                        }else alert('이미지 없는 문제 업로드 성공');
+                            $window.alert(imageFiles.length + '개 이미지와 문제 업로드 성공');
+                        }else $window.alert('이미지 없는 문제 업로드 성공');
                     });   
                 };
                 
@@ -292,11 +292,8 @@
         return {
             restrict: 'E',
             templateUrl: 'view/show-problems.html',
-            controller: ['$scope', '$http', function($scope, $http){
-                
-                this.problemImage = {};
-                
-                this.loadProblems = function(){
+            controller: ['$scope', '$http', function($scope, $http){                
+                $scope.loadProblems = function(){
                     $http.get('/problems').
                     then(function(response){
                         var data = response.data;        
@@ -308,16 +305,17 @@
         };
     });
     
-//    app.directive('mathjax',function(){
-//        return {
-//            restrict: 'EA',
-//            link: function(scope, element, attrs) {
-//                scope.$watch(attrs.ngModel, function () {
-//                    MathJax.Hub.Queue(['Typeset',MathJax.Hub,element.get(0)]);
-//                });
-//            }
-//        };
-//    });
+    app.directive('mathjax',function(){
+        return {
+            restrict: 'EA',
+            link: ['$scope', '$element', '$attrs', function($scope, $element, $attrs) {
+                $scope.$watch($attrs.ngModel, function () {
+                    alert('ngmodel '+$attrs.ngModel);
+                    MathJax.Hub.Queue(['Typeset',MathJax.Hub,$element.get(0)]);
+                });
+            }]
+        };
+    });
 //
 //    function ExampleCtrl($scope){
 //        $scope.changeModel = function(){
