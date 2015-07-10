@@ -118,7 +118,7 @@ app.post('/problem', function(request, response){
                             }else{
                                 var attachedFilePath = request.files.questionAttached.path;
                                 filePaths.push(attachedFilePath);
-                                newImageFilePaths.push( defaultPath + 'question_image_' + insertId + '_' + i + path.extname(attachedFilePath));
+                                newImageFilePaths.push( defaultPath + 'question_image_' + insertId + path.extname(attachedFilePath));
                             }
                         }
 
@@ -133,14 +133,14 @@ app.post('/problem', function(request, response){
                             }else{
                                 var attachedFilePath = request.files.explanationAttached.path;
                                 filePaths.push(attachedFilePath);
-                                newImageFilePaths.push( defaultPath + 'explanation_image_' + insertId + '_' + i + path.extname(attachedFilePath));
+                                newImageFilePaths.push( defaultPath + 'explanation_image_' + insertId + path.extname(attachedFilePath));
                             }
                         }
                         
                         
                         var index = 0;
                         for(var i=0; i<filePaths.length; i++){
-//                            (function(i){
+                            (function(i){
                             var oldPath = '';
                             var newPath = '';
                             oldPath = filePaths[i];
@@ -180,7 +180,7 @@ app.post('/problem', function(request, response){
                                     });     
                                 }   
                             });                            
-//                            })(i);
+                            })(i);
                         }
                         
                         

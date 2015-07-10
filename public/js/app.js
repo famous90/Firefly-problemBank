@@ -155,7 +155,10 @@
                         file: imageFiles,
                         fileFormDataName: formDataNames
                     }).success(function(response){
-                        alert('upload SUCCESS');
+                        
+                        if(imageFiles.length){
+                            alert(imageFiles.length + '개 이미지와 문제 업로드 성공');
+                        }else alert('이미지 없는 문제 업로드 성공');
                     });   
                 };
                 
