@@ -290,18 +290,8 @@
     
     app.directive('nodesRenderer', function(){
         return {
-            restrict: 'A',
-            templateUrl: 'view/nodes-renderer.html',
-            controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs){
-                $scope.$watch($attrs.mathjaxBind, function(texExpression) {
-                var texScript = angular.element("<script type='math/tex'>")
-                    .html(texExpression ? texExpression :  "");
-                $element.html("");
-                $element.append(texScript);
-                MathJax.Hub.Queue(["Reprocess", MathJax.Hub, $element[0]]);
-            });
-            }],
-            controllerAs: 'nodeCtrl'
+            restrict: 'E',
+            templateUrl: 'view/nodes-renderer.html'
         };
     });
     
