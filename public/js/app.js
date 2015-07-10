@@ -87,15 +87,6 @@
         }else return 0;
     };
     
-//    MathJax.Hub.Config({
-//        skipStartupTypeset: true,
-//        messageStyle: "none",
-//        "HTML-CSS": {
-//            showMathMenu: false
-//        }
-//    });
-//    MathJax.Hub.Configured();
-    
     var selectedCategories = new Array();
         
     app.controller('BankController', ['$scope', '$http', function($scope, $http){
@@ -106,7 +97,7 @@
         return {
             restrict: 'E',
             templateUrl: 'view/insert-problem.html',
-            controller: ['$scope', '$http', 'Upload', function($scope, $http, Upload){
+            controller: ['$scope', '$http', 'Upload', '$window', function($scope, $http, Upload, $window){
                 
                 $scope.answerType = 'single';
                 $scope.answerPlaceHolder = '정답을 입력해 주세요';
@@ -118,6 +109,8 @@
                 };
                 
                 $scope.submitForm = function(questionImages, explanationImages){
+                    $window.alert('hello');
+                    
                     var question = $scope.question;
                     var answer = $scope.answer;
                     var explanation = $scope.explanation;
