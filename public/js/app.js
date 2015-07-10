@@ -325,17 +325,17 @@
         };
     });
     
-    app.directive('mathjax',function(){
-        return {
-            restrict: 'EA',
-            link: function(scope, element, attrs) {
-                scope.$watch(attrs.ngModel, function () {
-                    MathJax.Hub.Queue(['Typeset',MathJax.Hub,element.get(0)]);
-                });
-            }
-        };
-    });
-
+//    app.directive('mathjax',function(){
+//        return {
+//            restrict: 'EA',
+//            link: function(scope, element, attrs) {
+//                scope.$watch(attrs.ngModel, function () {
+//                    MathJax.Hub.Queue(['Typeset',MathJax.Hub,element.get(0)]);
+//                });
+//            }
+//        };
+//    });
+//
 //    function ExampleCtrl($scope){
 //        $scope.changeModel = function(){
 //             $scope.mjx = '\sum_{i=0}^\infty i^2';
