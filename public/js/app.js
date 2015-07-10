@@ -109,13 +109,10 @@
                 };
                 
                 $scope.submitForm = function(questionImages, explanationImages){
-                    $window.alert('hello');
                     
                     var question = $scope.question;
                     var answer = $scope.answer;
                     var explanation = $scope.explanation;
-                    
-                    alert('Q: '+question + ' A: '+answer +' E: '+explanation);
                     
                     var stringWithCategories = '';
                     for(var i=0; i<selectedCategories.length; i++){
