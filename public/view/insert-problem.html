@@ -14,7 +14,7 @@
     <fieldset class="form-group">
         <label for="question" class="col-md-1">문제:</label>
         <div class="col-md-11">
-            <textarea ng-model="question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text col-sm-9" id="MathInput" placeholder="문제를 입력해주세요" title="question" required></textarea>
+            <textarea ng-model="question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text col-sm-9" id="MathInput" onkeyup="Preview.Update()" placeholder="문제를 입력해주세요" title="question" required></textarea>
             <label for="questionImages">문제에 첨부할 이미지를 넣어주세요</label>
             <input type="file" name="questionImages" ng-model="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
         </div>
