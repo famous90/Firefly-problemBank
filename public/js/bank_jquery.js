@@ -6,5 +6,11 @@ $(document).ready(function() {
             return false;
         }
     });
+    
+    $('.mathstring').text(function(){
+        var string = this;
+        string.replace(/['"]+/g, '');
+        this = string;
+    });
 });
 

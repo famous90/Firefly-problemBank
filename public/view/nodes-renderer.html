@@ -1,4 +1,4 @@
-<div ng-class="{selected:selectCategoryCtrl.isSelected(item)&&!type, unselected:!selectCategoryCtrl.isSelected(item)&&!type, unselectable: type}" style="padding: 5px; margin-bottom:5px;" ng-click="!type && selectCategoryCtrl.selectCategory(item)">
+<div ng-class="{selected:selectCategoryCtrl.isSelected(item)&&!type, unselected:!selectCategoryCtrl.isSelected(item)&&!type, unselectable: type}" class="mathstring" style="padding: 5px; margin-bottom:5px;" ng-click="!type && selectCategoryCtrl.selectCategory(item)">
     <a class="btn btn-default btn-xs" ng-if="item.categories && item.categories.length > 0" ng-click="item.nodeCollapsed = !item.nodeCollapsed; $event.stopPropagation();">
         <span class="glyphicon" ng-class="{'glyphicon-chevron-right': item.nodeCollapsed ,'glyphicon-chevron-down':!item.nodeCollapsed}"></span>
     </a>
