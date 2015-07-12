@@ -99,6 +99,8 @@
             templateUrl: 'view/insert-problem.html',
             controller: ['$scope', '$http', 'Upload', '$window', function($scope, $http, Upload, $window){
                 
+                $scope.wholeProblem = 
+                
                 $scope.answerType = 'single';
                 $scope.answerPlaceHolder = '정답을 입력해 주세요';
                 
@@ -305,21 +307,15 @@
         };
     });
     
-    app.directive('mathjax',function(){
+    app.directive('mathjaxBind',function(){
         return {
             restrict: 'EA',
-            link: ['$scope', '$element', '$attrs', function($scope, $element, $attrs) {
-                $scope.$watch($attrs.ngModel, function () {
-                    alert('ngmodel '+$attrs.ngModel);
-                    MathJax.Hub.Queue(['Typeset',MathJax.Hub,$element.get(0)]);
+            controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs) {
+                $scope.$watch($attrs.mathjaxBind, function (expression) {
+                    $element.html(expression);
+                    MathJax.Hub.Queue(['Typeset', MathJax.Hub, $element[0]]);
                 });
             }]
         };
     });
-//
-//    function ExampleCtrl($scope){
-//        $scope.changeModel = function(){
-//             $scope.mjx = '\sum_{i=0}^\infty i^2';
-//        }
-//    }
 })();

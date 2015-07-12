@@ -10,12 +10,24 @@
 </div>
 
 
-<!--<form ng-submit="submitForm(questionImages, explanationImages)" class="col-sm-12">-->
+<div class="row" ng-show="question || answer || explanation">
+    <label for="problemPreview" class="col-md-1">미리보기:</label>
+    <pre id="problemPreview" class="col-md-9 col-md-offset-1" style="white-space:normal;">
+        <h5 ng-show="question"><strong>문제</strong></h5>
+        <h6 mathjax-bind="question"></h6>
+        <h5 ng-show="answer"><strong>정답</strong></h5>
+        <h6 mathjax-bind="answer"></h6>
+        <h5 ng-show="explanation"><strong>해설</strong></h5>
+        <h6 mathjax-bind="explanation"></h6>
+    </pre>
+</div>
+
+
 <form class="col-sm-12">
     <fieldset class="form-group">
         <label for="question" class="col-md-1">문제:</label>
         <div class="col-md-11">
-            <textarea ng-model="question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text col-sm-9" placeholder="문제를 입력해주세요" title="question" required></textarea>
+            <textarea ng-model="question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text" placeholder="문제를 입력해주세요" title="question" required></textarea>
             <label for="questionImages">문제에 첨부할 이미지를 넣어주세요</label>
             <input type="file" name="questionImages" ng-model="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
         </div>
@@ -47,18 +59,7 @@
         </div>
     </fieldset>
     <fieldset class="form-group">
-<!--        <input type="submit" class="btn btn-primary pull-right" value="Submit" />-->
         <button type="button" class="btn btn-primary pull-right" ng-click="submitForm(questionImages, explanationImages)">문제 올리기</button>
     </fieldset>
-    
-    <div ng-show="question">
-        <pre><strong>Q: </strong>{{question}}</pre>
-    </div>
-    <div ng-show="answer">
-        <pre><strong>A: </strong>{{answer}}</pre>
-    </div>
-    <div ng-show="explanation">
-        <pre><strong>A: </strong>{{explanation}}</pre>
-    </div>
-    
+        
 </form>
