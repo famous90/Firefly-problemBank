@@ -1,9 +1,7 @@
-<div ng-class="{selected:selectCategoryCtrl.isSelected(item)&&!type, unselected:!selectCategoryCtrl.isSelected(item)&&!type, unselectable: type}" style="padding: 5px; margin-bottom:5px;" ng-click="!type && selectCategoryCtrl.selectCategory(item)">
+<div ng-class="{selected:selectCategoryCtrl.isSelected(item)&&!type, unselected:!selectCategoryCtrl.isSelected(item)&&!type, unselectable: type}" style="padding: 5px; margin-bottom:5px;" ng-click="!type && selectCategoryCtrl.selectCategory(item);">
     <a class="btn btn-default btn-xs" ng-if="item.categories && item.categories.length > 0" ng-click="item.nodeCollapsed = !item.nodeCollapsed; $event.stopPropagation();">
         <span class="glyphicon" ng-class="{'glyphicon-chevron-right': item.nodeCollapsed ,'glyphicon-chevron-down':!item.nodeCollapsed}"></span>
     </a>
-<!--    {{item.name}}-->
-<!--    <mathjax ng-model="item.name">{{item.name}}</mathjax>-->
     <mathjax-bind>{{item.name}}</mathjax-bind>
     <a class="pull-right btn btn-danger btn-xs" style="margin-left: 8px;" ng-show="type && item.cid != '1'" ng-click="selectCategoryCtrl.deleteCategory(item); $event.stopPropagation();">
         <span class="glyphicon glyphicon-remove"></span>

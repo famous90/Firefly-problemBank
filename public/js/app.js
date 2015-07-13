@@ -99,10 +99,9 @@
             templateUrl: 'view/insert-problem.html',
             controller: ['$scope', '$http', 'Upload', '$window', function($scope, $http, Upload, $window){
                 
-                $scope.wholeProblem = 
-                
                 $scope.answerType = 'single';
                 $scope.answerPlaceHolder = '정답을 입력해 주세요';
+                $scope.selections = selectedCategories;
                 
                 $scope.answerTypeButtonTapped = function(answerType){
                     if($scope.answerType == 'single'){
@@ -112,6 +111,11 @@
                 
                 $scope.submitForm = function(questionImages, explanationImages){
                     
+                    if(!selectedCategories.length){
+                        alert('카테고리를 선택해주세요');    
+                        return;
+                    }
+                                        
                     var question = $scope.question;
                     var answer = $scope.answer;
                     var explanation = $scope.explanation;
@@ -243,6 +247,8 @@
                     }else{
                         selectedCategories.push(item);
                     }
+                    
+//                    $scope.selections = selectedCategories;
                 };
                 
                 this.isSelected = function(item){

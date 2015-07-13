@@ -1,3 +1,4 @@
+// mathjax configuration
 MathJax.Hub.Config({
 	tex2jax: {
 	    inlineMath: [['$','$'], ['\\(','\\)']],
