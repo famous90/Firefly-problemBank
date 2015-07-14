@@ -12,21 +12,7 @@
 
 <div class="row" ng-show="question || answer || explanation">
     <label for="problemPreview" class="col-md-1">미리보기:</label>
-    <pre id="problemPreview" class="col-md-9 col-md-offset-1" style="white-space:normal;">
-        <span><strong>선택한 카테고리 : </strong></span>
-        <span ng-repeat-start="cate in selections" mathjax-bind="cate.name"></span><span ng-repeat-end> / </span>
-        <h5 ng-show="question"><strong>문제</strong></h5>
-        <h6 mathjax-bind="question"></h6>
-        <h5 ng-show="answer"><strong>정답</strong></h5>
-        <h6 mathjax-bind="answer"></h6>
-        <h5 ng-show="answerType == 'multiple'"><strong>보기</strong></h5>
-        <span ng-show="example1">(1) </span><span mathjax-bind="example1"></span><span>  </span>
-        <span ng-show="example2">(2) </span><span mathjax-bind="example2"></span><span>  </span>
-        <span ng-show="example3">(3) </span><span mathjax-bind="example3"></span><span>  </span>
-        <span ng-show="example4">(4) </span><span mathjax-bind="example4"></span><span>  </span>
-        <h5 ng-show="explanation"><strong>해설</strong></h5>
-        <h6 mathjax-bind="explanation"></h6>
-    </pre>
+    <pre id="problemPreview" class="col-md-9 col-md-offset-1"><span><strong>선택한 카테고리 : </strong></span><br><span ng-repeat-start="cate in selections" mathjax-bind="cate.name"></span><span ng-repeat-end> / </span><br><span ng-show="question"><strong>문제</strong></span><br><span mathjax-bind="question"></span><br><span ng-show="answer"><strong>정답</strong></span><br><span mathjax-bind="answer"></span><br><span ng-show="answerType == 'multiple'"><strong>보기  </strong></span><span ng-show="example1">(1) </span><span mathjax-bind="example1"></span><span>  </span><span ng-show="example2">(2) </span><span mathjax-bind="example2"></span><span>  </span><span ng-show="example3">(3) </span><span mathjax-bind="example3"></span><span>  </span><span ng-show="example4">(4) </span><span mathjax-bind="example4"></span><br><span ng-show="explanation"><strong>해설</strong></span><span mathjax-bind="explanation"></span></pre>
 </div>
 
 

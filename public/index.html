@@ -8,6 +8,7 @@
         <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
         <script type="text/javascript" src="js/angular.min.js"></script>
         <script type="text/javascript" src="js/app.js"></script>
+        <script type="text/javascript" src="js/app-mathjax.js"></script>
         <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
         <script type="text/javascript" src="js/bank_jquery.js"></script>
         <script type="text/javascript" src="js/mathjax_dynamic.js"></script>
@@ -18,24 +19,34 @@
         <script type="text/javascript" src="js/ng-file-upload.min.js"></script> 
     </head>
     
-    <body ng-controller="BankController as bank" style="margin:100px;">     
+    <body ng-controller="BankController as bank">     
         
-        <!-- Bank Header -->
-        <header>
+        <header id="main_header">
             <h1 class="text-center">{{"초롱불"}}</h1>
-<!--            <p class="text-center">\(x^2-4x-3=0\) $(x+a)^2=b$</p>-->
+            <hr>
         </header>
-        <hr/>
                     
-        <insert-problem></insert-problem>
-        <hr/>
+        <section id="insert_problem" class="row">
+            <div class="col-md-10 col-md-offset-1" style="padding-bottom:50px;">
+                <insert-problem></insert-problem>
+            </div>
+            <hr class="col-md-12">
+        </section>
         
-        <edit-category></edit-category>
-        <hr/>
+        <section id="edit_category" class="row">
+            <div class="col-md-10 col-md-offset-1" style="padding-bottom:50px;">
+                <edit-category></edit-category>
+            </div>
+            <hr class="col-md-12">
+        </section>
         
-        <show-problems></show-problems>
-        <hr/>
-
+        <section id="load_problem" class="row">
+            <div class="col-md-10 col-md-offset-1" style="padding-bottom:50px;">
+                <show-problems></show-problems>
+            </div>
+            <hr class="col-md-12">
+        </section>
+        
         <!-- Bank Footer -->
         <footer>
         </footer>

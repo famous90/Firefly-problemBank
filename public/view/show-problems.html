@@ -1,25 +1,28 @@
 <!-- Problems Container -->
 <section class="list-group">
 
-    <h3 ng-show="problems.length">Show Problems</h3>
+    <h3>문제 불러오기</h3>
+    
+<!--    <select-category type=0></select-category>-->
 
     <div class="list-group-item" ng-repeat="problem in problems">
         <div class="row">
             <h4 class="col-md-1 text-center">{{problem.pid}}</h4>
-            <pre class="col-md-11" style="white-space:normal;">
-                <h5><strong>문제</strong></h5>
-                <h6 mathjax-bind="problem.question"></h6>
-                <h5><strong>정답</strong></h5>
-                <h6 mathjax-bind="problem.answer"></h6>
-                <h5><strong>해설</strong></h5>
-                <h6 mathjax-bind="problem.explanation"></h6>
-            </pre>
+            <pre class="col-md-10"><span><strong>문제  </strong></span><span mathjax-bind="problem.question"></span><br><span><strong>정답  </strong></span><span mathjax-bind="problem.answer"></span><br><span><strong>해설  </strong></span><span mathjax-bind="problem.explanation"></span></pre>
+            <div class="col-md-1">
+                <a class="pull-right btn btn-danger btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="deleteProblem(problem)">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </a>
+                <a class="pull-right btn btn-primary btn-sm" style="margin-left: 8px; margin-bottom: 8px;">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                </a>
+            </div>
         </div>
     </div>
         
-    <form name="loadProblemsForm">
+    <form name="loadProblemsForm" style="padding-top:10px;">
         <fieldset class="form-group">
-            <input type="button" class="btn btn-primary pull-right" value="Load Problems" ng-click="loadProblems()">
+            <input type="button" class="btn btn-primary pull-right" value="문제 불러오기" ng-click="loadProblems()">
         </fieldset>
     </form>
     

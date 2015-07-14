@@ -23,6 +23,7 @@ app.use(app.router);
 
 
 app.get('/problems', function(request, response){
+        
     client.query('select * from problems', function(error, data){
         response.send(data);
     });
@@ -199,6 +200,99 @@ app.post('/problem', function(request, response){
     
 });
 
+
+app.post('/load_problems', function(request, response){
+//    var stringCategories = request.param('categories');
+//    var categories = new Array();
+//    var tempId = '';
+//    for(var i=0; i<stringCategories.length; i++){
+//        if(stringCategories.charAt(i) == '/'){
+//            categories.push(tempId);
+//            tempId = '';
+//        }else{
+//            tempId = tempId.concat(stringCategories.charAt(i));
+//        }
+//    }
+    
+    client.query('select * from problems', function(error, data){
+        response.send(data);
+        response.send('OK');
+    });
+
+});
+
+app.del('/problem/:pid', function(request, response){
+        
+    var pid = Number(request.param('pid'));
+    
+    client.query('DELETE FROM pcLinks WHERE pid = ?', [pid], function(error, results){
+        
+        if(error){
+            response.statusCode = 400;
+            console.log('DELETE PROBLEM http delete request : delete pclinks error with problem id '+pid);
+            throw error;
+        
+        }else{
+            console.log('DELETE PROBLEM http delete request : delete pclinks complete');
+        }
+    });
+
+    
+    client.query('SELECT * FROM problemImages WHERE pid = ?', [pid], function(error, results){
+
+        if(error){
+            response.statusCode = 400;
+            console.log('DELETE PROBLEM http delete request : select problemImages error with problem id '+pid);
+            throw error;
+
+        }else{
+
+            if(results.length){
+                for(var i=0; i<results.length; i++){
+                    (function(i){
+                        var imagePath = results[i].name;
+
+                        fs.unlink(imagePath, function (removeFileError) {
+                            if (removeFileError) {
+                                console.log('DELETE PROBLEM http delete request : delete image file error with path '+imagePath);
+                                throw removeFileError;
+                            }else{
+                                console.log('DELETE PROBLEM http delete request : delete image file complete with path '+imagePath);
+                                client.query('DELETE FROM problemImages WHERE pid = ?', [pid], function(removeError, data){
+                                    if(removeError){
+                                        response.statusCode = 400;
+                                        console.log('DELETE PROBLEM http delete request : delete problemImages error with problemImages id '+results[i].imgid);
+                                        throw removeError;
+
+                                    }else{
+                                        console.log('DELETE PROBLEM http delete request : delete problemImages complete with problemImages id '+results[i].imgid);
+                                    }
+                                });
+
+                            }
+                        });
+                    })(i);
+                }
+                console.log('DELETE PROBLEM http delete request : select problemImages complete');   
+            }else console.log('DELETE PROBLEM http delete request : no images in problem');
+        }
+    });    
+    
+    client.query('DELETE FROM problems WHERE pid = ?', [pid], function(error, results){
+        
+        if(error){
+            response.statusCode = 400;
+            console.log('DELETE PROBLEM http delete request : delete problem error with problem id '+pid);
+            throw error;
+        
+        }else{
+            console.log('DELETE PROBLEM http delete request : delete problem complete');
+            response.statusCode = 200;
+            response.send('OK');
+        }
+    });
+});
+
 app.get('/categories', function(request, response){
     client.query('select * from categories', function(error, data){
         response.send(data);
@@ -285,9 +379,6 @@ app.del('/category/:cid', function(request, response){
             });        
         }
     });
-    
-    
-
 });
 
 

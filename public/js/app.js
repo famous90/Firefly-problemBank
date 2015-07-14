@@ -1,8 +1,8 @@
 (function(){
     
-    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload']);
+    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math']);
     
-    function Category(cid, name, path, relPath) {
+        function Category(cid, name, path, relPath) {
         this.cid = cid;
         this.name = name;
         this.path = path;
@@ -10,6 +10,7 @@
         this.selectedCategorySet = [];
         this.categories = [];
     }
+    
     Category.prototype.makeCategory = function(data){
         for(var k=0; k<data.length; k++){
             var item = data[k];
@@ -193,6 +194,51 @@
             controllerAs: 'cateCtrl'
         };
     });
+        
+    app.directive('showProblems', function(){
+        return {
+            restrict: 'E',
+            templateUrl: 'view/show-problems.html',
+            controller: ['$scope', '$http', function($scope, $http){                
+                $scope.loadProblems = function(){
+                    
+//                    var stringWithCategories = '';
+//                    for(var i=0; i<selectedCategories.length; i++){
+//                        stringWithCategories = stringWithCategories + selectedCategories[i].cid.toString() + '/';
+//                    }
+//                    
+//                    $http.post('/load_problems', {'categories': 'hello'})
+//                    .success(function(response){
+//
+//                        var data = response.data;        
+//                        $scope.problems = data;
+//                        alert('문제를 성공적으로 불러왔습니다.' + $scope.problems.length);
+//                        
+//                    }).error(function(response){
+//                        
+//                        alert('문제를 불러올 수 없습니다. 다시 시도해 주세요.');
+//                    });
+                    $http.get('/problems').then(function(response){
+                        var data = response.data;        
+                        $scope.problems = data;
+                    });
+                };
+                
+                $scope.deleteProblem = function(item){
+                    
+                    alert('delete problem');
+                    
+                    $http.delete('/problem/'+item.pid)
+                    .success(function(response){
+                        alert('문제를 성공적으로 제거했습니다.');
+                    }).error(function(response){
+                        alert('문제 삭제에 실패했습니다. 다시 시도해 주세요.');
+                    });
+                };
+            }],
+            controllerAs: 'masterProblemsCtrl'
+        };
+    });
     
     app.directive('selectCategory', function(){
         return {
@@ -247,8 +293,6 @@
                     }else{
                         selectedCategories.push(item);
                     }
-                    
-//                    $scope.selections = selectedCategories;
                 };
                 
                 this.isSelected = function(item){
@@ -296,32 +340,4 @@
         };
     });
     
-    app.directive('showProblems', function(){
-        return {
-            restrict: 'E',
-            templateUrl: 'view/show-problems.html',
-            controller: ['$scope', '$http', function($scope, $http){                
-                $scope.loadProblems = function(){
-                    $http.get('/problems').
-                    then(function(response){
-                        var data = response.data;        
-                        $scope.problems = data;
-                    });
-                };
-            }],
-            controllerAs: 'masterProblemsCtrl'
-        };
-    });
-    
-    app.directive('mathjaxBind',function(){
-        return {
-            restrict: 'EA',
-            controller: ['$scope', '$element', '$attrs', function($scope, $element, $attrs) {
-                $scope.$watch($attrs.mathjaxBind, function (expression) {
-                    $element.html(expression);
-                    MathJax.Hub.Queue(['Typeset', MathJax.Hub, $element[0]]);
-                });
-            }]
-        };
-    });
 })();
