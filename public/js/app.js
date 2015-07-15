@@ -166,6 +166,14 @@
                         if(imageFiles.length){
                             $window.alert(imageFiles.length + '개 이미지와 문제 업로드 성공');
                         }else $window.alert('이미지 없는 문제 업로드 성공');
+                        
+                        $scope.question = '';
+                        $scope.answer = '';
+                        $scope.explanation = '';
+                        $scope.example1 = '';
+                        $scope.example2 = '';
+                        $scope.example3 = '';
+                        $scope.example4 = '';
                     });   
                 };
                 
@@ -226,8 +234,6 @@
                 
                 $scope.deleteProblem = function(item){
                     
-                    alert('delete problem');
-                    
                     $http.delete('/problem/'+item.pid)
                     .success(function(response){
                         alert('문제를 성공적으로 제거했습니다.');
@@ -247,6 +253,7 @@
             scope: {
                 type: '='
             },
+//            scope: false,
             controller: ['$scope', '$http', function($scope, $http){
                 
                 var rowData = [];

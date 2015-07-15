@@ -2,5 +2,4 @@
     
     var app = angular.module('category', []);
     
-
 })();
