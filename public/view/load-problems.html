@@ -10,6 +10,7 @@
         </fieldset>
     </form>
 
+    <h5 ng-show="problems.length">* 문제 업데이트 가능, 카테고리 수정 불가, 첨부 그림 수정 불가</h5>
     <div class="list-group-item" ng-repeat="problem in problems">
         <div class="row">
             <h4 class="col-md-1 text-center">{{problem.pid}}</h4>
