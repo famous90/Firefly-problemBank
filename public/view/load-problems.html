@@ -1,0 +1,29 @@
+<section class="list-group">
+
+    <h3>문제 불러오기</h3>
+    
+<!--    <select-category type=0></select-category>-->
+    
+    <form name="loadProblemsForm" style="padding-top:10px;">
+        <fieldset class="form-group">
+            <input type="button" class="btn btn-primary pull-right" value="문제 불러오기" ng-click="loadProblems()">
+        </fieldset>
+    </form>
+
+    <div class="list-group-item" ng-repeat="problem in problems">
+        <div class="row">
+            <h4 class="col-md-1 text-center">{{problem.pid}}</h4>
+            <div class="col-md-10">
+                <show-problem item="problem"></show-problem>
+            </div>
+            <div class="col-md-1">
+                <a class="pull-right btn btn-primary btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="updateProblem(problem)">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                </a>
+                <a class="pull-right btn btn-danger btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="deleteProblem(problem)">
+                    <span class="glyphicon glyphicon-trash"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

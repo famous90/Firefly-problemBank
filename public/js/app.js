@@ -87,6 +87,30 @@
             
         }else return 0;
     };
+        
+//    app.factory('ProblemFactory', [function(){
+//        
+//        var ProblemFactory = {};
+//        
+//        ProblemFactory.getExamples = function(stringExample){
+//            if(stringExamples.length){
+//                var exampleArray = [];
+//                var tempExample = '';
+//                for(i=0 ;i<stringExamples.length; i++){
+//                    if(stringExamples.charAt(i)=='/'){
+//                        exampleArray.push(tempExample);
+//                        tempExample = '';
+//                    }else{
+//                        tempExample = tempExample.concat(stringExamples.charAt(i));
+//                    }
+//                }
+//                return exampleArray;
+//            }else{
+//                return [];
+//            }
+//        };
+//        return ProblemFactory;
+//    }]);
     
     var selectedCategories = new Array();
         
@@ -100,14 +124,46 @@
             templateUrl: 'view/insert-problem.html',
             controller: ['$scope', '$http', 'Upload', '$window', function($scope, $http, Upload, $window){
                 
-                $scope.answerType = 'single';
-                $scope.answerPlaceHolder = '정답을 입력해 주세요';
-                $scope.selections = selectedCategories;
+                $scope.initProblem = function(){
+                    $scope.problem = {};
+                    $scope.problem.question = '';
+                    $scope.problem.answer = '';
+                    $scope.problem.explanation = '';
+                    $scope.problem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];   
+                    $scope.problem.answerType = 'single';
+                    $scope.problem.answerPlaceholder = '정답을 입력해 주세요';
+                };
                 
-                $scope.answerTypeButtonTapped = function(answerType){
-                    if($scope.answerType == 'single'){
-                        $scope.answerPlaceHolder = '정답인 보기를 입력해 주세요';
-                    }else $scope.answerPlaceHolder = '정답을 입력해 주세요';
+                if($scope.problem){
+                }else {
+                    $scope.initProblem();
+                }
+                
+                $scope.problem.selections = selectedCategories;
+                
+//                $scope.$watch('problem.answerType', function(newValue, oldValue) {
+//                    alert('old'+oldValue + 'new'+newValue);
+//                    if(newValue == $scope.problem.answerType) {
+//                        return;
+//                    }else {
+//                        if(oldValue == 'single'){
+//                            $scope.problem.answerType = 'multiple';
+//                            $scope.problem.answerPlaceholder = '정답인 보기를 입력해 주세요';
+//                        }else if(oldValue == 'multiple'){
+//                            $scope.problem.answerType = 'single';
+//                            $scope.problem.answerPlaceholder = '정답을 입력해 주세요';
+//                        }    
+//                    }
+//                });
+                
+                $scope.answerTypeButtonTapped = function(type){
+                    if(type == 'multiple' && $scope.problem.answerType == 'single'){
+                        type = 'multiple';
+                        $scope.problem.answerPlaceholder = '정답인 보기를 입력해 주세요';
+                    }else if(type == 'single' && $scope.problem.answerType == 'multiple'){
+                        type = 'single';
+                        $scope.problem.answerPlaceholder = '정답을 입력해 주세요';
+                    }
                 };
                 
                 $scope.submitForm = function(questionImages, explanationImages){
@@ -117,9 +173,9 @@
                         return;
                     }
                                         
-                    var question = $scope.question;
-                    var answer = $scope.answer;
-                    var explanation = $scope.explanation;
+                    var question = $scope.problem.question;
+                    var answer = $scope.problem.answer;
+                    var explanation = $scope.problem.explanation;
                     
                     var stringWithCategories = '';
                     for(var i=0; i<selectedCategories.length; i++){
@@ -127,8 +183,10 @@
                     }
                     
                     var stringWithExamples = '';
-                    if($scope.answerType == 'multiple'){
-                        stringWithExamples = $scope.example1 + '@@' + $scope.example2 + '@@' + $scope.example3 + '@@' + $scope.example4 + '@@';
+                    if($scope.problem.answerType == 'multiple'){
+                        for(var i=0; i<$scope.problem.examples.length; i++){
+                            stringWithExamples += $scope.problem.examples[i].content + '@';    
+                        }
                     }
                     
                     var formDataNames = [];
@@ -167,13 +225,7 @@
                             $window.alert(imageFiles.length + '개 이미지와 문제 업로드 성공');
                         }else $window.alert('이미지 없는 문제 업로드 성공');
                         
-                        $scope.question = '';
-                        $scope.answer = '';
-                        $scope.explanation = '';
-                        $scope.example1 = '';
-                        $scope.example2 = '';
-                        $scope.example3 = '';
-                        $scope.example4 = '';
+                        $scope.initProblem();
                     });   
                 };
                 
@@ -203,11 +255,11 @@
         };
     });
         
-    app.directive('showProblems', function(){
+    app.directive('loadProblems', function(){
         return {
             restrict: 'E',
-            templateUrl: 'view/show-problems.html',
-            controller: ['$scope', '$http', function($scope, $http){                
+            templateUrl: 'view/load-problems.html',
+            controller: ['$scope', '$http', '$modal', '$log', function($scope, $http, $modal, $log){                
                 $scope.loadProblems = function(){
                     
 //                    var stringWithCategories = '';
@@ -228,7 +280,40 @@
 //                    });
                     $http.get('/problems').then(function(response){
                         var data = response.data;        
-                        $scope.problems = data;
+                        
+//                        $scope.problems = data;
+                        $scope.problems = [];
+
+                        for(var i=0; i<data.length; i++){
+                            var theData = data[i];
+                            var theProblem = {};
+                            theProblem.pid = theData.pid;
+                            theProblem.question = theData.question;
+                            theProblem.answer = theData.answer;
+                            theProblem.explanation = theData.explanation;
+                            theProblem.examples = [];
+                            theProblem.answerType = 'single';
+                            theProblem.answerPlaceholder = '정답을 입력해 주세요';
+                            
+                            if(theData.examples.length){
+                                theProblem.answerType = 'multiple';
+                                theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
+                                var stringExamples = theData.examples;
+                                var tempExample = '';
+                                for(var j=0 ;j<stringExamples.length; j++){
+                                    if(stringExamples.charAt(j)=='@'){
+                                        theProblem.examples.push({content: tempExample});
+                                        tempExample = '';
+                                    }else{
+                                        tempExample = tempExample.concat(stringExamples.charAt(j));
+                                    }
+                                }
+                            }else{
+                                theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
+                            }
+                            
+                            $scope.problems.push(theProblem);
+                        }
                     });
                 };
                 
@@ -241,8 +326,65 @@
                         alert('문제 삭제에 실패했습니다. 다시 시도해 주세요.');
                     });
                 };
+                
+                $scope.updateProblem = function (item) {
+                    
+                    var modalInstance = $modal.open({
+                        animation: true,
+                        templateUrl: 'view/edit-problem-modal.html',
+                        controller: 'ModalInstanceCtrl',
+                        size: 'lg',
+                        resolve: {
+                            item: function () {
+                                return item;
+                            }
+                        }
+                    });
+
+                    modalInstance.result.then(function (selectedItem) {
+                        $scope.problem = selectedItem;
+                    }, function () {
+                        $log.info('Modal dismissed at: ' + new Date());
+                    });
+                };
+
             }],
             controllerAs: 'masterProblemsCtrl'
+        };
+    });
+    
+    app.controller('ModalInstanceCtrl', ['$scope', '$http', '$modalInstance', 'item', function ($scope, $http, $modalInstance, item) {
+        $scope.problem = item;
+        $scope.update = function (item) {
+            
+            var stringWithExamples = '';
+            if(item.answerType == 'multiple'){
+                for(var i=0; i<item.examples.length; i++){
+                    stringWithExamples += item.examples[i].content + '@';    
+                }
+            }
+            
+            $http.put('/problem/'+item.pid, {pid:item.pid, question:item.question, answer:item.answer, explanation:item.explanation, examples:stringWithExamples})
+            .success(function(response){
+                alert('문제를 성공적으로 수정하였습니다.');
+                $modalInstance.close(); 
+            }).error(function(response){
+                alert('문제를 수정하지 못했습니다. 다시 시도해주세요.' + response.error);
+            });
+        };
+
+        $scope.cancel = function () {
+            $modalInstance.dismiss('cancel');
+        };
+    }]);
+    
+    app.directive('showProblem', function(){
+        return {
+            restrict: 'EA',
+            templateUrl: 'view/show-problem.html',
+            scope: {
+                problem: '=item',
+            }
         };
     });
     
@@ -253,7 +395,6 @@
             scope: {
                 type: '='
             },
-//            scope: false,
             controller: ['$scope', '$http', function($scope, $http){
                 
                 var rowData = [];

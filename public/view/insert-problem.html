@@ -1,5 +1,3 @@
-<h3 class="text-center">{{"문제 입력하기"}}</h3>
-
 <div class="row">
     <label class="col-md-1">카테고리:</label>
     <div class="col-md-11">
@@ -9,50 +7,53 @@
     </div>
 </div>
 
-
-<div class="row" ng-show="question || answer || explanation">
+<div class="row" ng-show="problem.question || problem.answer || problem.explanation">
+<!--<div class="row">-->
     <label for="problemPreview" class="col-md-1">미리보기:</label>
-    <pre id="problemPreview" class="col-md-9 col-md-offset-1"><span><strong>선택한 카테고리 : </strong></span><br><span ng-repeat-start="cate in selections" mathjax-bind="cate.name"></span><span ng-repeat-end> / </span><br><span ng-show="question"><strong>문제</strong></span><br><span mathjax-bind="question"></span><br><span ng-show="answer"><strong>정답</strong></span><br><span mathjax-bind="answer"></span><br><span ng-show="answerType == 'multiple'"><strong>보기  </strong></span><span ng-show="example1">(1) </span><span mathjax-bind="example1"></span><span>  </span><span ng-show="example2">(2) </span><span mathjax-bind="example2"></span><span>  </span><span ng-show="example3">(3) </span><span mathjax-bind="example3"></span><span>  </span><span ng-show="example4">(4) </span><span mathjax-bind="example4"></span><br><span ng-show="explanation"><strong>해설</strong></span><span mathjax-bind="explanation"></span></pre>
+    <div id="problemPreview" class="col-md-11">
+        <show-problem item="problem"></show-problem>
+    </div>
 </div>
 
 
-<form class="col-sm-12">
-    <fieldset class="form-group">
-        <label for="question" class="col-md-1">문제:</label>
-        <div class="col-md-11">
-            <textarea ng-model="question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text" placeholder="문제를 입력해주세요" title="question" required></textarea>
-            <label for="questionImages">문제에 첨부할 이미지를 넣어주세요</label>
-            <input type="file" name="questionImages" ng-model="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
-        </div>
-    </fieldset>
+<div class="row">
+    <form>
+        <fieldset class="form-group">
+            <label for="question" class="col-md-1">문제:</label>
+            <div class="col-md-11">
+                <textarea ng-model="problem.question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text" placeholder="문제를 입력해주세요" title="question" required></textarea>
+                <label for="questionImages">문제에 첨부할 이미지를 넣어주세요</label>
+                <input type="file" name="questionImages" ng-model="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
+            </div>
+        </fieldset>
 
-    <fieldset class="form-group">
-        <label for="answer" class="col-md-1">정답:</label>
-        <div class="col-md-11">
-            <div class="btn-group" style="margin-bottom: 10px">
-                <label class="btn btn-primary" ng-model="answerType" ng-click="answerTypeButtonTapped(answerType)" btn-radio="'single'" uncheckable>주관식</label>
-                <label class="btn btn-primary" ng-model="answerType" ng-click="answerTypeButtonTapped(answerType)" btn-radio="'multiple'" uncheckable>객관식</label>
+        <fieldset class="form-group">
+            <label for="answer" class="col-md-1">정답:</label>
+            <div class="col-md-11">
+                <div class="btn-group" style="margin-bottom: 10px">
+                    <label class="btn btn-primary" ng-model="problem.answerType" ng-click="answerTypeButtonTapped('single')" btn-radio="'single'">주관식</label>
+                    <label class="btn btn-primary" ng-model="problem.answerType" ng-click="answerTypeButtonTapped('multiple')" btn-radio="'multiple'">객관식</label>
+                </div>
+                <textarea ng-model="problem.answer" style="padding: 10px; margin-bottom:10px;" class="form-control text" placeholder="{{problem.answerPlaceholder}}" rows="1" title="answer" required></textarea>
+                <div ng-show="problem.answerType == 'multiple'">
+                    <hr/>
+                    <div ng-repeat="example in problem.examples">
+                        <textarea ng-model="example.content" style="padding: 10px; margin-bottom:10px;" class="form-control text" placeholder="정답이 아닌 보기({{$index+1}})를 입력해주세요" rows="1" title="example" required></textarea>
+                    </div>
+                </div>
             </div>
-            <textarea ng-model="answer" style="padding: 10px; margin-bottom:10px;" name="answer" class="form-control text" placeholder="{{answerPlaceHolder}}" rows="1" title="answer" required></textarea>
-            <div ng-show="answerType == 'multiple'">
-                <hr/>
-                <textarea ng-model="example1" style="padding: 10px; margin-bottom:10px;" name="example1" class="form-control text" placeholder="정답이 아닌 보기1을 입력해주세요" rows="1" title="example1" required></textarea>
-                <textarea ng-model="example2" style="padding: 10px; margin-bottom:10px;" name="example2" class="form-control text" placeholder="정답이 아닌 보기2를 입력해주세요" rows="1" title="example2" required></textarea>
-                <textarea ng-model="example3" style="padding: 10px; margin-bottom:10px;" name="example3" class="form-control text" placeholder="정답이 아닌 보기3을 입력해주세요" rows="1" title="example3" required></textarea>
-                <textarea ng-model="example4" style="padding: 10px; margin-bottom:10px;" name="example4" class="form-control text" placeholder="정답이 아닌 보기4를 입력해주세요" rows="1" title="example4" required></textarea>
+        </fieldset>
+        <fieldset class="form-group">
+            <label for="explanation" class="col-md-1">해설:</label>
+            <div class="col-md-11">
+                <textarea ng-model="problem.explanation" style="padding: 10px; margin-bottom:10px;" rows="5" name="explanation" class="form-control text" placeholder="해설을 입력해주세요" title="explanation" required></textarea>
+                <label for="explanationImages">해설에 첨부할 이미지를 넣어주세요</label>
+                <input type="file" ng-model="explanationImages" name="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
             </div>
-        </div>
-    </fieldset>
-    <fieldset class="form-group">
-        <label for="explanation" class="col-md-1">해설:</label>
-        <div class="col-md-11">
-            <textarea ng-model="explanation" style="padding: 10px; margin-bottom:10px;" rows="5" name="explanation" class="form-control text" placeholder="해설을 입력해주세요" title="explanation" required></textarea>
-            <label for="explanationImages">해설에 첨부할 이미지를 넣어주세요</label>
-            <input type="file" ng-model="explanationImages" name="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
-        </div>
-    </fieldset>
-    <fieldset class="form-group">
-        <button type="button" class="btn btn-primary pull-right" ng-click="submitForm(questionImages, explanationImages)">문제 올리기</button>
-    </fieldset>
-        
-</form>
+        </fieldset>
+        <fieldset class="form-group">
+            <button type="button" class="btn btn-primary pull-right" ng-click="submitForm(questionImages, explanationImages)">문제 올리기</button>
+        </fieldset>
+
+    </form>
+</div>

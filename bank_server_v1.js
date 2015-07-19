@@ -173,7 +173,7 @@ app.post('/problem', function(request, response){
                                                     console.log('INSERT PROBLEM http post request : image upload complete');
                                                     index++;
                                                     if(index == filePaths.length-1){
-                                                        response.send('OK');
+                                                        response.redirect('back');
                                                     }
                                                 }
                                             });
@@ -216,9 +216,38 @@ app.post('/load_problems', function(request, response){
     
     client.query('select * from problems', function(error, data){
         response.send(data);
-        response.send('OK');
+        response.redirect('back');
     });
 
+});
+
+app.put('/problem/:pid', function(request, response){
+    
+    var pid = request.param('pid');
+    var question = request.param('question');
+    var answer = request.param('answer');
+    var explanation = request.param('explanation');
+    var examples = request.param('examples');
+    var query = 'UPDATE problems SET ';
+    
+    if (question) query += 'question="' + question + '" ';
+    if (answer) query += ', answer="' + answer + '" ';
+    if (explanation) query += ', explanation="' + explanation + '" ';
+    if (examples) query += ', examples="' + examples + '" ';
+    query += 'WHERE pid=' + pid;
+
+    client.query(query, function(error, data){
+        if(error){
+            response.statusCode = 400;
+            console.log('UPDATE PROBLEM : error with problem id '+pid);
+            throw error;
+        }else {
+//            response.statusCode = 200;
+            console.log('UPDATE PROBLEM : complete');
+//            response.redirect('back');
+            response.end('updated');
+        }
+     });
 });
 
 app.del('/problem/:pid', function(request, response){
