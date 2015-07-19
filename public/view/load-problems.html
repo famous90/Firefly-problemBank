@@ -2,7 +2,15 @@
 
     <h3>문제 불러오기</h3>
     
-<!--    <select-category type=0></select-category>-->
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <div style="margin-left: 20px; margin-right: 20px;">
+                <select-category type=0 selections="category.selections"></select-category>
+                <span ng-repeat="item in category.selections"><span>  #</span><span mathjax-bind="item.name"></span></span>
+            </div>
+        </div>
+    </div>
+
     
     <form name="loadProblemsForm" style="padding-top:10px;">
         <fieldset class="form-group">
@@ -10,6 +18,7 @@
         </fieldset>
     </form>
 
+    <h4 class="text-center" ng-show="problems.length    ">총 {{problems.length}}문제</h4>
     <h5 ng-show="problems.length">* 문제 업데이트 가능, 카테고리 수정 불가, 첨부 그림 수정 불가</h5>
     <div class="list-group-item" ng-repeat="problem in problems">
         <div class="row">

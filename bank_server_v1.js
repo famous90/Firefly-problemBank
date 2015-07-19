@@ -202,23 +202,37 @@ app.post('/problem', function(request, response){
 
 
 app.post('/load_problems', function(request, response){
-//    var stringCategories = request.param('categories');
-//    var categories = new Array();
-//    var tempId = '';
-//    for(var i=0; i<stringCategories.length; i++){
-//        if(stringCategories.charAt(i) == '/'){
-//            categories.push(tempId);
-//            tempId = '';
-//        }else{
-//            tempId = tempId.concat(stringCategories.charAt(i));
-//        }
-//    }
     
-    client.query('select * from problems', function(error, data){
-        response.send(data);
-        response.redirect('back');
+    var categories = JSON.parse(request.param('categories'));    
+    var query = 'SELECT DISTINCT problems.*, pcLinks.cid FROM problems RIGHT JOIN pcLinks ON problems.pid = pcLinks.pid';
+    
+    if(categories.length){
+        
+        query += ' WHERE problems.pid in (SELECT pid from pcLinks WHERE ';
+    
+        for(var i=0; i<categories.length; i++){
+            query += 'cid = '+categories[i].cid;
+            if(i != categories.length - 1){
+                query += ' | ';   
+            }
+        }
+        query += ')';
+        
+    }else {
+    }
+    query += ' ORDER BY problems.pid';
+    
+    client.query(query, function(error, data){
+        if(error){
+            console.log('LOAD PROBLEMS : error');
+            throw error;
+        }else{
+            console.log('LOAD PROBLEMS : complete');
+            console.log(JSON.parse(JSON.stringify(data)));
+            response.send(data);
+            response.end('loaded');
+        }
     });
-
 });
 
 app.put('/problem/:pid', function(request, response){
@@ -242,9 +256,7 @@ app.put('/problem/:pid', function(request, response){
             console.log('UPDATE PROBLEM : error with problem id '+pid);
             throw error;
         }else {
-//            response.statusCode = 200;
             console.log('UPDATE PROBLEM : complete');
-//            response.redirect('back');
             response.end('updated');
         }
      });

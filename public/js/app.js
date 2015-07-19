@@ -2,7 +2,7 @@
     
     var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math']);
     
-        function Category(cid, name, path, relPath) {
+    function Category(cid, name, path, relPath) {
         this.cid = cid;
         this.name = name;
         this.path = path;
@@ -87,7 +87,52 @@
             
         }else return 0;
     };
-        
+    
+    function Problem (pid, question, answer, explanation, strExamples){
+        this.pid = pid;
+        this.question = question;
+        this.answer = answer;
+        this.explanation = explanation;
+        this.examples = [];
+        this.answerType = 'single';
+        this.answerPlaceholder = '정답을 입력해 주세요';
+                            
+    }
+    
+    Problem.prototype.setExamples = function (strExamples) {
+        if(strExamples.length){
+            this.answerType = 'multiple';
+            this.answerPlaceholder = '정답인 보기를 입력해 주세요';
+            
+            var stringExamples = strExamples;
+            var tempExample = '';
+            for(var j=0 ;j<stringExamples.length; j++){
+                if(stringExamples.charAt(j)=='@'){
+                    this.examples.push({content: tempExample});
+                    tempExample = '';
+                }else{
+                    tempExample = tempExample.concat(stringExamples.charAt(j));
+                }
+            }
+            
+        }else{
+            this.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
+        }
+    };
+    
+    function ProblemMaster () {
+        this.masterData = new Array();
+    }
+    
+    ProblemMaster.prototype.push = function (item){
+        this.masterData.push(item);
+    };
+    
+    ProblemMaster.prototype.getMasterData = function () {
+        return this.masterData;  
+    };
+    
+    
 //    app.factory('ProblemFactory', [function(){
 //        
 //        var ProblemFactory = {};
@@ -112,7 +157,7 @@
 //        return ProblemFactory;
 //    }]);
     
-    var selectedCategories = new Array();
+//    var selectedCategories = new Array();
         
     app.controller('BankController', ['$scope', '$http', function($scope, $http){
         var bank = this;
@@ -132,16 +177,14 @@
                     $scope.problem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];   
                     $scope.problem.answerType = 'single';
                     $scope.problem.answerPlaceholder = '정답을 입력해 주세요';
-//                    $scope.problem.selections = selectedCategories;
+                    $scope.problem.selections = new Array();
                 };
                 
                 if($scope.problem){
                 }else {
                     $scope.initProblem();
                 }
-                
-                $scope.problem.selections = selectedCategories;
-                
+                                
                 $scope.answerTypeButtonTapped = function(type){
                     if(type == 'multiple' && $scope.problem.answerType == 'single'){
                         type = 'multiple';
@@ -154,7 +197,7 @@
                 
                 $scope.submitForm = function(questionImages, explanationImages){
                     
-                    if(!selectedCategories.length){
+                    if(!$scope.problem.selections.length){
                         alert('카테고리를 선택해주세요');    
                         return;
                     }
@@ -164,8 +207,8 @@
                     var explanation = $scope.problem.explanation;
                     
                     var stringWithCategories = '';
-                    for(var i=0; i<selectedCategories.length; i++){
-                        stringWithCategories = stringWithCategories + selectedCategories[i].cid.toString() + '/';
+                    for(var i=0; i<$scope.problem.selections.length; i++){
+                        stringWithCategories = stringWithCategories + $scope.problem.selections[i].cid.toString() + '/';
                     }
                     
                     var stringWithExamples = '';
@@ -246,60 +289,93 @@
             restrict: 'E',
             templateUrl: 'view/load-problems.html',
             controller: ['$scope', '$http', '$modal', '$log', function($scope, $http, $modal, $log){                
+                
+                $scope.category = {};
+                $scope.category.selections = new Array();
+                    
                 $scope.loadProblems = function(){
                     
-//                    var stringWithCategories = '';
-//                    for(var i=0; i<selectedCategories.length; i++){
-//                        stringWithCategories = stringWithCategories + selectedCategories[i].cid.toString() + '/';
-//                    }
-//                    
-//                    $http.post('/load_problems', {'categories': 'hello'})
-//                    .success(function(response){
-//
-//                        var data = response.data;        
-//                        $scope.problems = data;
-//                        alert('문제를 성공적으로 불러왔습니다.' + $scope.problems.length);
-//                        
-//                    }).error(function(response){
-//                        
-//                        alert('문제를 불러올 수 없습니다. 다시 시도해 주세요.');
-//                    });
-                    $http.get('/problems').then(function(response){
+                    $http.post('/load_problems', {'categories': angular.toJson($scope.category.selections)})
+                    .then(function(response){
+
                         var data = response.data;        
                         
-//                        $scope.problems = data;
                         $scope.problems = [];
 
                         for(var i=0; i<data.length; i++){
-                            var theData = data[i];
-                            var theProblem = {};
-                            theProblem.pid = theData.pid;
-                            theProblem.question = theData.question;
-                            theProblem.answer = theData.answer;
-                            theProblem.explanation = theData.explanation;
-                            theProblem.examples = [];
-                            theProblem.answerType = 'single';
-                            theProblem.answerPlaceholder = '정답을 입력해 주세요';
                             
-                            if(theData.examples.length){
-                                theProblem.answerType = 'multiple';
-                                theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
-                                var stringExamples = theData.examples;
-                                var tempExample = '';
-                                for(var j=0 ;j<stringExamples.length; j++){
-                                    if(stringExamples.charAt(j)=='@'){
-                                        theProblem.examples.push({content: tempExample});
-                                        tempExample = '';
+                            var theData = data[i];
+                            
+                            if(i != 0){
+                                var lastProblem = $scope.problems[$scope.problems.length-1];
+                                if(lastProblem.pid != theData.pid){
+                                    var theProblem = {};
+                                    theProblem.pid = theData.pid;
+                                    theProblem.question = theData.question;
+                                    theProblem.answer = theData.answer;
+                                    theProblem.explanation = theData.explanation;
+                                    theProblem.examples = [];
+                                    theProblem.answerType = 'single';
+                                    theProblem.answerPlaceholder = '정답을 입력해 주세요';
+                                    theProblem.selections = new Array();
+                                    theProblem.selections.push(theData.cid);
+
+                                    if(theData.examples.length){
+                                        theProblem.answerType = 'multiple';
+                                        theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
+                                        var stringExamples = theData.examples;
+                                        var tempExample = '';
+                                        for(var j=0 ;j<stringExamples.length; j++){
+                                            if(stringExamples.charAt(j)=='@'){
+                                                theProblem.examples.push({content: tempExample});
+                                                tempExample = '';
+                                            }else{
+                                                tempExample = tempExample.concat(stringExamples.charAt(j));
+                                            }
+                                        }
                                     }else{
-                                        tempExample = tempExample.concat(stringExamples.charAt(j));
+                                        theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
                                     }
+
+                                    $scope.problems.push(theProblem);   
+                                }else{
+                                    lastProblem.selections.push(theData.cid);
                                 }
                             }else{
-                                theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
+                                var theProblem = {};
+                                theProblem.pid = theData.pid;
+                                theProblem.question = theData.question;
+                                theProblem.answer = theData.answer;
+                                theProblem.explanation = theData.explanation;
+                                theProblem.examples = [];
+                                theProblem.answerType = 'single';
+                                theProblem.answerPlaceholder = '정답을 입력해 주세요';
+                                theProblem.selections = new Array();
+                                theProblem.selections.push(theData.cid);
+
+                                if(theData.examples.length){
+                                    theProblem.answerType = 'multiple';
+                                    theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
+                                    var stringExamples = theData.examples;
+                                    var tempExample = '';
+                                    for(var j=0 ;j<stringExamples.length; j++){
+                                        if(stringExamples.charAt(j)=='@'){
+                                            theProblem.examples.push({content: tempExample});
+                                            tempExample = '';
+                                        }else{
+                                            tempExample = tempExample.concat(stringExamples.charAt(j));
+                                        }
+                                    }
+                                }else{
+                                    theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
+                                }
+                                $scope.problems.push(theProblem);   
                             }
-                            
-                            $scope.problems.push(theProblem);
                         }
+
+                    }).error(function(response){
+                        
+                        alert('문제를 불러올 수 없습니다. 다시 시도해 주세요.');
                     });
                 };
                 
@@ -379,13 +455,14 @@
             restrict: 'E',
             templateUrl: 'view/select-category.html',
             scope: {
-                type: '='
+                type: '=',
+                selections: '='
             },
             controller: ['$scope', '$http', function($scope, $http){
                 
                 var rowData = [];
                 var masterCategory = [];
-                
+                                
                 $http.get('/categories').then(function(response){
                     rowData = response.data;
                     masterCategory = new Category(0, '', '', '');
@@ -423,9 +500,11 @@
                     
                     var theIndex = getIndexOfSelectedCategory(item.cid);
                     if(theIndex >= 0){
-                        selectedCategories.splice(theIndex, 1);
+                        $scope.selections.splice(theIndex, 1);
+//                        selectedCategories.splice(theIndex, 1);
                     }else{
-                        selectedCategories.push(item);
+                        $scope.selections.push(item);
+//                        selectedCategories.push(item);
                     }
                 };
                 
@@ -433,23 +512,36 @@
                     
                     var cid = item.cid;
                     
-                    for(i=0; i<selectedCategories.length; i++){
-                        if(selectedCategories[i].cid == cid){
+                    for(i=0; i<$scope.selections.length; i++){
+                        if($scope.selections[i].cid == cid){
                             return true;   
                         }
                     }
+//                    for(i=0; i<selectedCategories.length; i++){
+//                        if(selectedCategories[i].cid == cid){
+//                            return true;   
+//                        }
+//                    }
                     return false;
                 }
                 
                 function getIndexOfSelectedCategory (cid){
-                    if(selectedCategories.length == 0 || !selectedCategories){
+                    if($scope.selections.length == 0 || !$scope.selections){
                         return -1;
                     }
-                    for(i=0; i<selectedCategories.length; i++){
-                        if(selectedCategories[i].cid == cid){
+                    for(i=0; i<$scope.selections.length; i++){
+                        if($scope.selections[i].cid == cid){
                             return i;   
                         }
                     }
+//                    if(selectedCategories.length == 0 || !selectedCategories){
+//                        return -1;
+//                    }
+//                    for(i=0; i<selectedCategories.length; i++){
+//                        if(selectedCategories[i].cid == cid){
+//                            return i;   
+//                        }
+//                    }
                     return -1;   
                 };
                 
