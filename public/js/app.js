@@ -132,6 +132,7 @@
                     $scope.problem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];   
                     $scope.problem.answerType = 'single';
                     $scope.problem.answerPlaceholder = '정답을 입력해 주세요';
+//                    $scope.problem.selections = selectedCategories;
                 };
                 
                 if($scope.problem){
@@ -140,21 +141,6 @@
                 }
                 
                 $scope.problem.selections = selectedCategories;
-                
-//                $scope.$watch('problem.answerType', function(newValue, oldValue) {
-//                    alert('old'+oldValue + 'new'+newValue);
-//                    if(newValue == $scope.problem.answerType) {
-//                        return;
-//                    }else {
-//                        if(oldValue == 'single'){
-//                            $scope.problem.answerType = 'multiple';
-//                            $scope.problem.answerPlaceholder = '정답인 보기를 입력해 주세요';
-//                        }else if(oldValue == 'multiple'){
-//                            $scope.problem.answerType = 'single';
-//                            $scope.problem.answerPlaceholder = '정답을 입력해 주세요';
-//                        }    
-//                    }
-//                });
                 
                 $scope.answerTypeButtonTapped = function(type){
                     if(type == 'multiple' && $scope.problem.answerType == 'single'){
