@@ -336,7 +336,14 @@ app.del('/problem/:pid', function(request, response){
 
 app.get('/categories', function(request, response){
     client.query('select * from categories', function(error, data){
-        response.send(data);
+        if(error){
+            console.log('LOAD ALL CATEGORIES : error');
+            throw error;
+        }else{
+            console.log('LOAD ALL CATEGORIES : complete');
+            response.send(data);
+            response.end('success');
+        }
     });
 });
 

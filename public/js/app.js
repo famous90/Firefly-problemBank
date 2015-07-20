@@ -2,6 +2,36 @@
     
     var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math']);
     
+    app.factory('categoryFactory', ['$http', '$q', function($http, $q){
+        
+        var masterCategory = new Category(0, '', '', '');
+        var rowCategory = [];
+        var deferred = $q.defer();
+                
+        $http.get('/categories').then(function(response){
+            rowCategory = response.data;
+            masterCategory.makeCategory(response.data);
+            deferred.resolve({
+                rowData: rowCategory,
+                masterCategory: masterCategory
+            });
+        });
+        
+        function getCategory(cid) {
+            for(var i=0; i<rowCategory.length; i++){
+                if(rowCategory[i].cid == cid){
+                    return rowCategory[i];
+                }
+            }
+            return null;
+        }
+        
+        return {
+            getCategories: deferred.promise,
+            getCategory: getCategory
+        };
+    }]);
+    
     function Category(cid, name, path, relPath) {
         this.cid = cid;
         this.name = name;
@@ -131,33 +161,6 @@
     ProblemMaster.prototype.getMasterData = function () {
         return this.masterData;  
     };
-    
-    
-//    app.factory('ProblemFactory', [function(){
-//        
-//        var ProblemFactory = {};
-//        
-//        ProblemFactory.getExamples = function(stringExample){
-//            if(stringExamples.length){
-//                var exampleArray = [];
-//                var tempExample = '';
-//                for(i=0 ;i<stringExamples.length; i++){
-//                    if(stringExamples.charAt(i)=='/'){
-//                        exampleArray.push(tempExample);
-//                        tempExample = '';
-//                    }else{
-//                        tempExample = tempExample.concat(stringExamples.charAt(i));
-//                    }
-//                }
-//                return exampleArray;
-//            }else{
-//                return [];
-//            }
-//        };
-//        return ProblemFactory;
-//    }]);
-    
-//    var selectedCategories = new Array();
         
     app.controller('BankController', ['$scope', '$http', function($scope, $http){
         var bank = this;
@@ -288,7 +291,7 @@
         return {
             restrict: 'E',
             templateUrl: 'view/load-problems.html',
-            controller: ['$scope', '$http', '$modal', '$log', function($scope, $http, $modal, $log){                
+            controller: ['$scope', '$http', '$modal', '$log', 'categoryFactory', function($scope, $http, $modal, $log, categoryFactory){                
                 
                 $scope.category = {};
                 $scope.category.selections = new Array();
@@ -318,7 +321,7 @@
                                     theProblem.answerType = 'single';
                                     theProblem.answerPlaceholder = '정답을 입력해 주세요';
                                     theProblem.selections = new Array();
-                                    theProblem.selections.push(theData.cid);
+                                    theProblem.selections.push(categoryFactory.getCategory(theData.cid));
 
                                     if(theData.examples.length){
                                         theProblem.answerType = 'multiple';
@@ -339,7 +342,7 @@
 
                                     $scope.problems.push(theProblem);   
                                 }else{
-                                    lastProblem.selections.push(theData.cid);
+                                    lastProblem.selections.push(categoryFactory.getCategory(theData.cid));
                                 }
                             }else{
                                 var theProblem = {};
@@ -351,7 +354,7 @@
                                 theProblem.answerType = 'single';
                                 theProblem.answerPlaceholder = '정답을 입력해 주세요';
                                 theProblem.selections = new Array();
-                                theProblem.selections.push(theData.cid);
+                                theProblem.selections.push(categoryFactory.getCategory(theData.cid));
 
                                 if(theData.examples.length){
                                     theProblem.answerType = 'multiple';
@@ -458,16 +461,13 @@
                 type: '=',
                 selections: '='
             },
-            controller: ['$scope', '$http', function($scope, $http){
+            controller: ['$scope', '$http', 'categoryFactory', function($scope, $http, categoryFactory){
                 
-                var rowData = [];
-                var masterCategory = [];
-                                
-                $http.get('/categories').then(function(response){
-                    rowData = response.data;
-                    masterCategory = new Category(0, '', '', '');
-                    masterCategory.makeCategory(rowData);
-                    $scope.categories = masterCategory.categories;
+                categoryFactory.getCategories.then(function(data){
+                    console.log(data);
+                    $scope.categories = data.masterCategory.categories;
+                }, function(data){
+                    alert('load category error');
                 });
                 
                 this.addCategory = function(name, item){
@@ -501,10 +501,8 @@
                     var theIndex = getIndexOfSelectedCategory(item.cid);
                     if(theIndex >= 0){
                         $scope.selections.splice(theIndex, 1);
-//                        selectedCategories.splice(theIndex, 1);
                     }else{
                         $scope.selections.push(item);
-//                        selectedCategories.push(item);
                     }
                 };
                 
@@ -517,11 +515,6 @@
                             return true;   
                         }
                     }
-//                    for(i=0; i<selectedCategories.length; i++){
-//                        if(selectedCategories[i].cid == cid){
-//                            return true;   
-//                        }
-//                    }
                     return false;
                 }
                 
@@ -534,14 +527,6 @@
                             return i;   
                         }
                     }
-//                    if(selectedCategories.length == 0 || !selectedCategories){
-//                        return -1;
-//                    }
-//                    for(i=0; i<selectedCategories.length; i++){
-//                        if(selectedCategories[i].cid == cid){
-//                            return i;   
-//                        }
-//                    }
                     return -1;   
                 };
                 
