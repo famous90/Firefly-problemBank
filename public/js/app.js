@@ -322,10 +322,11 @@
                                     theProblem.selections = new Array();
                                     theProblem.selections.push(categoryFactory.getCategory(theData.cid));
 
+                                    console.log(theData.examples);
                                     if(theData.answerType == 'multiple'){
                                         theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
                                         theProblem.examples = angular.fromJson(theData.examples);
-                                        console.log(theData.examples);
+                                        console.log(angular.fromJson(theData.examples));
                                     }else{
                                         theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
                                     }
@@ -346,10 +347,11 @@
                                 theProblem.selections = new Array();
                                 theProblem.selections.push(categoryFactory.getCategory(theData.cid));
 
+                                console.log(theData.examples);
                                 if(theData.answerType == 'multiple'){
                                     theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
                                     theProblem.examples = angular.fromJson(theData.examples);
-                                    console.log(theData.examples);
+                                    console.log(angular.fromJson(theData.examples));
                                 }else{
                                     theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
                                 }

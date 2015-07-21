@@ -227,8 +227,8 @@ app.post('/load_problems', function(request, response){
 //    }else {
 //        console.log('LOAD PROBLEMS : without category');
 //    }
-    query += ' WHERE problems.pid=42';
-//    query += ' ORDER BY problems.pid';
+    query += ' WHERE problems.pid = 42';
+    query += ' ORDER BY problems.pid';
     
     client.query(query, function(error, data){
         if(error){
