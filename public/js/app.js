@@ -129,27 +129,27 @@
         this.selections = new Array();                
     }
     
-    Problem.prototype.setExamples = function (strExamples) {
-        if(strExamples.length){
-            this.answerType = 'multiple';
-            this.answerPlaceholder = '정답인 보기를 입력해 주세요';
-            
-            var stringExamples = strExamples;
-            var tempExample = '';
-            for(var j=0 ;j<stringExamples.length; j++){
-                if(stringExamples.substr(j,2)=='@@'){
-                    this.examples.push({content: tempExample});
-                    tempExample = '';
-                    j++;
-                }else{
-                    tempExample = tempExample.concat(stringExamples.charAt(j));
-                }
-            }
-            
-        }else{
-            this.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
-        }
-    };
+//    Problem.prototype.setExamples = function (strExamples) {
+//        if(strExamples.length){
+//            this.answerType = 'multiple';
+//            this.answerPlaceholder = '정답인 보기를 입력해 주세요';
+//            
+//            var stringExamples = strExamples;
+//            var tempExample = '';
+//            for(var j=0 ;j<stringExamples.length; j++){
+//                if(stringExamples.substr(j,2)=='@@'){
+//                    this.examples.push({content: tempExample});
+//                    tempExample = '';
+//                    j++;
+//                }else{
+//                    tempExample = tempExample.concat(stringExamples.charAt(j));
+//                }
+//            }
+//            
+//        }else{
+//            this.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
+//        }
+//    };
     
     Problem.prototype.setSelections = function (){
         
