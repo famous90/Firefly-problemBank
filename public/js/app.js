@@ -325,6 +325,7 @@
                                     if(theData.answerType == 'multiple'){
                                         theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
                                         theProblem.examples = angular.fromJson(theData.examples);
+                                        console.log(theData.examples);
                                     }else{
                                         theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
                                     }
@@ -348,6 +349,7 @@
                                 if(theData.answerType == 'multiple'){
                                     theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
                                     theProblem.examples = angular.fromJson(theData.examples);
+                                    console.log(theData.examples);
                                 }else{
                                     theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
                                 }
