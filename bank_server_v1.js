@@ -211,23 +211,24 @@ app.post('/load_problems', function(request, response){
     var categories = JSON.parse(request.param('categories'));    
     var query = 'SELECT DISTINCT problems.*, pcLinks.cid FROM problems RIGHT JOIN pcLinks ON problems.pid = pcLinks.pid';
     
-    if(categories.length){
-        
-        console.log('LOAD PROBLEMS : with category');
-        query += ' WHERE problems.pid in (SELECT pid from pcLinks WHERE ';
-    
-        for(var i=0; i<categories.length; i++){
-            query += 'cid = '+categories[i].cid;
-            if(i != categories.length - 1){
-                query += ' | ';
-            }
-        }
-        query += ')';
-        
-    }else {
-        console.log('LOAD PROBLEMS : without category');
-    }
-    query += ' ORDER BY problems.pid';
+//    if(categories.length){
+//        
+//        console.log('LOAD PROBLEMS : with category');
+//        query += ' WHERE problems.pid in (SELECT pid from pcLinks WHERE ';
+//    
+//        for(var i=0; i<categories.length; i++){
+//            query += 'cid = '+categories[i].cid;
+//            if(i != categories.length - 1){
+//                query += ' | ';
+//            }
+//        }
+//        query += ')';
+//        
+//    }else {
+//        console.log('LOAD PROBLEMS : without category');
+//    }
+    query += ' WHERE problems.pid=42';
+//    query += ' ORDER BY problems.pid';
     
     client.query(query, function(error, data){
         if(error){
