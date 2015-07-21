@@ -340,13 +340,12 @@
                                 theProblem.answer = theData.answer;
                                 theProblem.explanation = theData.explanation;
                                 theProblem.examples = [];
-                                theProblem.answerType = 'single';
+                                theProblem.answerType = theData.answerType;
                                 theProblem.answerPlaceholder = '정답을 입력해 주세요';
                                 theProblem.selections = new Array();
                                 theProblem.selections.push(categoryFactory.getCategory(theData.cid));
 
                                 if(theData.answerType == 'multiple'){
-                                    theProblem.answerType = 'multiple';
                                     theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
                                     theProblem.examples = angular.fromJson(theData.examples);
                                 }else{
