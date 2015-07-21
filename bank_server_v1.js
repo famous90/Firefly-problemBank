@@ -20,7 +20,19 @@ app.use(express.static('public'));
 app.use(express.bodyParser());
 app.use(app.router);
 
-
+app.get('/problemImage?', function(request, response){
+    var imageName = request.param('name');
+    var type = request.param('type');
+    var imageFile = 'public/asset/images/'+imageName+'.'+type;
+    
+    fs.exists(imageFile, function(exist){
+        if(exist){
+            response.sendfile(imageFile);     
+        }else{
+            response.status(403).send('Sorry! Can not find image');
+        }
+    });
+});
 
 app.get('/problems', function(request, response){
         
@@ -208,6 +220,7 @@ app.post('/load_problems', function(request, response){
     
     if(categories.length){
         
+        console.log('LOAD PROBLEMS : with category');
         query += ' WHERE problems.pid in (SELECT pid from pcLinks WHERE ';
     
         for(var i=0; i<categories.length; i++){
@@ -219,6 +232,7 @@ app.post('/load_problems', function(request, response){
         query += ')';
         
     }else {
+        console.log('LOAD PROBLEMS : without category');
     }
     query += ' ORDER BY problems.pid';
     
@@ -228,7 +242,7 @@ app.post('/load_problems', function(request, response){
             throw error;
         }else{
             console.log('LOAD PROBLEMS : complete');
-            console.log(JSON.parse(JSON.stringify(data)));
+//            console.log(JSON.parse(JSON.stringify(data)));
             response.send(data);
             response.end('loaded');
         }
@@ -242,15 +256,15 @@ app.put('/problem/:pid', function(request, response){
     var answer = request.param('answer');
     var explanation = request.param('explanation');
     var examples = request.param('examples');
-    var query = 'UPDATE problems SET ';
+//    var query = 'UPDATE problems SET question = ?, answer = ?, explanation = ?, examples = ? WHERE pid = ?';
     
-    if (question) query += 'question="' + question + '" ';
-    if (answer) query += ', answer="' + answer + '" ';
-    if (explanation) query += ', explanation="' + explanation + '" ';
-    if (examples) query += ', examples="' + examples + '" ';
-    query += 'WHERE pid=' + pid;
+//    if (question) query += 'question="' + question + '" ';
+//    if (answer) query += ', answer="' + answer + '" ';
+//    if (explanation) query += ', explanation="' + explanation + '" ';
+//    if (examples) query += ', examples="' + examples + '" ';
+//    query += 'WHERE pid=' + pid;
 
-    client.query(query, function(error, data){
+    client.query('UPDATE problems SET question = ?, answer = ?, explanation = ?, examples = ? WHERE pid = ?', [question, answer, explanation, examples, pid], function(error, data){
         if(error){
             response.statusCode = 400;
             console.log('UPDATE PROBLEM : error with problem id '+pid);

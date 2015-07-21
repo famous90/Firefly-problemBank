@@ -137,9 +137,10 @@
             var stringExamples = strExamples;
             var tempExample = '';
             for(var j=0 ;j<stringExamples.length; j++){
-                if(stringExamples.charAt(j)=='@'){
+                if(stringExamples.substr(j,2)=='@@'){
                     this.examples.push({content: tempExample});
                     tempExample = '';
+                    j++;
                 }else{
                     tempExample = tempExample.concat(stringExamples.charAt(j));
                 }
@@ -217,7 +218,7 @@
                     var stringWithExamples = '';
                     if($scope.problem.answerType == 'multiple'){
                         for(var i=0; i<$scope.problem.examples.length; i++){
-                            stringWithExamples += $scope.problem.examples[i].content + '@';    
+                            stringWithExamples += $scope.problem.examples[i].content + '@@';    
                         }
                     }
                     
@@ -328,10 +329,11 @@
                                         theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
                                         var stringExamples = theData.examples;
                                         var tempExample = '';
-                                        for(var j=0 ;j<stringExamples.length; j++){
-                                            if(stringExamples.charAt(j)=='@'){
+                                        for(var j=0 ;j<stringExamples.length-1; j++){
+                                            if(stringExamples.substr(j,2)=='@@'){
                                                 theProblem.examples.push({content: tempExample});
                                                 tempExample = '';
+                                                j++;
                                             }else{
                                                 tempExample = tempExample.concat(stringExamples.charAt(j));
                                             }
@@ -362,9 +364,10 @@
                                     var stringExamples = theData.examples;
                                     var tempExample = '';
                                     for(var j=0 ;j<stringExamples.length; j++){
-                                        if(stringExamples.charAt(j)=='@'){
+                                        if(stringExamples.substr(j,2)=='@@'){
                                             theProblem.examples.push({content: tempExample});
                                             tempExample = '';
+                                            j++;
                                         }else{
                                             tempExample = tempExample.concat(stringExamples.charAt(j));
                                         }
@@ -425,7 +428,7 @@
             var stringWithExamples = '';
             if(item.answerType == 'multiple'){
                 for(var i=0; i<item.examples.length; i++){
-                    stringWithExamples += item.examples[i].content + '@';    
+                    stringWithExamples += item.examples[i].content + '@@';    
                 }
             }
             
