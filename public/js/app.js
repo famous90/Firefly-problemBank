@@ -126,7 +126,7 @@
         this.examples = [];
         this.answerType = 'single';
         this.answerPlaceholder = '정답을 입력해 주세요';
-                            
+        this.selections = new Array();                
     }
     
     Problem.prototype.setExamples = function (strExamples) {
@@ -149,6 +149,10 @@
         }else{
             this.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
         }
+    };
+    
+    Problem.prototype.setSelections = function (){
+        
     };
     
     function ProblemMaster () {
@@ -205,22 +209,6 @@
                         alert('카테고리를 선택해주세요');    
                         return;
                     }
-                                        
-                    var question = $scope.problem.question;
-                    var answer = $scope.problem.answer;
-                    var explanation = $scope.problem.explanation;
-                    
-                    var stringWithCategories = '';
-                    for(var i=0; i<$scope.problem.selections.length; i++){
-                        stringWithCategories = stringWithCategories + $scope.problem.selections[i].cid.toString() + '/';
-                    }
-                    
-                    var stringWithExamples = '';
-                    if($scope.problem.answerType == 'multiple'){
-                        for(var i=0; i<$scope.problem.examples.length; i++){
-                            stringWithExamples += $scope.problem.examples[i].content + '@@';    
-                        }
-                    }
                     
                     var formDataNames = [];
                     var imageFiles = [];
@@ -237,6 +225,20 @@
                         }                        
                     }
                     
+                    var jsonExamples = '';
+                    if($scope.problem.answerType == 'multiple'){
+                        jsonExamples = angular.toJson($scope.problem.examples);
+                    }
+                    
+                    var requestParams = {
+                        question: $scope.problem.question,
+                        answer: $scope.problem.answer,
+                        explanation: $scope.problem.explanation,
+                        categories : $scope.problem.selections,
+                        examples : jsonExamples,
+                        answerType : $scope.problem.answerType
+                    };
+                    
                     $scope.upload = Upload.upload({
                         url: '/problem',
                         method: 'POST',
@@ -244,11 +246,7 @@
                             'Content-Type': undefined
                         },
                         fields: {
-                            question: question,
-                            answer: answer,
-                            explanation: explanation,
-                            categories:stringWithCategories,
-                            examples:stringWithExamples
+                            data: angular.toJson(requestParams)
                         },
                         file: imageFiles,
                         fileFormDataName: formDataNames
@@ -319,25 +317,14 @@
                                     theProblem.answer = theData.answer;
                                     theProblem.explanation = theData.explanation;
                                     theProblem.examples = [];
-                                    theProblem.answerType = 'single';
+                                    theProblem.answerType = theData.answerType;
                                     theProblem.answerPlaceholder = '정답을 입력해 주세요';
                                     theProblem.selections = new Array();
                                     theProblem.selections.push(categoryFactory.getCategory(theData.cid));
 
-                                    if(theData.examples.length){
-                                        theProblem.answerType = 'multiple';
+                                    if(theData.answerType == 'multiple'){
                                         theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
-                                        var stringExamples = theData.examples;
-                                        var tempExample = '';
-                                        for(var j=0 ;j<stringExamples.length-1; j++){
-                                            if(stringExamples.substr(j,2)=='@@'){
-                                                theProblem.examples.push({content: tempExample});
-                                                tempExample = '';
-                                                j++;
-                                            }else{
-                                                tempExample = tempExample.concat(stringExamples.charAt(j));
-                                            }
-                                        }
+                                        theProblem.examples = angular.fromJson(theData.examples);
                                     }else{
                                         theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
                                     }
@@ -358,20 +345,10 @@
                                 theProblem.selections = new Array();
                                 theProblem.selections.push(categoryFactory.getCategory(theData.cid));
 
-                                if(theData.examples.length){
+                                if(theData.answerType == 'multiple'){
                                     theProblem.answerType = 'multiple';
                                     theProblem.answerPlaceholder = '정답인 보기를 입력해 주세요';
-                                    var stringExamples = theData.examples;
-                                    var tempExample = '';
-                                    for(var j=0 ;j<stringExamples.length; j++){
-                                        if(stringExamples.substr(j,2)=='@@'){
-                                            theProblem.examples.push({content: tempExample});
-                                            tempExample = '';
-                                            j++;
-                                        }else{
-                                            tempExample = tempExample.concat(stringExamples.charAt(j));
-                                        }
-                                    }
+                                    theProblem.examples = angular.fromJson(theData.examples);
                                 }else{
                                     theProblem.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
                                 }
@@ -432,7 +409,7 @@
                 }
             }
             
-            $http.put('/problem/'+item.pid, {pid:item.pid, question:item.question, answer:item.answer, explanation:item.explanation, examples:stringWithExamples})
+            $http.put('/problem/'+item.pid, {pid:item.pid, question:item.question, answer:item.answer, explanation:item.explanation, examples:stringWithExamples, categories:angular.toJson(item.selections)})
             .success(function(response){
                 alert('문제를 성공적으로 수정하였습니다.');
                 $modalInstance.close(); 

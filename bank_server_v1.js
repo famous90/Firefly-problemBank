@@ -43,26 +43,19 @@ app.get('/problems', function(request, response){
 
 app.post('/problem', function(request, response){
     
-    var question = request.param('question');
-    var answer = request.param('answer');
-    var explanation = request.param('explanation');
-    var stringWithCategories = request.param('categories');
-    var categories = [];
+    var parameters = JSON.parse(request.param('data'));
+    var question = parameters.question;
+    var answer = parameters.answer;
+    var explanation = parameters.explanation;
+    var categories = parameters.categories;
+    var examples = parameters.examples;
+    var answerType = parameters.answerType;
+    
     var hasQuestionImage = false;
     var hasExplanationImage = false;
-    var stringWithExamples = request.param('examples');
     var insertId = {};
     
-    var tempId = '';
-    for(var i=0; i<stringWithCategories.length; i++){
-        if(stringWithCategories.charAt(i) == '/'){
-            categories.push(tempId);
-            tempId = '';
-        }else{
-            tempId = tempId.concat(stringWithCategories.charAt(i));
-        }
-    }
-    
+    console.log(JSON.parse(JSON.stringify(categories)));
     console.log(JSON.parse(JSON.stringify(request.files)));
     
     // case for problem/explanation with image
@@ -86,7 +79,7 @@ app.post('/problem', function(request, response){
     // insert problem to db
     if(question && answer){
         
-        client.query('INSERT INTO problems (question, answer, explanation, hasQImage, hasExplnImage, examples) VALUES(?, ?, ?, ?, ?, ?)', [question, answer, explanation, hasQuestionImage, hasExplanationImage, stringWithExamples], function(error, info){
+        client.query('INSERT INTO problems (question, answer, explanation, hasQImage, hasExplnImage, examples, answerType) VALUES(?, ?, ?, ?, ?, ?, ?)', [question, answer, explanation, hasQuestionImage, hasExplanationImage, examples, answerType], function(error, info){
             
             if(error){
                 console.log('INSERT PROBLEM http post request : insert problem error with problem');    
@@ -102,7 +95,7 @@ app.post('/problem', function(request, response){
                     if(i != 0){
                         pclinkQuery += ',';
                     }
-                    var cid = categories[i];
+                    var cid = categories[i].cid;
                     pclinkQuery += '('+insertId+','+cid+')';
                 }
 
@@ -226,7 +219,7 @@ app.post('/load_problems', function(request, response){
         for(var i=0; i<categories.length; i++){
             query += 'cid = '+categories[i].cid;
             if(i != categories.length - 1){
-                query += ' | ';   
+                query += ' | ';
             }
         }
         query += ')';
@@ -242,7 +235,7 @@ app.post('/load_problems', function(request, response){
             throw error;
         }else{
             console.log('LOAD PROBLEMS : complete');
-//            console.log(JSON.parse(JSON.stringify(data)));
+            console.log(JSON.parse(JSON.stringify(data)));
             response.send(data);
             response.end('loaded');
         }
@@ -256,13 +249,7 @@ app.put('/problem/:pid', function(request, response){
     var answer = request.param('answer');
     var explanation = request.param('explanation');
     var examples = request.param('examples');
-//    var query = 'UPDATE problems SET question = ?, answer = ?, explanation = ?, examples = ? WHERE pid = ?';
-    
-//    if (question) query += 'question="' + question + '" ';
-//    if (answer) query += ', answer="' + answer + '" ';
-//    if (explanation) query += ', explanation="' + explanation + '" ';
-//    if (examples) query += ', examples="' + examples + '" ';
-//    query += 'WHERE pid=' + pid;
+    var categories = request.param('categories');
 
     client.query('UPDATE problems SET question = ?, answer = ?, explanation = ?, examples = ? WHERE pid = ?', [question, answer, explanation, examples, pid], function(error, data){
         if(error){
