@@ -405,14 +405,14 @@
         $scope.problem = item;
         $scope.update = function (item) {
             
-            var stringWithExamples = '';
-            if(item.answerType == 'multiple'){
-                for(var i=0; i<item.examples.length; i++){
-                    stringWithExamples += item.examples[i].content + '@@';    
-                }
-            }
+//            var stringWithExamples = '';
+//            if(item.answerType == 'multiple'){
+//                for(var i=0; i<item.examples.length; i++){
+//                    stringWithExamples += item.examples[i].content + '@@';    
+//                }
+//            }
             
-            $http.put('/problem/'+item.pid, {pid:item.pid, question:item.question, answer:item.answer, explanation:item.explanation, examples:stringWithExamples, categories:angular.toJson(item.selections)})
+            $http.put('/problem/'+item.pid, {pid:item.pid, question:item.question, answer:item.answer, explanation:item.explanation, examples:angular.toJson(item.examples), categories:angular.toJson(item.selections), answerType:item.answerType})
             .success(function(response){
                 alert('문제를 성공적으로 수정하였습니다.');
                 $modalInstance.close(); 

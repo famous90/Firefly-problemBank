@@ -250,8 +250,9 @@ app.put('/problem/:pid', function(request, response){
     var explanation = request.param('explanation');
     var examples = request.param('examples');
     var categories = request.param('categories');
+    var answerType = request.param('answerType');
 
-    client.query('UPDATE problems SET question = ?, answer = ?, explanation = ?, examples = ? WHERE pid = ?', [question, answer, explanation, examples, pid], function(error, data){
+    client.query('UPDATE problems SET question = ?, answer = ?, explanation = ?, examples = ?, answerType = ? WHERE pid = ?', [question, answer, explanation, examples, answerType, pid], function(error, data){
         if(error){
             response.statusCode = 400;
             console.log('UPDATE PROBLEM : error with problem id '+pid);
