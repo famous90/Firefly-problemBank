@@ -19,7 +19,7 @@
     </form>
 
     <h4 class="text-center" ng-show="masterProblem.getLength()">총 {{masterProblem.getLength()}}문제</h4>
-    <h5 ng-show="masterProblem.getLength()">* 문제 업데이트 가능, 카테고리 수정 불가, 첨부 그림 수정 불가</h5>
+    <h5 ng-show="masterProblem.getLength()">* 문제 업데이트 가능, 카테고리 수정 가능, 첨부 그림 수정 불가</h5>
     <div class="list-group-item" ng-repeat="problem in masterProblem.getMasterData()">
         <div class="row">
             <h4 class="col-md-1 text-center">{{problem.pid}}</h4>
