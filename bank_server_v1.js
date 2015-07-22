@@ -244,24 +244,71 @@ app.post('/load_problems', function(request, response){
 
 app.put('/problem/:pid', function(request, response){
     
+    var parameters = JSON.parse(request.param('data'));
     var pid = request.param('pid');
-    var question = request.param('question');
-    var answer = request.param('answer');
-    var explanation = request.param('explanation');
-    var examples = request.param('examples');
-    var categories = request.param('categories');
-    var answerType = request.param('answerType');
+    var question = parameters.question;
+    var answer = parameters.answer;
+    var explanation = parameters.explanation;
+    var examples = parameters.examples;
+    var answerType = parameters.answerType;
+    var newCategories = parameters.alterCategories.new;
+    var deleteCategories = parameters.alterCategories.delete;
+    
+    console.log(JSON.parse(JSON.stringify(parameters)));
 
+    // update problem
     client.query('UPDATE problems SET question = ?, answer = ?, explanation = ?, examples = ?, answerType = ? WHERE pid = ?', [question, answer, explanation, examples, answerType, pid], function(error, data){
         if(error){
             response.statusCode = 400;
-            console.log('UPDATE PROBLEM : error with problem id '+pid);
+            console.log('UPDATE PROBLEM : update problem error with problem id '+pid);
             throw error;
         }else {
-            console.log('UPDATE PROBLEM : complete');
+            console.log('UPDATE PROBLEM : update problem complete');
             response.end('updated');
         }
      });
+        
+    // insert pclink
+    if(newCategories.length){
+        var insertQuery = 'INSERT INTO pcLinks (pid, cid) VALUES ';
+        for(i=0; i<newCategories.length; i++){
+            if(i != 0){
+                insertQuery += ',';
+            }
+            var cid = newCategories[i];
+            insertQuery += '('+pid+','+cid+')';
+        }
+        client.query(insertQuery, function(err, results){
+            if(err){
+                response.statusCode = 400;
+                console.log('UPDATE PROBLEM : insert pclinks error with problem id '+pid);
+                throw err;
+            }else {
+                console.log('UPDATE PROBLEM : insert pclinks complete');
+            }
+        });        
+    }
+        
+    // delete pclink
+    if(deleteCategories.length){
+        var deleteQuery = 'DELETE FROM pcLinks WHERE ';
+        for(i=0; i<deleteCategories.length; i++){
+            if(i != 0){
+                deleteQuery += '||';
+            }
+            var cid = deleteCategories[i];
+            deleteQuery += '(pid='+pid+'&&cid='+cid+')';
+        }
+        client.query(deleteQuery, function(err, results){
+            if(err){
+                response.statusCode = 400;
+                console.log('UPDATE PROBLEM : delete pclinks error with problem id '+pid);
+                throw err;
+            }else {
+                console.log('UPDATE PROBLEM : delete pclinks complete');
+            }
+        });        
+    }
 });
 
 app.del('/problem/:pid', function(request, response){
