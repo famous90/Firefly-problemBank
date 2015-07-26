@@ -1,12 +1,12 @@
-<div ng-class="{selected:selectCategoryCtrl.isSelected(item)&&!type, unselected:!selectCategoryCtrl.isSelected(item)&&!type, unselectable: type}" style="padding: 5px; margin-bottom:5px;" ng-click="!type && selectCategoryCtrl.selectCategory(item);">
+<div ng-class="{selected:(isSelected(item.cid)!=-1)&&!type, unselected:(isSelected(item.cid)==-1)&&!type, unselectable: type}" style="padding: 5px; margin-bottom:5px;" ng-click="!type && selectCategory(item.cid);">
     <a class="btn btn-default btn-xs" ng-if="item.categories && item.categories.length > 0" ng-click="item.nodeCollapsed = !item.nodeCollapsed; $event.stopPropagation();">
         <span class="glyphicon" ng-class="{'glyphicon-chevron-right': item.nodeCollapsed ,'glyphicon-chevron-down':!item.nodeCollapsed}"></span>
     </a>
     <mathjax-bind>{{item.name}}</mathjax-bind>
-    <a class="pull-right btn btn-danger btn-xs" style="margin-left: 8px;" ng-if="type && item.cid != '1'" ng-click="selectCategoryCtrl.deleteCategory(item); $event.stopPropagation();">
+    <a class="pull-right btn btn-danger btn-xs" style="margin-left: 8px;" ng-if="type && (item.cid != 1)" ng-click="deleteCategory(item.cid); $event.stopPropagation();">
         <span class="glyphicon glyphicon-remove"></span>
     </a>
-    <a class="pull-right btn btn-primary btn-xs" style="margin-left: 8px;" ng-if="type && item.cid == '1'" ng-click="item.isCollapsed = !item.isCollapsed; $event.stopPropagation();">
+    <a class="pull-right btn btn-primary btn-xs" style="margin-left: 8px;" ng-if="type && (item.cid == 1)" ng-click="item.isCollapsed = !item.isCollapsed; $event.stopPropagation();">
         <span class="glyphicon glyphicon-plus"></span>
     </a>
     <a class="pull-right btn btn-primary btn-xs" style="margin-left: 8px;" ng-if="type" ng-click="item.isChildCollapsed = !item.isChildCollapsed; $event.stopPropagation();">
@@ -16,8 +16,8 @@
 <div collapse="!item.isCollapsed">
     <div class="well well-lg">
         <h6>추가할 카테고리 이름을 입력하세요</h6>
-        <form ng-submit="selectCategoryCtrl.addCategory(categoryName, item)">
-            <input type="text" class="col-sm-10" name="categoryName" ng-model="categoryName" placeholder="Write a category name" />
+        <form ng-submit="addCategory(categoryName, item)">
+            <input type="text" class="col-sm-10" ng-model="categoryName" placeholder="Write a category name" />
             <input type="submit" value="추가" />
         </form>
     </div> 
@@ -26,8 +26,8 @@
     <li collapse="!item.isChildCollapsed">
             <div class="well well-lg">
                 <h6>추가할 자식 카테고리 이름을 입력하세요</h6>
-                <form ng-submit="selectCategoryCtrl.addChildCategory(categoryName, item)">
-                    <input type="text" class="col-sm-10" name="categoryName" ng-model="categoryName" placeholder="Write a category name" />
+                <form ng-submit="addChildCategory(categoryName, item)">
+                    <input type="text" class="col-sm-10" ng-model="categoryName" placeholder="Write a category name" />
                     <input type="submit" value="추가" />
                 </form>
             </div> 

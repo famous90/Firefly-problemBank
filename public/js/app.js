@@ -2,6 +2,17 @@
     
     var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math']);
     
+    app.factory('httpFactory', ['$http', function($http){
+        
+        function getHttp(url) {
+            return $http.get(url);
+        };
+        
+        return {
+            getHttp: getHttp    
+        };    
+    }]);
+    
     app.factory('categoryFactory', ['$http', '$q', function($http, $q){
         
         var masterCategory = new Category(0, '', '', '');
@@ -16,6 +27,15 @@
                 masterCategory: masterCategory
             });
         });
+        
+        function addCategory(item) {
+            $http.post('/category', {'parentId':item.parentId, 'name':item.name, 'path':item.absPath, 'parentRelativePath': item.relPath})
+            .success(function(response){
+                alert('카테고리를 성공적으로 추가했습니다.');
+            }).error(function(response){
+                alert('카테고리를 새로 만들지 못했습니다. 다시 시도해 주세요.');
+            });
+        }
         
         function getCategory(cid) {
             for(var i=0; i<rowCategory.length; i++){
@@ -76,11 +96,11 @@
         };
     }]);
     
-    function Category(cid, name, path, relPath) {
+    function Category(cid, name, path) {
         this.cid = cid;
         this.name = name;
         this.path = path;
-        this.relativePath = relPath;
+//        this.relativePath = relPath;
         this.selectedCategorySet = [];
         this.categories = [];
     }
@@ -88,7 +108,8 @@
     Category.prototype.makeCategory = function(data){
         for(var k=0; k<data.length; k++){
             var item = data[k];
-            var category = new Category(item.cid, item.name, item.path, item.relativePath);
+            var category = new Category(item.cid, item.name, item.path);
+//            var category = new Category(item.cid, item.name, item.path, item.relativePath);
             
             var absPath = item.path;
             var parentIdsArray = new Array();
@@ -162,14 +183,32 @@
         }else return 0;
     };
     
+    function ImageFile (data){
+        this.imgid = '', this.pid = '', this.name = '', this.imageType = '', this.image;
+        
+        if(arguments.length){
+            var data = arguments[0];
+            this.imgid = data.imgid;
+            this.pid = data.pid;
+            this.name = data.name;
+            this.imageType = data.imageType;
+            this.image;
+        }
+    }
+    
     function Problem (){
         
         this.pid = '', this.question = '', this.answer = '', this.explanation = '', this.answerType = 'single', this.answerPlaceholder = '정답을 입력해 주세요', this.examples = [];
+        this.type = 'new';
         this.selections = new Array();
         this.alterSelections = {
             new: [],
             delete: [],
             exist: []
+        };
+        this.images = {
+            questions: [],
+            explanations: []
         };
         
         if(arguments.length){
@@ -180,11 +219,17 @@
             this.explanation = data.explanation;
             this.answerType = data.answerType;
             this.setExamples(data.examples);
+            if(data.type){
+                this.type = data.type;
+            }
             if(data.selections){
                 this.selections = data.selections;
                 for(var i=0; i<data.selections.length; i++){
                     this.alterSelections.exist.push(data.selections[i].cid);
                 }
+            }
+            if(data.images){
+                this.images = data.images;
             }
         }else {
             this.setExamples('');
@@ -315,6 +360,87 @@
         }  
     };
     
+    ProblemMaster.prototype.setMasterProblem = function (data){
+        var problemData = data.problems;
+        var pcdata = data.pcLinks;
+        var imagedata = data.problemImages;
+        
+        function pcSet (){
+            this.pid;
+            this.cids = new Array();
+        }
+        var pcLinkArray = new Array();
+        var thePcSet = new pcSet();
+        for(var i=0; i<pcdata.length; i++){
+            var theData = pcdata[i];
+            if(i == 0){
+                thePcSet.pid = theData.pid;
+            }else if(theData.pid != thePcSet.pid){
+                pcLinkArray.push(thePcSet);
+                thePcSet = new pcSet();
+                thePcSet.pid = theData.pid;
+            }
+            thePcSet.cids.push(theData.cid);
+            if(i == pcdata.length-1){
+                pcLinkArray.push(thePcSet);
+            }
+        }
+        
+        function imageSet () {
+            this.pid = {};
+            this.questions = new Array();
+            this.explanations = new Array();
+        }
+        imageSet.prototype.addImage = function (data){
+            if(data.imageType == 'question'){
+                this.questions.push(data);
+            }else if(data.imageType == 'explanation'){
+                this.explanations.push(data);
+            }
+        };
+        
+        var problemImageArray = new Array();
+        var theImageSet = new imageSet();
+        if(imagedata.length){
+            for(var i=0; i<imagedata.length; i++){
+                var theData = imagedata[i];
+                if(i == 0){
+                    theImageSet.pid = theData.pid;
+                }else if(theData.pid != theImageSet.pid){
+                    problemImageArray.push(theImageSet);
+                    theImageSet = new imageSet();
+                    theImageSet.pid = theData.pid;
+                }
+                var theImageFile = new ImageFile(theData);
+                theImageSet.addImage(theImageFile);
+                if(i == imagedata.length-1){
+                    problemImageArray.push(theImageSet);
+                }
+            }
+        }
+    
+        var problems = [];
+        angular.forEach(problemData, function(problem){
+            var theProblem = new Problem(problem);
+            theProblem.type = 'load';
+            angular.forEach(pcLinkArray, function(theSet){
+                if(theSet.pid == theProblem.pid){
+                    theProblem.selections = theSet.cids;
+                }
+            });
+            
+            angular.forEach(problemImageArray, function(theSet){
+                if(theSet.pid == theProblem.pid){
+                    theProblem.images.questions = theSet.questions;
+                    theProblem.images.explanations = theSet.explanations;
+                }
+            });
+            
+            problems.push(theProblem);
+        });
+        this.masterData = problems;
+    };
+    
     ProblemMaster.prototype.getLength = function (){
         return this.masterData.length;  
     };
@@ -331,7 +457,25 @@
         return {
             restrict: 'E',
             templateUrl: 'view/insert-problem.html',
-            controller: ['$scope', '$http', 'Upload', '$window', function($scope, $http, Upload, $window){
+            controller: ['$scope', '$http', 'Upload', '$window', function($scope, $http, Upload, $window){       
+                $scope.setImageFiles = function(files, type){
+                    
+                    var imageArray = [];
+                    if(type=='question'){
+                        $scope.problem.images.questions = new Array();
+                        imageArray = $scope.problem.images.questions;
+                    }else if(type == 'explanation'){
+                        $scope.problem.images.explanations = new Array();
+                        imageArray = $scope.problem.images.explanations;
+                    }
+                    
+                    angular.forEach(files, function(theImage){
+                        var theImageFile = new ImageFile();
+                        theImageFile.imageType = 'new';
+                        theImageFile.image = theImage;
+                        imageArray.push(theImageFile);      
+                    });
+                };
                 
                 if($scope.problem){
                 }else {
@@ -381,7 +525,9 @@
                         
                         if(imageFiles.length){
                             $window.alert(imageFiles.length + '개 이미지와 문제 업로드 성공');
-                        }else $window.alert('이미지 없는 문제 업로드 성공');
+                        }else {
+                            $window.alert('이미지 없는 문제 업로드 성공');
+                        }
                         
                         $scope.problem = new Problem();
                     });   
@@ -427,30 +573,11 @@
                     $http.post('/load_problems', {'categories': angular.toJson($scope.category.selections)})
                     .then(function(response){
 
-                        var data = response.data;        
+                        var data = response.data;
+                        console.log(data);
                         
                         $scope.masterProblem = new ProblemMaster();
-
-                        for(var i=0; i<data.length; i++){
-                            
-                            var theData = data[i];
-                            
-                            if(i != 0){
-                                var lastProblem = $scope.masterProblem.getLastObject();
-                                if(lastProblem.pid != theData.pid){
-                                    var theProblem = new Problem(theData);
-                                    theProblem.selections.push(categoryFactory.getCategory(theData.cid));
-                                    $scope.masterProblem.push(theProblem);   
-                                }else{
-                                    lastProblem.selections.push(categoryFactory.getCategory(theData.cid));
-                                }
-                            }else{
-                                var theProblem = new Problem(theData);
-                                theProblem.selections.push(categoryFactory.getCategory(theData.cid));
-                                $scope.masterProblem.push(theProblem);   
-                            }
-                        }
-
+                        $scope.masterProblem.setMasterProblem(data);
                     });
                 };
                 
@@ -519,7 +646,12 @@
             templateUrl: 'view/show-problem.html',
             scope: {
                 problem: '=item',
-            }
+            },
+            controller: ['$scope', 'categoryFactory', function($scope, categoryFactory){
+                $scope.getCategoryName = function (cid){
+                    return categoryFactory.getCategoryName(cid);
+                }
+            }]
         };
     });
     
@@ -533,33 +665,34 @@
                 alters: '='
             },
             controller: ['$scope', '$http', 'categoryFactory', function($scope, $http, categoryFactory){
-                
+                $scope.categories = [];
                 categoryFactory.getCategories.then(function(data){
-                    console.log(data);
+                    console.log('load category \n'+data);
                     $scope.categories = data.masterCategory.categories;
                 }, function(data){
                     alert('카테고리를 불러오지 못했습니다. 다시 시도해 주세요.');
                 });
                 
-                this.addCategory = function(name, item){
-                    var theCategory = new Category(item.cid, item.name, item.path, item.relativePath);
+                $scope.addCategory = function(name, item){
+                    var theCategory = new Category(item.cid, item.name, item.path);
+//                    var theCategory = new Category(item.cid, item.name, item.path, item.relativePath);
                     var parentId = theCategory.getParentId();
                     var parentRelativePath = '';
                     if(parentId != 0){
                         parentRelativePath = rowData[parentId -1].relativePath;   
                     }
                       
-                    httpPostCategory(parentId, name, theCategory.path, parentRelativePath);
+                    httpPostCategory(parentId, name, theCategory.path);
                 };
                 
-                this.addChildCategory = function(name, item){
+                $scope.addChildCategory = function(name, item){
                     
                     var newPath = item.path + item.cid.toString() + '/';
-                    httpPostCategory(item.cid, name, newPath, item.relativePath);
+                    httpPostCategory(item.cid, name, newPath);
                 };
                 
-                this.deleteCategory = function(item){
-                    $http.delete('/category/'+item.cid)
+                $scope.deleteCategory = function(cid){
+                    $http.delete('/category/'+cid)
                     .success(function(response){
                         alert('카테고리를 삭제했습니다.');
                     }).error(function(response){
@@ -567,51 +700,55 @@
                     });
                 };
                 
-                this.selectCategory = function(item){
+                $scope.selectCategory = function(cid){
                     
-                    var theIndex = getIndexOfSelectedCategory(item.cid);
+//                    var theIndex = getIndexOfSelectedCategory(item.cid);
+                    var theIndex = $scope.selections.indexOf(cid);
                      
                     if(theIndex != -1){
                         // already has category
                         $scope.selections.splice(theIndex, 1);
-                        categoryFactory.removeCidOf($scope.alters.new, item.cid);
-                        categoryFactory.removeCidOf($scope.alters.delete, item.cid);
-                        $scope.alters.delete.push(item.cid);
+//                        $scope.selections.
+                        if($scope.alters){
+                            categoryFactory.removeCidOf($scope.alters.new, cid);
+                            categoryFactory.removeCidOf($scope.alters.delete, cid);
+                            $scope.alters.delete.push(cid);    
+                        }
                         
                     }else{
                         // not have category
-                        $scope.selections.push(item);
-                        categoryFactory.removeCidOf($scope.alters.delete, item.cid);
-                        $scope.alters.new.push(item.cid);
+                        $scope.selections.push(cid);
+                        if($scope.alters){
+                            categoryFactory.removeCidOf($scope.alters.delete, cid);
+                            $scope.alters.new.push(cid);   
+                        }
                     }
                 };
                 
-                this.isSelected = function(item){
-                    
-                    var cid = item.cid;
-                    
-                    for(i=0; i<$scope.selections.length; i++){
-                        if($scope.selections[i].cid == cid){
-                            return true;   
-                        }
-                    }
-                    return false;
+                $scope.isSelected = function(cid){
+                    return $scope.selections.indexOf(cid);
+//                    for(i=0; i<$scope.selections.length; i++){
+//                        if($scope.selections[i].cid == cid){
+//                            return true;   
+//                        }
+//                    }
+//                    return false;
                 }
                 
-                function getIndexOfSelectedCategory (cid){
-                    if($scope.selections.length == 0 || !$scope.selections){
-                        return -1;
-                    }
-                    for(i=0; i<$scope.selections.length; i++){
-                        if($scope.selections[i].cid == cid){
-                            return i;   
-                        }
-                    }
-                    return -1;   
-                };
+//                function getIndexOfSelectedCategory (cid){
+//                    if($scope.selections.length == 0 || !$scope.selections){
+//                        return -1;
+//                    }
+//                    for(i=0; i<$scope.selections.length; i++){
+//                        if($scope.selections[i].cid == cid){
+//                            return i;   
+//                        }
+//                    }
+//                    return -1;   
+//                };
                 
-                function httpPostCategory (parentId, name, absPath, relPath){
-                    $http.post('/category', {'parentId':parentId, 'name':name, 'path':absPath, 'parentRelativePath': relPath})
+                function httpPostCategory (parentId, name, absPath){
+                    $http.post('/category', {'parentId':parentId, 'name':name, 'path':absPath})
                     .success(function(response){
                         alert('insert category SUCCESS');
                     }).error(function(response){
@@ -628,6 +765,17 @@
         return {
             restrict: 'E',
             templateUrl: 'view/nodes-renderer.html'
+        };
+    });
+    
+    app.directive('imageFrame', function(){
+        return {
+            restrict: 'EA',
+            templateUrl: 'view/image-frame.html',
+            scope: {
+                imageFile: '=',
+                width: '='
+            }
         };
     });
     

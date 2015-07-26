@@ -1,8 +1,10 @@
-<pre><span><strong>선택한 카테고리 : </strong></span><span ng-repeat="cate in problem.selections"> <span>#</span><span mathjax-bind="cate.name"></span></span>
+<pre><span><strong>선택한 카테고리 : </strong></span><span ng-repeat="cid in problem.selections"> <span>#</span><span mathjax-bind="getCategoryName(cid)"></span></span>
+<span style="float: right; max-width:420px; margin:10px;" ng-if="problem.images.questions.length"><span ng-repeat="questionImage in problem.images.questions"><image-frame image-file="questionImage" width="200"></image-frame></span></span>
 <span ng-show="problem.question"><strong>문제</strong></span>
 <span mathjax-bind="problem.question"></span>
 <span ng-show="problem.answer"><strong>정답</strong></span>
 <span mathjax-bind="problem.answer"></span>
 <span ng-show="problem.answerType == 'multiple'"><strong>보기</strong><span ng-repeat-start="item in problem.examples"> ({{$index+1}})</span><span ng-repeat-end mathjax-bind="item.content"></span></span>
+<span style="float: right; max-width:420px; margin:10px;" ng-if="problem.images.explanations.length"><span ng-repeat="explanationImage in problem.images.explanations"><image-frame image-file="explanationImage" width="200"></image-frame></span></span>
 <span ng-show="problem.explanation"><strong>해설</strong></span>
 <span mathjax-bind="problem.explanation"></span></pre>

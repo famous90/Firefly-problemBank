@@ -23,7 +23,7 @@
             <div class="col-md-11">
                 <textarea ng-model="problem.question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text" placeholder="문제를 입력해주세요" title="question" required></textarea>
                 <label for="questionImages">문제에 첨부할 이미지를 넣어주세요</label>
-                <input type="file" name="questionImages" ng-model="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
+                <input type="file" ng-model="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(questionImages, 'question')" accept="image/*" class="btn">
             </div>
         </fieldset>
 
@@ -48,10 +48,10 @@
             <div class="col-md-11">
                 <textarea ng-model="problem.explanation" style="padding: 10px; margin-bottom:10px;" rows="5" name="explanation" class="form-control text" placeholder="해설을 입력해주세요" title="explanation" required></textarea>
                 <label for="explanationImages">해설에 첨부할 이미지를 넣어주세요</label>
-                <input type="file" ng-model="explanationImages" name="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="true" ngf-keep-distinct="true" accept="image/*" class="btn">
+                <input type="file" ng-model="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(questionImages, 'explanation')" accept="image/*" class="btn">
             </div>
         </fieldset>
-        <fieldset class="form-group">
+        <fieldset class="form-group" ng-if="problem.type == 'new'">
             <button type="button" class="btn btn-primary pull-right" ng-click="submitForm(questionImages, explanationImages)">문제 올리기</button>
         </fieldset>
 

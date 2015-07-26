@@ -22,13 +22,13 @@ app.use(app.router);
 
 app.get('/problemImage?', function(request, response){
     var imageName = request.param('name');
-    var type = request.param('type');
-    var imageFile = 'public/asset/images/'+imageName+'.'+type;
+    var imageFile = 'public/asset/images/'+imageName;
     
     fs.exists(imageFile, function(exist){
         if(exist){
-            response.sendfile(imageFile);     
+            response.sendfile(imageFile);
         }else{
+            console.log('image no exist');
             response.status(403).send('Sorry! Can not find image');
         }
     });
@@ -109,8 +109,14 @@ app.post('/problem', function(request, response){
 
                     if(hasImage){
                         
-                        var filePaths = [];
-                        var newImageFilePaths = [];
+                        var fileDataArray = new Array();
+                        function fileDateSet (path, newPath, type, fileName){
+                            this.path = path;
+                            this.newPath = newPath;
+                            this.type = type;
+                            this.fileName = fileName;
+                        }
+                        
                         var defaultPath = 'public/asset/images/';
                         
                         if(hasQuestionImage){
@@ -118,13 +124,17 @@ app.post('/problem', function(request, response){
                             if(request.files.questionAttached.length){
                                 for(var i=0; i<request.files.questionAttached.length; i++){
                                     var attachedFilePath = request.files.questionAttached[i].path;
-                                    filePaths.push(attachedFilePath);
-                                    newImageFilePaths.push( defaultPath + 'question_image_' + insertId + '_' + i + path.extname(attachedFilePath));
+                                    var fileName = 'question_image_' + insertId + '_' + i + path.extname(attachedFilePath);
+                                    var newPath = defaultPath + fileName;
+                                    var theFileDataSet = new fileDateSet(attachedFilePath, newPath, 'question', fileName);
+                                    fileDataArray.push(theFileDataSet);
                                 }                                
                             }else{
                                 var attachedFilePath = request.files.questionAttached.path;
-                                filePaths.push(attachedFilePath);
-                                newImageFilePaths.push( defaultPath + 'question_image_' + insertId + path.extname(attachedFilePath));
+                                var fileName = 'question_image_' + insertId + path.extname(attachedFilePath);
+                                var newPath = defaultPath + fileName;
+                                var theFileDataSet = new fileDateSet(attachedFilePath, newPath, 'question', fileName);
+                                fileDataArray.push(theFileDataSet);
                             }
                         }
 
@@ -133,34 +143,34 @@ app.post('/problem', function(request, response){
                             if(request.files.explanationAttached.length){
                                 for(var i=0; i<request.files.explanationAttached.length; i++){
                                     var attachedFilePath = request.files.explanationAttached[i].path;
-                                    filePaths.push(attachedFilePath);
-                                    newImageFilePaths.push( defaultPath + 'question_image_' + insertId + '_' + i + path.extname(attachedFilePath));
+                                    var fileName = 'explanation_image_' + insertId + '_' + i + path.extname(attachedFilePath);
+                                    var newPath = defaultPath + fileName;
+                                    var theFileDataSet = new fileDateSet(attachedFilePath, newPath, 'explanation', fileName);
+                                    fileDataArray.push(theFileDataSet);
                                 }                                
                             }else{
                                 var attachedFilePath = request.files.explanationAttached.path;
-                                filePaths.push(attachedFilePath);
-                                newImageFilePaths.push( defaultPath + 'explanation_image_' + insertId + path.extname(attachedFilePath));
+                                var fileName = 'explanation_image_' + insertId + path.extname(attachedFilePath);
+                                var newPath = defaultPath + fileName;
+                                var theFileDataSet = new fileDateSet(attachedFilePath, newPath, 'explanation', fileName);
+                                fileDataArray.push(theFileDataSet);
                             }
                         }
                         
-                        
                         var index = 0;
-                        for(var i=0; i<filePaths.length; i++){
+                        for(var i=0; i<fileDataArray.length; i++){
                             (function(i){
-                            var oldPath = '';
-                            var newPath = '';
-                            oldPath = filePaths[i];
-                            newPath = newImageFilePaths[i];
+                            var fileData = fileDataArray[i];
                             
-                            fs.readFile(oldPath, function(err, data){
+                            fs.readFile(fileData.path, function(err, data){
                                 
                                 if(err){
                                     response.statusCode = 400;
-                                    console.log('INSERT PROBLEM http post request : file read error ' + oldPath);
+                                    console.log('INSERT PROBLEM http post request : file read error ' + fileData.path);
                                     throw err;
                                 }else{                                
-                                    console.log('INSERT PROBLEM http post request : file read complete ' + oldPath);
-                                    fs.writeFile(newPath, data, 'binary', function(saveError){
+                                    console.log('INSERT PROBLEM http post request : file read complete');
+                                    fs.writeFile(fileData.newPath, data, 'binary', function(saveError){
                                     
                                         if(saveError){ 
                                             response.statusCode = 400;
@@ -169,17 +179,18 @@ app.post('/problem', function(request, response){
 
                                         }else{
 
-                                            client.query('INSERT INTO problemImages (name, pid) VALUES(?, ?)', [newPath, insertId], function(imageQueryError, imageQueryInfo){
+                                            client.query('INSERT INTO problemImages (name, pid, imageType) VALUES(?, ?, ?)', [fileData.fileName, insertId, fileData.type], function(imageQueryError, imageQueryInfo){
                                                 if(imageQueryError){
                                                     response.statusCode = 400;
                                                     console.log('INSERT PROBLEM http post request : image query error');
                                                     throw imageQueryError;
                                                 }else{
                                                     console.log('INSERT PROBLEM http post request : image upload complete');
-                                                    index++;
-                                                    if(index == filePaths.length-1){
+                                                    if(index == fileDataArray.length-1){
+                                                        console.log('last image uploaded');
                                                         response.redirect('back');
                                                     }
+                                                    index++;
                                                 }
                                             });
                                         }
@@ -201,6 +212,7 @@ app.post('/problem', function(request, response){
     }else{
         console.log('INSERT PROBLEM http post request : parameter missing');
         response.statusCode = 400;
+        response.end('error');
     }
     
 });
@@ -208,36 +220,88 @@ app.post('/problem', function(request, response){
 
 app.post('/load_problems', function(request, response){
     
-    var categories = JSON.parse(request.param('categories'));    
-    var query = 'SELECT DISTINCT problems.*, pcLinks.cid FROM problems RIGHT JOIN pcLinks ON problems.pid = pcLinks.pid';
+    var categories = JSON.parse(request.param('categories'));
+    var responseResults = {
+        problems: [],
+        pcLinks: [],
+        problemImages: []
+    };
     
+    var problemsQuery = 'SELECT DISTINCT problems.* FROM problems RIGHT JOIN pcLinks ON problems.pid = pcLinks.pid';
     if(categories.length){
         
         console.log('LOAD PROBLEMS : with category');
-        query += ' WHERE problems.pid in (SELECT pid from pcLinks WHERE ';
+        problemsQuery += ' WHERE (';
     
         for(var i=0; i<categories.length; i++){
-            query += 'cid = '+categories[i].cid;
+            problemsQuery += 'pcLinks.cid = '+categories[i];
             if(i != categories.length - 1){
-                query += ' | ';
+                problemsQuery += ' || ';
             }
         }
-        query += ')';
+        problemsQuery += ')';
         
     }else {
         console.log('LOAD PROBLEMS : without category');
     }
-    query += ' ORDER BY problems.pid';
+    problemsQuery += ' ORDER BY problems.pid';
     
-    client.query(query, function(error, data){
+    client.query(problemsQuery, function(error, problemResults){
         if(error){
-            console.log('LOAD PROBLEMS : error');
+            console.log('LOAD PROBLEMS : load problems error');
             throw error;
         }else{
-            console.log('LOAD PROBLEMS : complete');
-            console.log(JSON.parse(JSON.stringify(data)));
-            response.send(data);
-            response.end('loaded');
+            console.log('LOAD PROBLEMS : load problems complete');
+            console.log(JSON.parse(JSON.stringify(problemResults)));
+            
+            responseResults.problems = problemResults;
+            
+            var pclinkQuery = 'SELECT DISTINCT * FROM pcLinks WHERE (';
+            for(var i=0; i<problemResults.length; i++){
+                pclinkQuery += 'pid = '+problemResults[i].pid;
+                if(i != problemResults.length - 1){
+                    pclinkQuery += ' || ';
+                }
+            }
+            pclinkQuery += ') ORDER BY pid';
+            
+            client.query(pclinkQuery, function(pclinkError, pcLinkResults){
+                if(pclinkError){
+                    console.log('LOAD PROBLEMS : load pclink error');
+                    throw pclinkError;
+                }else{
+                    console.log('LOAD PROBLEMS : load pclink complete');
+                    console.log(JSON.parse(JSON.stringify(pcLinkResults)));
+
+                    responseResults.pcLinks = pcLinkResults;
+                    
+                    var imageQuery = 'SELECT DISTINCT * FROM problemImages WHERE (';
+                    for(var i=0; i<problemResults.length; i++){ 
+                        imageQuery += 'pid = '+problemResults[i].pid;
+                        if(i != problemResults.length - 1){
+                            imageQuery += ' || ';
+                        }
+                    }
+                    imageQuery += ') ORDER BY pid';
+
+                    client.query(imageQuery, function(imageError, imageResults){
+                        if(imageError){
+                            console.log('LOAD PROBLEMS : load problem images error');
+                            throw imageError;
+                        }else{
+                            console.log('LOAD PROBLEMS : load problem images complete');
+                            console.log(JSON.parse(JSON.stringify(imageResults)));
+
+                            responseResults.problemImages = imageResults;
+                            response.send(responseResults);
+                            response.end('loaded');
+                        }
+                    });
+                }
+            });
+//            response.send(data);
+//            response.end('loaded');
+            
         }
     });
 });
@@ -401,36 +465,47 @@ app.post('/category', function(request, response){
     var categoryPath = request.param('path');  
     var name = request.param('name');
     var parentId = request.param('parentId');
-    var parentRelativePath = request.param('parentRelativePath');
+    var path = request.param('absPath');
+//    var parentRelativePath = request.param('parentRelativePath');
     
-    console.log('post category path,name: ' + categoryPath +','+ name +', parentId : '+ parentId + ' re_path : '+parentRelativePath);
+    console.log('post category path,name: ' + categoryPath +','+ name +', parentId : '+ parentId);
     var insertCategoryOrder = 0;
     
-    
-    client.query('select * from categories where path = ?', [categoryPath], function(error, results){
-
-        insertCategoryOrder = results.length;
-        var relativePath = parentRelativePath + insertCategoryOrder.toString() + '/';
-
-        if(error){
+    client.query('INSERT INTO categories (name, path) VALUES(?, ?)', [name, absPath], function(insertError, insertInfo){
+        if(insertError){
             response.statusCode = 400;
-            console.log('INSERT CATEGORY http post request : count parent path error');
-            throw saveError;
+            console.log('INSERT CATEGORY http post request : insert category error');
+            throw insertError;
         }else{
-            
-            console.log('INSERT CATEGORY http post request : count parent path complete');
-            client.query('INSERT INTO categories (name, path, relativePath) VALUES(?, ?, ?)', [name, categoryPath, relativePath], function(insertError, insertInfo){
-                if(insertError){
-                    response.statusCode = 400;
-                    console.log('INSERT CATEGORY http post request : insert category error');
-                    throw insertError;
-                }else{
-                    console.log('INSERT CATEGORY http post request : insert category complete');
-                    response.send('OK');
-                }
-            });
+            console.log('INSERT CATEGORY http post request : insert category complete');
+            response.end('inserted');
         }
     });
+
+//    client.query('select * from categories where path = ?', [categoryPath], function(error, results){
+//
+//        insertCategoryOrder = results.length;
+//        var relativePath = parentRelativePath + insertCategoryOrder.toString() + '/';
+//
+//        if(error){
+//            response.statusCode = 400;
+//            console.log('INSERT CATEGORY http post request : count parent path error');
+//            throw saveError;
+//        }else{
+//            
+//            console.log('INSERT CATEGORY http post request : count parent path complete');
+//            client.query('INSERT INTO categories (name, path) VALUES(?, ?)', [name, categoryPath], function(insertError, insertInfo){
+//                if(insertError){
+//                    response.statusCode = 400;
+//                    console.log('INSERT CATEGORY http post request : insert category error');
+//                    throw insertError;
+//                }else{
+//                    console.log('INSERT CATEGORY http post request : insert category complete');
+//                    response.end('inserted');
+//                }
+//            });
+//        }
+//    });
 });
 
 app.del('/category/:cid', function(request, response){
