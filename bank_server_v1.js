@@ -95,7 +95,7 @@ app.post('/problem', function(request, response){
                     if(i != 0){
                         pclinkQuery += ',';
                     }
-                    var cid = categories[i].cid;
+                    var cid = categories[i];
                     pclinkQuery += '('+insertId+','+cid+')';
                 }
 

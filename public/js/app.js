@@ -1,6 +1,6 @@
 (function(){
     
-    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math']);
+    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math', 'print']);
     
     app.factory('httpFactory', ['$http', function($http){
         
@@ -563,10 +563,11 @@
         return {
             restrict: 'E',
             templateUrl: 'view/load-problems.html',
-            controller: ['$scope', '$http', '$modal', '$log', 'categoryFactory', function($scope, $http, $modal, $log, categoryFactory){                
+            controller: ['$scope', '$http', '$modal', '$log', 'categoryFactory', 'printFactory', function($scope, $http, $modal, $log, categoryFactory, printFactory){                
                 
                 $scope.category = {};
                 $scope.category.selections = new Array();
+                $scope.masterProblem = [];
                     
                 $scope.loadProblems = function(){
                     
@@ -613,6 +614,12 @@
                         $log.info('Modal dismissed at: ' + new Date());
                     });
                 };
+                
+                $scope.printProblem = function(){
+                    var problemsElement = angular.element($('#problemView') );
+                    console.log(problemsElement);
+                    printFactory.printProblem(problemsElement);
+                }
 
             }],
             controllerAs: 'masterProblemsCtrl'
@@ -667,7 +674,6 @@
             controller: ['$scope', '$http', 'categoryFactory', function($scope, $http, categoryFactory){
                 $scope.categories = [];
                 categoryFactory.getCategories.then(function(data){
-                    console.log('load category \n'+data);
                     $scope.categories = data.masterCategory.categories;
                 }, function(data){
                     alert('카테고리를 불러오지 못했습니다. 다시 시도해 주세요.');
