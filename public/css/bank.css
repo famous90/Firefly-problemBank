@@ -1,25 +1,71 @@
-.selected {
-    background-color: #fedcba;
-}
+/* for screen */
+@media screen {
+    .selected {
+        background-color: #fedcba;
+    }
 
-.unselected {
-    background-color: #f0f0f0;
-}
+    .unselected {
+        background-color: #f0f0f0;
+    }
 
-.unselectable {
-    background-color: #d0d0d0;
-}
+    .unselectable {
+        background-color: #d0d0d0;
+    }
 
-#main_header {
-}
+    #main_header {
+    }
 
-#insert_problem {
-}
+    #insert_problem {
+    }
 
-#edit_problem {
+    #edit_problem {
+
+    }
+
+    #load_problem {
+
+    }
     
+/*
+    #print_problem_section {
+        margin: auto;
+        width: 100%;
+        width: 21.7cm;
+    }
+    
+    .problem_for_print {
+        margin: auto;
+        width: 100%;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        width: 10.85cm;
+        height: 14.85cm;
+        overflow: hidden;
+        float: left;
+    }
+*/
 }
 
-#load_problem {
+
+/* for print */
+@media print {
+    .no_print {
+        display: none;
+    }
     
+    #print_problem_section {
+        margin: auto;
+        width: 21.7cm;
+    }
+    
+    .problem_for_print {
+        width: 50%;
+        height: 14.85cm;
+        overflow: hidden;
+        float: left;
+    }
+    
+    .problem_for_print pre {
+        overflow: hidden;
+    }
 }

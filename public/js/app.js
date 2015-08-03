@@ -1,6 +1,6 @@
 (function(){
     
-    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math', 'print']);
+    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math']);
     
     app.factory('httpFactory', ['$http', function($http){
         
@@ -100,7 +100,6 @@
         this.cid = cid;
         this.name = name;
         this.path = path;
-//        this.relativePath = relPath;
         this.selectedCategorySet = [];
         this.categories = [];
     }
@@ -109,7 +108,6 @@
         for(var k=0; k<data.length; k++){
             var item = data[k];
             var category = new Category(item.cid, item.name, item.path);
-//            var category = new Category(item.cid, item.name, item.path, item.relativePath);
             
             var absPath = item.path;
             var parentIdsArray = new Array();
@@ -461,7 +459,7 @@
                 $scope.setImageFiles = function(files, type){
                     
                     var imageArray = [];
-                    if(type=='question'){
+                    if(type == 'question'){
                         $scope.problem.images.questions = new Array();
                         imageArray = $scope.problem.images.questions;
                     }else if(type == 'explanation'){
@@ -530,6 +528,12 @@
                         }
                         
                         $scope.problem = new Problem();
+                        $scope.questionImages = [];
+                        angular.element($('#questionImages')[0]).val(null);
+                        angular.element($('#explanationImages')[0]).val(null);
+//                        $scope.questionImages = undefined;
+                    }).error(function(response){
+                        $window.alert('업로드에 실패했습니다. 다시 시도해 주세요.');
                     });   
                 };
                 
@@ -563,7 +567,7 @@
         return {
             restrict: 'E',
             templateUrl: 'view/load-problems.html',
-            controller: ['$scope', '$http', '$modal', '$log', 'categoryFactory', 'printFactory', function($scope, $http, $modal, $log, categoryFactory, printFactory){                
+            controller: ['$scope', '$http', '$modal', '$log', 'categoryFactory', '$window', function($scope, $http, $modal, $log, categoryFactory, $window){                
                 
                 $scope.category = {};
                 $scope.category.selections = new Array();
@@ -616,30 +620,68 @@
                 };
                 
                 $scope.printProblem = function(){
-                    var problemsElement = angular.element($('#problemView') );
-                    console.log(problemsElement);
-                    printFactory.printProblem(problemsElement);
-                }
+                    $window.print();
+                };
 
             }],
             controllerAs: 'masterProblemsCtrl'
         };
     });
     
-    app.controller('ModalInstanceCtrl', ['$scope', '$http', '$modalInstance', 'item', 'categoryFactory', function ($scope, $http, $modalInstance, item, categoryFactory) {
+    app.controller('ModalInstanceCtrl', ['$scope', '$http', '$modalInstance', 'item', 'categoryFactory', 'Upload', function ($scope, $http, $modalInstance, item, categoryFactory, Upload) {
         $scope.problem = item;
         $scope.update = function (item) {
             
             categoryFactory.removeCidsOf(item.alterSelections.new, item.alterSelections.exist);
             item.alterSelections.delete = categoryFactory.extractCidsOf(item.alterSelections.delete, item.alterSelections.exist);
             
-            $http.put('/problem/'+item.pid, {data: item.getValuesToJson()})
-            .success(function(response){
-                $modalInstance.close(item); 
-                alert('문제를 성공적으로 수정하였습니다.');
+            var formDataNames = [];
+            var imageFiles = [];
+            if(item.images.questions.length){
+                for(var i=0; i<item.images.questions.length; i++){
+                    formDataNames.push('questionAttached');    
+                    imageFiles.push(item.images.questions[i].image);
+                }                        
+            }
+            if(item.images.explanations.length){
+                for(var i=0; i<item.images.explanations.length; i++){
+                    formDataNames.push('explanationAttached');
+                    imageFiles.push(item.images.explanations[i].image);
+                }                        
+            }
+
+            var url = '/problem/'+item.pid; 
+            $scope.upload = Upload.upload({
+                url: url,
+                method: 'PUT',
+                headers: {
+                    'Content-Type': undefined
+                },
+                fields: {
+                    data: item.getValuesToJson()
+                },
+                file: imageFiles,
+                fileFormDataName: formDataNames
+            }).success(function(response){
+
+                if(imageFiles.length){
+                    $window.alert(imageFiles.length + '개 이미지와 문제를 성공적으로 수정하였습니다.');
+                }else {
+                    $window.alert('이미지 없는 문제를 성공적으로 수정하였습니다.');
+                }
+
+                $scope.problem = new Problem();
             }).error(function(response){
-                alert('문제를 수정하지 못했습니다. 다시 시도해주세요.' + response.error);
-            });
+                $window.alert('문제 수정에 실패했습니다. 다시 시도해 주세요.');
+            }); 
+            
+//            $http.put('/problem/'+item.pid, {data: item.getValuesToJson()})
+//            .success(function(response){
+//                $modalInstance.close(item); 
+//                alert('문제를 성공적으로 수정하였습니다.');
+//            }).error(function(response){
+//                alert('문제를 수정하지 못했습니다. 다시 시도해주세요.' + response.error);
+//            });
         };
 
         $scope.cancel = function () {
@@ -681,7 +723,6 @@
                 
                 $scope.addCategory = function(name, item){
                     var theCategory = new Category(item.cid, item.name, item.path);
-//                    var theCategory = new Category(item.cid, item.name, item.path, item.relativePath);
                     var parentId = theCategory.getParentId();
                     var parentRelativePath = '';
                     if(parentId != 0){
@@ -708,13 +749,11 @@
                 
                 $scope.selectCategory = function(cid){
                     
-//                    var theIndex = getIndexOfSelectedCategory(item.cid);
                     var theIndex = $scope.selections.indexOf(cid);
                      
                     if(theIndex != -1){
                         // already has category
                         $scope.selections.splice(theIndex, 1);
-//                        $scope.selections.
                         if($scope.alters){
                             categoryFactory.removeCidOf($scope.alters.new, cid);
                             categoryFactory.removeCidOf($scope.alters.delete, cid);
@@ -733,25 +772,7 @@
                 
                 $scope.isSelected = function(cid){
                     return $scope.selections.indexOf(cid);
-//                    for(i=0; i<$scope.selections.length; i++){
-//                        if($scope.selections[i].cid == cid){
-//                            return true;   
-//                        }
-//                    }
-//                    return false;
                 }
-                
-//                function getIndexOfSelectedCategory (cid){
-//                    if($scope.selections.length == 0 || !$scope.selections){
-//                        return -1;
-//                    }
-//                    for(i=0; i<$scope.selections.length; i++){
-//                        if($scope.selections[i].cid == cid){
-//                            return i;   
-//                        }
-//                    }
-//                    return -1;   
-//                };
                 
                 function httpPostCategory (parentId, name, absPath){
                     $http.post('/category', {'parentId':parentId, 'name':name, 'path':absPath})

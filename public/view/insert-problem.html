@@ -22,8 +22,9 @@
             <label for="question" class="col-md-1">문제:</label>
             <div class="col-md-11">
                 <textarea ng-model="problem.question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text" placeholder="문제를 입력해주세요" title="question" required></textarea>
-                <label for="questionImages">문제에 첨부할 이미지를 넣어주세요</label>
-                <input type="file" ng-model="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(questionImages, 'question')" accept="image/*" class="btn">
+                <label for="questionImages">문제에<span ng-if="problem.type != 'new'"> 새롭게</span> 첨부할 이미지를 넣어주세요</label>
+<!--                <input type="file" ng-model="problem.questions" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(questionImages, 'question')" accept="image/*" class="btn">-->
+                <input type="file" ng-model="questionImages" id="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(questionImages, 'question')" accept="image/*" class="btn">
             </div>
         </fieldset>
 
@@ -47,8 +48,8 @@
             <label for="explanation" class="col-md-1">해설:</label>
             <div class="col-md-11">
                 <textarea ng-model="problem.explanation" style="padding: 10px; margin-bottom:10px;" rows="5" name="explanation" class="form-control text" placeholder="해설을 입력해주세요" title="explanation" required></textarea>
-                <label for="explanationImages">해설에 첨부할 이미지를 넣어주세요</label>
-                <input type="file" ng-model="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(questionImages, 'explanation')" accept="image/*" class="btn">
+                <label for="explanationImages">해설에<span ng-if="problem.type != 'new'"> 새롭게</span> 첨부할 이미지를 넣어주세요</label>
+                <input type="file" ng-model="explanationImages" id="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(explanationImages, 'explanation')" accept="image/*" class="btn">
             </div>
         </fieldset>
         <fieldset class="form-group" ng-if="problem.type == 'new'">

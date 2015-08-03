@@ -107,6 +107,7 @@ app.post('/problem', function(request, response){
                         console.log('INSERT PROBLEM http post request : insert problem_category_link complete');
                     }                
 
+                    // image insert
                     if(hasImage){
                         
                         var fileDataArray = new Array();
@@ -373,6 +374,100 @@ app.put('/problem/:pid', function(request, response){
             }
         });        
     }
+    
+    // insert problem images
+    if(request.files.questionAttached || request.files.explanationAttached){
+        var fileDataArray = new Array();
+        function fileDateSet (path, newPath, type, fileName){
+            this.path = path;
+            this.newPath = newPath;
+            this.type = type;
+            this.fileName = fileName;
+        }
+
+        var defaultPath = 'public/asset/images/';
+
+        if(request.files.questionAttached){
+
+            if(request.files.questionAttached.length){
+                for(var i=0; i<request.files.questionAttached.length; i++){
+                    var attachedFilePath = request.files.questionAttached[i].path;
+                    var fileName = 'question_image_' + insertId + '_' + i + path.extname(attachedFilePath);
+                    var newPath = defaultPath + fileName;
+                    var theFileDataSet = new fileDateSet(attachedFilePath, newPath, 'question', fileName);
+                    fileDataArray.push(theFileDataSet);
+                }                                
+            }else{
+                var attachedFilePath = request.files.questionAttached.path;
+                var fileName = 'question_image_' + insertId + path.extname(attachedFilePath);
+                var newPath = defaultPath + fileName;
+                var theFileDataSet = new fileDateSet(attachedFilePath, newPath, 'question', fileName);
+                fileDataArray.push(theFileDataSet);
+            }
+        }
+
+        if(request.files.explanationAttached){
+
+            if(request.files.explanationAttached.length){
+                for(var i=0; i<request.files.explanationAttached.length; i++){
+                    var attachedFilePath = request.files.explanationAttached[i].path;
+                    var fileName = 'explanation_image_' + insertId + '_' + i + path.extname(attachedFilePath);
+                    var newPath = defaultPath + fileName;
+                    var theFileDataSet = new fileDateSet(attachedFilePath, newPath, 'explanation', fileName);
+                    fileDataArray.push(theFileDataSet);
+                }                                
+            }else{
+                var attachedFilePath = request.files.explanationAttached.path;
+                var fileName = 'explanation_image_' + insertId + path.extname(attachedFilePath);
+                var newPath = defaultPath + fileName;
+                var theFileDataSet = new fileDateSet(attachedFilePath, newPath, 'explanation', fileName);
+                fileDataArray.push(theFileDataSet);
+            }
+        }
+
+        var index = 0;
+        for(var i=0; i<fileDataArray.length; i++){
+            (function(i){
+            var fileData = fileDataArray[i];
+
+            fs.readFile(fileData.path, function(err, data){
+
+                if(err){
+                    response.statusCode = 400;
+                    console.log('UPDATE PROBLEM http post request : file read error');
+                    throw err;
+                }else{                                
+                    console.log('UPDATE PROBLEM http post request : file read complete');
+                    fs.writeFile(fileData.newPath, data, 'binary', function(saveError){
+                        if(saveError){ 
+                            response.statusCode = 400;
+                            console.log('UPDATE PROBLEM http post request : saving image error');
+                            throw saveError;
+
+                        }else{
+
+                            client.query('UPDATE INTO problemImages (name, pid, imageType) VALUES(?, ?, ?)', [fileData.fileName, insertId, fileData.type], function(imageQueryError, imageQueryInfo){
+                                if(imageQueryError){
+                                    response.statusCode = 400;
+                                    console.log('UPDATE PROBLEM http post request : image query error');
+                                    throw imageQueryError;
+                                }else{
+                                    console.log('UPDATE PROBLEM http post request : image upload complete');
+                                    if(index == fileDataArray.length-1){
+                                        console.log('last image uploaded');
+                                        response.redirect('back');
+                                    }
+                                    index++;
+                                }
+                            });
+                        }
+                    });     
+                }   
+            });                            
+            })(i);
+        }
+
+    }
 });
 
 app.del('/problem/:pid', function(request, response){
@@ -560,23 +655,23 @@ http.createServer(app).listen(8080, function(){
     
     var ifaces = os.networkInterfaces();
 
-    Object.keys(ifaces).forEach(function (ifname) {
-        var alias = 0;
-
-        ifaces[ifname].forEach(function (iface) {
-            if ('IPv4' !== iface.family || iface.internal !== false) {
-                  // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
-                return;
-            }
-
-            if (alias >= 1) {
-                // this single interface has multiple ipv4 addresses
-                console.log(ifname + ':' + alias, iface.address);
-            } else {
-                // this interface has only one ipv4 adress
-                console.log(ifname, iface.address);
-            }
-        });
-    });
+//    Object.keys(ifaces).forEach(function (ifname) {
+//        var alias = 0;
+//
+//        ifaces[ifname].forEach(function (iface) {
+//            if ('IPv4' !== iface.family || iface.internal !== false) {
+//                  // skip over internal (i.e. 127.0.0.1) and non-ipv4 addresses
+//                return;
+//            }
+//
+//            if (alias >= 1) {
+//                // this single interface has multiple ipv4 addresses
+//                console.log(ifname + ':' + alias, iface.address);
+//            } else {
+//                // this interface has only one ipv4 adress
+//                console.log(ifname, iface.address);
+//            }
+//        });
+//    });
     console.log('Server running');
 });
