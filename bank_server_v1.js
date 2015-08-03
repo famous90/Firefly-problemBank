@@ -651,7 +651,7 @@ app.del('/category/:cid', function(request, response){
 
 
 // check server running
-http.createServer(app).listen(8080, function(){
+http.createServer(app).listen(8080, function(req, res){
     
     var ifaces = os.networkInterfaces();
 
@@ -674,4 +674,5 @@ http.createServer(app).listen(8080, function(){
         });
     });
     console.log('Server running');
+    res.send('hello');
 });
