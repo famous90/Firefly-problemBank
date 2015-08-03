@@ -648,6 +648,9 @@ app.del('/category/:cid', function(request, response){
     });
 });
 
+app.get(['/', '/index.html'], function(req, res){
+   res.send('Hello Elastic beanstalk - rechange env'); 
+});
 
 
 // check server running
@@ -674,5 +677,4 @@ http.createServer(app).listen(8080, function(req, res){
         });
     });
     console.log('Server running');
-    res.send('hello');
 });
