@@ -35,7 +35,6 @@ app.get('/problemImage?', function(request, response){
 });
 
 app.get('/problems', function(request, response){
-        
     client.query('select * from problems', function(error, data){
         response.send(data);
     });
@@ -649,7 +648,7 @@ app.del('/category/:cid', function(request, response){
 });
 
 // check server running
-http.createServer(app).listen(8080, function(req, res){
+http.createServer(app).listen(3000, function(req, res){
     
     var ifaces = os.networkInterfaces();
 
