@@ -695,6 +695,7 @@
             templateUrl: 'view/show-problem.html',
             scope: {
                 problem: '=item',
+                index: '='
             },
             controller: ['$scope', 'categoryFactory', function($scope, categoryFactory){
                 $scope.getCategoryName = function (cid){

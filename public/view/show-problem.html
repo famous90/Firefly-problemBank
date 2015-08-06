@@ -1,10 +1,5 @@
-<pre><span><strong>선택한 카테고리 : </strong></span><span ng-repeat="cid in problem.selections"> <span>#</span><span mathjax-bind="getCategoryName(cid)"></span></span>
-<span style="float: right; max-width:420px; margin:10px;" ng-if="problem.images.questions.length"><span ng-repeat="questionImage in problem.images.questions"><image-frame image-file="questionImage" width="200"></image-frame></span></span>
-<span ng-show="problem.question"><strong>문제</strong></span>
-<span mathjax-bind="problem.question"></span>
-<span ng-show="problem.answer"><strong>정답</strong></span>
-<span mathjax-bind="problem.answer"></span>
-<span ng-show="problem.answerType == 'multiple'"><strong>보기</strong><span ng-repeat-start="item in problem.examples"> ({{$index+1}})</span><span ng-repeat-end mathjax-bind="item.content"></span></span>
-<span style="float: right; max-width:420px; margin:10px;" ng-if="problem.images.explanations.length"><span ng-repeat="explanationImage in problem.images.explanations"><image-frame image-file="explanationImage" width="200"></image-frame></span></span>
-<span ng-show="problem.explanation"><strong>해설</strong></span>
-<span mathjax-bind="problem.explanation"></span></pre>
+<pre><span class="problemCategoriesLabel"><strong>선택한 카테고리 :</strong></span><span ng-repeat="cid in problem.selections" class="problemCategoriesContent"><span>#</span><span mathjax-bind="getCategoryName(cid)"></span> </span><span style="float: right; max-width:420px; margin:10px;" ng-if="problem.images.questions.length" class="problemQuestionImageContent"><br><span ng-repeat="questionImage in problem.images.questions"><image-frame image-file="questionImage" width="200"></image-frame></span></span>
+<span ng-show="problem.question" class="problemQuestionLabel"><strong>문제</strong></span><span ng-if="index != null" style="font-size:25px;" class="problemNumber"><strong>{{index+1}} </strong></span><span class="problemQuestionContent"><span mathjax-bind="problem.question"></span></span><span ng-show="problem.answerType == 'multiple'"><br><strong class="problemExamplesLabel">보기</strong><span ng-repeat-start="item in problem.examples" class="problemExamples"><br> ({{$index+1}})</span><span ng-repeat-end mathjax-bind="item.content"></span></span><span ng-show="problem.answer" class="problemAnswerLabel"><br><strong>정답</strong></span>  <span mathjax-bind="problem.answer" class="problemAnswerContent"></span>
+<span style="float: right; max-width:420px; margin:10px;" ng-if="problem.images.explanations.length" class="problemExplanationImageContent"><span ng-repeat="explanationImage in problem.images.explanations"><image-frame image-file="explanationImage" width="200"></image-frame></span></span>
+<span ng-show="problem.explanation" class="problemExplanationLabel"><strong>해설</strong></span>
+<span mathjax-bind="problem.explanation" class="problemExplanationContent"></span></pre>

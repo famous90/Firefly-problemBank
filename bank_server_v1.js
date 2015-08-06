@@ -244,7 +244,7 @@ app.post('/load_problems', function(request, response){
     }else {
         console.log('LOAD PROBLEMS : without category');
     }
-    problemsQuery += ' ORDER BY problems.pid';
+    problemsQuery += ' ORDER BY RAND() LIMIT 20';
     
     client.query(problemsQuery, function(error, problemResults){
         if(error){
@@ -648,7 +648,7 @@ app.del('/category/:cid', function(request, response){
 });
 
 // check server running
-http.createServer(app).listen(3000, function(req, res){
+http.createServer(app).listen(process.env.PORT || 3000, function(req, res){
     
     var ifaces = os.networkInterfaces();
 

@@ -23,27 +23,15 @@
     }
 
     #load_problem {
-
+    }   
+    
+    #print_answer_section {
+        display: none;
     }
     
-/*
-    #print_problem_section {
-        margin: auto;
-        width: 100%;
-        width: 21.7cm;
+    .problemNumber {
+        display: none;
     }
-    
-    .problem_for_print {
-        margin: auto;
-        width: 100%;
-        padding-top: 10px;
-        padding-bottom: 10px;
-        width: 10.85cm;
-        height: 14.85cm;
-        overflow: hidden;
-        float: left;
-    }
-*/
 }
 
 
@@ -53,19 +41,62 @@
         display: none;
     }
     
-    #print_problem_section {
+    .print {
         margin: auto;
+/*        width: 100%;*/
         width: 21.7cm;
+        height: 29.0cm;
     }
-    
+        
     .problem_for_print {
         width: 50%;
         height: 14.85cm;
-        overflow: hidden;
+/*        max-height: 14.85cm;*/
+        overflow: auto;
         float: left;
     }
     
+    #print_question_section {
+/*        page-break-before: auto;*/
+    }
+    
+    #print_answer_section {
+        page-break-before: always;
+/*        page-break-after: auto;*/
+    }
+    
+    .problemCategoriesLabel, .problemQuestionLabel, .problemExamplesLabel, #print_question_section .problemAnswerLabel, #print_question_section .problemAnswerContent, #print_question_section .problemExplanationLabel, #print_question_section .problemExplanationContent {
+        display: none;
+    }
+    
+    #print_question_section pre, #print_answer_section pre {
+        border-style: none;
+    }
+    
+/*
+    #print_question_section .problemExampleContent {
+        display: block;
+    }
+*/
+/*
+    #print_answer_section .problemQuestionContent{
+        display: none;
+    }
+*/
+    
+    #print_answer_section .problemCategoriesContent, #print_answer_section .problemQuestionContent, #print_answer_section .problemExamples {
+        display: none;
+    }
+    
+    
+/*
+    #print_question_section .questionLabel {
+        display: none;
+    }
+*/
+/*
     .problem_for_print pre {
         overflow: hidden;
     }
+*/
 }

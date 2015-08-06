@@ -22,14 +22,34 @@
 
 <h4 class="text-center no_print" ng-show="masterProblem.getLength()">총 {{masterProblem.getLength()}}문제</h4>
 <h5 ng-show="masterProblem.getLength()" class="no_print">* 문제 업데이트 가능, 카테고리 수정 가능, 첨부 그림 수정 불가</h5>
-<div id="print_problem_section">
+<div id="print_question_section" class="print">
     <div ng-repeat="problem in masterProblem.getMasterData()">
         <div class="problem_for_print row">
-            <h4 class="col-md-1 text-center">{{problem.pid}}</h4>
+            <h4 class="col-md-1 text-center no_print">{{problem.pid}}</h4>
+<!--            <h4 class="col-md-1 text-center">{{$index+1}}</h4>-->
             <div class="col-md-10">
-                <show-problem item="problem"></show-problem>
+                <show-problem item="problem" index="$index"></show-problem>
             </div>
-            <div class="col-md-1">
+            <div class="col-md-1 no_print">
+                <a class="pull-right btn btn-primary btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="updateProblem(problem)">
+                    <span class="glyphicon glyphicon-pencil"></span>
+                </a>
+                <a class="pull-right btn btn-danger btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="deleteProblem(problem)" ng-if=false>
+                    <span class="glyphicon glyphicon-trash"></span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="print_answer_section" class="print">
+    <div ng-repeat="problem in masterProblem.getMasterData()">
+        <div class="problem_for_print row">
+            <h4 class="col-md-1 text-center no_print">{{problem.pid}}</h4>
+<!--            <h4 class="col-md-1 text-center">{{$index+1}}</h4>-->
+            <div class="col-md-10">
+                <show-problem item="problem" index="$index"></show-problem>
+            </div>
+            <div class="col-md-1 no_print">
                 <a class="pull-right btn btn-primary btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="updateProblem(problem)">
                     <span class="glyphicon glyphicon-pencil"></span>
                 </a>
