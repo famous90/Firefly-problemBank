@@ -647,7 +647,6 @@ app.del('/category/:cid', function(request, response){
     });
 });
 
-
 // check server running
 http.createServer(app).listen(process.env.PORT || 3000, function(req, res){
     
