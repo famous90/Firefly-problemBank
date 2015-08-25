@@ -1,36 +1,36 @@
 <div ng-class="{selected:(isSelected(item.cid)!=-1)&&!type, unselected:(isSelected(item.cid)==-1)&&!type, unselectable: type}" style="padding: 5px; margin-bottom:5px;" ng-click="!type && selectCategory(item.cid);">
     <a class="btn btn-default btn-xs" ng-if="item.categories && item.categories.length > 0" ng-click="item.nodeCollapsed = !item.nodeCollapsed; $event.stopPropagation();">
-        <span class="glyphicon" ng-class="{'glyphicon-chevron-right': item.nodeCollapsed ,'glyphicon-chevron-down':!item.nodeCollapsed}"></span>
+        <span class="glyphicon" ng-class="{'glyphicon-chevron-right': !item.nodeCollapsed ,'glyphicon-chevron-down':item.nodeCollapsed}"></span>
     </a>
     <mathjax-bind>{{item.name}}</mathjax-bind>
-    <a class="pull-right btn btn-danger btn-xs" style="margin-left: 8px;" ng-if="type && (item.cid != 1)" ng-click="deleteCategory(item.cid); $event.stopPropagation();">
+    <a class="pull-right btn btn-danger btn-xs" style="margin-left: 8px;" ng-if="type && (item.cid != 1)" ng-click="deleteCategory(item); $event.stopPropagation();">
         <span class="glyphicon glyphicon-remove"></span>
     </a>
-    <a class="pull-right btn btn-primary btn-xs" style="margin-left: 8px;" ng-if="type && (item.cid == 1)" ng-click="item.isCollapsed = !item.isCollapsed; $event.stopPropagation();">
+    <a class="pull-right btn btn-primary btn-xs" style="margin-left: 8px;" ng-if="type && (item.cid == 1)" ng-click="clickedAddBroCategory(item); $event.stopPropagation();">
         <span class="glyphicon glyphicon-plus"></span>
     </a>
-    <a class="pull-right btn btn-primary btn-xs" style="margin-left: 8px;" ng-if="type" ng-click="item.isChildCollapsed = !item.isChildCollapsed; $event.stopPropagation();">
+    <a class="pull-right btn btn-primary btn-xs" style="margin-left: 8px;" ng-if="type" ng-click="clickedAddChildCategory(item); $event.stopPropagation();">
         <span class="glyphicon glyphicon-list"></span>
     </a>
 </div>  
 <div collapse="!item.isCollapsed">
-    <div class="well well-lg">
+    <div class="well well-lg row" style="margin:0 0 5px 0; padding: 0px 30px 10px 30px;">
         <h6>추가할 카테고리 이름을 입력하세요</h6>
-        <form ng-submit="addCategory(categoryName, item)">
-            <input type="text" class="col-sm-10" ng-model="categoryName" placeholder="Write a category name" />
-            <input type="submit" value="추가" />
+        <form ng-submit="addBroCategory(item)">
+            <input type="text" name="카테고리 이름" class="col-md-12 form-control" ng-model="item.newBroCategoryName" placeholder="카테고리 이름을 입력해 주세요" />
+            <input type="submit" class="btn btn-primary btn-sm pull-right" style="margin-top:5px;" value="추가" />
         </form>
-    </div> 
+    </div>
 </div>    
 <ol ng-model="item.categories" collapse="!item.nodeCollapsed" style="list-style-type:none;">
     <li collapse="!item.isChildCollapsed">
-            <div class="well well-lg">
-                <h6>추가할 자식 카테고리 이름을 입력하세요</h6>
-                <form ng-submit="addChildCategory(categoryName, item)">
-                    <input type="text" class="col-sm-10" ng-model="categoryName" placeholder="Write a category name" />
-                    <input type="submit" value="추가" />
-                </form>
-            </div> 
+        <div class="well well-lg row" style="margin:0 0 5px 0; padding: 0px 30px 10px 30px;">
+            <h6>추가할 자식 카테고리 이름을 입력하세요</h6>
+            <form ng-submit="addChildCategory(item)">
+                <input type="text" class="col-md-12 form-control" ng-model="item.newChildCategoryName" placeholder="카테고리 이름을 입력해 주세요" />
+                <input type="submit" class="btn btn-primary btn-sm pull-right" style="margin-top:5px;" value="추가" />
+            </form>
+        </div> 
     </li>
     <li ng-repeat="item in item.categories" ng-include="'view/nodes-renderer.html'" >
     </li>

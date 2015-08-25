@@ -8,10 +8,9 @@
 </div>
 
 <div class="row" ng-show="problem.question || problem.answer || problem.explanation">
-<!--<div class="row">-->
     <label for="problemPreview" class="col-md-1">미리보기:</label>
     <div id="problemPreview" class="col-md-11">
-        <show-problem item="problem"></show-problem>
+        <show-problem item="problem" type="'New'"></show-problem>
     </div>
 </div>
 
@@ -38,7 +37,7 @@
                 <textarea ng-model="problem.answer" style="padding: 10px; margin-bottom:10px;" class="form-control text" placeholder="{{problem.answerPlaceholder}}" rows="1" title="answer" required></textarea>
                 <div ng-show="problem.answerType == 'multiple'">
                     <hr/>
-                    <div ng-repeat="example in problem.examples">
+                    <div ng-repeat="example in problem.notAnswerExamples">
                         <textarea ng-model="example.content" style="padding: 10px; margin-bottom:10px;" class="form-control text" placeholder="정답이 아닌 보기({{$index+1}})를 입력해주세요" rows="1" title="example" required></textarea>
                     </div>
                 </div>

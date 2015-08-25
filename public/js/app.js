@@ -1,6 +1,53 @@
 (function(){
     
-    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math']);
+    var app = angular.module('problemBank', ['ui.tree', 'ui.bootstrap', 'ngFileUpload', 'math', 'ngRoute']);
+    
+//    app.config(function($routeProvider) {
+//        $routeProvider
+//
+//            // route for the home page
+//            .when('/', {
+//                templateUrl : 'view/home.html',
+//                controller  : 'mainController'
+//            })
+//
+//            // route for the about page
+//            .when('/about', {
+//                templateUrl : 'view/about.html',
+//                controller  : 'aboutController'
+//            })
+//
+//            // route for the contact page
+//            .when('/contact', {
+//                templateUrl : 'view/contact.html',
+//                controller  : 'contactController'
+//            });
+//    });
+    
+//    app.controller('mainController', function($scope) {
+//        // create a message to display in our view
+//        $scope.message = 'Everyone come and see how good I look!';
+//    });
+//
+//    app.controller('aboutController', function($scope) {
+//        $scope.message = 'Look! I am an about page.';
+//    });
+//
+//    app.controller('contactController', function($scope) {
+//        $scope.message = 'Contact us! JK. This is just a demo.';
+//    });
+    
+    app.factory('stringFactory', function(){
+        
+        function getCircleNumber(index) {
+            var baseASCIINumber = 9312 + index - 1;
+            return String.fromCharCode(baseASCIINumber);
+        };
+        
+        return {
+            getCircleNumber: getCircleNumber
+        };
+    });
     
     app.factory('httpFactory', ['$http', function($http){
         
@@ -85,6 +132,14 @@
             return newItems;
         }
         
+        function insertCategory(item) {
+            masterCategory.insertCategory(item);
+        }
+        
+        function deleteCategory(item) {
+            masterCategory.deleteCategory(item);
+        }
+        
         return {
             getCategories: deferred.promise,
             getCategory: getCategory,
@@ -92,7 +147,9 @@
             getCidIndexOf: getCidIndexOf,
             removeCidOf: removeCidOf,
             removeCidsOf: removeCidsOf,
-            extractCidsOf: extractCidsOf
+            extractCidsOf: extractCidsOf,
+            insertCategory: insertCategory,
+            deleteCategory: deleteCategory
         };
     }]);
     
@@ -144,6 +201,7 @@
             }            
         }
     };
+    
     Category.prototype.getParentId = function(){
         
         if(this.path.length && this.path){
@@ -181,6 +239,73 @@
         }else return 0;
     };
     
+    Category.prototype.insertCategory = function(item){
+        var parentIdsArray = new Array();
+            
+        // separate parents ids
+        var tempId = '';
+        for(i=0 ;i<item.path.length; i++){
+            if(item.path.charAt(i)=='/'){
+                parentIdsArray.push(tempId);
+                tempId = '';
+            }else{
+                tempId = tempId.concat(item.path.charAt(i));
+            }
+        }
+
+        var parentCategory = this;
+
+        for(var j=0; j<=parentIdsArray.length; j++){
+
+            var parentId = parentIdsArray[j];
+
+            // last leaf
+            if(j == parentIdsArray.length){
+                parentCategory.categories.push(item);
+            }else{
+                // parentCategory change
+                for(var l=0; l<parentCategory.categories.length; l++){
+                    if(parentCategory.categories[l].cid == parentId){
+                        parentCategory = parentCategory.categories[l];
+                    }
+                }        
+            }   
+        }
+    };
+    
+    Category.prototype.deleteCategory = function(item){
+        var cid = item.cid;
+        
+        // separate parents ids
+        var tempId = '';
+        var pathIds = new Array();
+        for(i=0 ;i<item.path.length; i++){
+            if(item.path.charAt(i)=='/'){
+                pathIds.push(tempId);
+                tempId = '';
+            }else{
+                tempId = tempId.concat(item.path.charAt(i));
+            }
+        }
+        pathIds.push(item.cid);
+        
+        var parentCategory = this;
+        for(var j=0; j<pathIds.length; j++){
+            var theId = pathIds[j];
+            for(var i=0; i<parentCategory.categories.length; i++){
+                var theCategory = parentCategory.categories[i];
+                if(theCategory.cid == theId){
+                    // last id
+                    if(theId == pathIds[pathIds.length - 1]){
+                        parentCategory.categories.splice(i, 1);
+                    }else{
+                        parentCategory = theCategory;
+                    }
+                }
+            }
+        }
+    };
+    
     function ImageFile (data){
         this.imgid = '', this.pid = '', this.name = '', this.imageType = '', this.image;
         
@@ -196,7 +321,7 @@
     
     function Problem (){
         
-        this.pid = '', this.question = '', this.answer = '', this.explanation = '', this.answerType = 'single', this.answerPlaceholder = '정답을 입력해 주세요', this.examples = [];
+        this.pid = '', this.question = '', this.answer = '', this.explanation = '', this.answerType = 'single', this.answerPlaceholder = '정답을 입력해 주세요', this.examples = [], this.notAnswerExamples = [];
         this.type = 'new';
         this.selections = new Array();
         this.alterSelections = {
@@ -208,6 +333,7 @@
             questions: [],
             explanations: []
         };
+        this.answerOfMultiple = 0;
         
         if(arguments.length){
             var data = arguments[0];
@@ -216,32 +342,69 @@
             this.answer = data.answer;
             this.explanation = data.explanation;
             this.answerType = data.answerType;
-            this.setExamples(data.examples);
+            this.setNotAnswerExamples(data.notAnswerExamples);
             if(data.type){
                 this.type = data.type;
             }
             if(data.selections){
                 this.selections = data.selections;
                 for(var i=0; i<data.selections.length; i++){
-                    this.alterSelections.exist.push(data.selections[i].cid);
+                    this.alterSelections.exist.push(data.selections[i]);
                 }
             }
             if(data.images){
                 this.images = data.images;
             }
         }else {
-            this.setExamples('');
+            this.setNotAnswerExamples('');
         }
     }
     
-    Problem.prototype.setExamples = function (jsonExamples) {
+    Problem.prototype.setNotAnswerExamples = function (jsonExamples) {
         if(this.answerType == 'multiple'){
             this.answerPlaceholder = '정답인 보기를 입력해 주세요';
-            this.examples = angular.fromJson(jsonExamples);
+            this.notAnswerExamples = angular.fromJson(jsonExamples);
+            this.setExamples();
         }else{
-            this.examples = [{content:''}, {content:''}, {content:''}, {content:''}];
+            this.notAnswerExamples = [{content:''}, {content:''}, {content:''}, {content:''}];
         }
     };
+    
+    Problem.prototype.setExamples = function () {
+        for(var i=0; i<this.notAnswerExamples.length; i++){
+            this.examples.push(this.notAnswerExamples[i]);
+        }
+        this.insertAnswerToExamples();
+    };
+    
+    Problem.prototype.shuffleExamples = function () {
+        var currentIndex = this.examples.length, tempExample, randomIndex ;
+
+        // While there remain elements to shuffle...
+        while (0 !== currentIndex) {
+
+            // Pick a remaining element...
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+
+            // And swap it with the current element.
+            tempExample = this.examples[currentIndex];
+            this.examples[currentIndex] = this.examples[randomIndex];
+            this.examples[randomIndex] = tempExample;
+        }
+    }
+    
+    Problem.prototype.insertAnswerToExamples = function () {
+        var countOfExamples = this.notAnswerExamples.length + 1;
+        var answerIndex = Math.floor(Math.random() * countOfExamples);
+        
+        this.answerOfMultiple = answerIndex + 1;
+        var answerExample = {
+            content: this.answer,
+            type: 'answer'
+        };
+        this.examples.splice(answerIndex, 0, answerExample);
+    }
     
     Problem.prototype.changeAnswerType = function(){
         if(this.answerType == 'single'){
@@ -257,7 +420,7 @@
         if(this.answerType == 'single'){
             return '';
         }else {
-            return angular.toJson(this.examples);
+            return angular.toJson(this.notAnswerExamples);
         }
     };
     
@@ -267,7 +430,7 @@
             answer: this.answer,
             explanation: this.explanation,
             categories : this.selections,
-            examples : this.getExamplesToJson(),
+            notAnswerExamples : this.getExamplesToJson(),
             answerType : this.answerType,
             alterCategories: this.alterSelections
         };
@@ -389,6 +552,7 @@
             this.questions = new Array();
             this.explanations = new Array();
         }
+        
         imageSet.prototype.addImage = function (data){
             if(data.imageType == 'question'){
                 this.questions.push(data);
@@ -456,6 +620,7 @@
             restrict: 'E',
             templateUrl: 'view/insert-problem.html',
             controller: ['$scope', '$http', 'Upload', '$window', function($scope, $http, Upload, $window){       
+                
                 $scope.setImageFiles = function(files, type){
                     
                     var imageArray = [];
@@ -527,11 +692,14 @@
                             $window.alert('이미지 없는 문제 업로드 성공');
                         }
                         
+                        var selections = $scope.problem.selections;
                         $scope.problem = new Problem();
+                        $scope.problem.selections = selections;
+//                        $scope.problem = new Problem({selections: selections});
                         $scope.questionImages = [];
                         angular.element($('#questionImages')[0]).val(null);
                         angular.element($('#explanationImages')[0]).val(null);
-//                        $scope.questionImages = undefined;
+                        
                     }).error(function(response){
                         $window.alert('업로드에 실패했습니다. 다시 시도해 주세요.');
                     });   
@@ -548,14 +716,18 @@
             templateUrl: 'view/edit-category.html',
             controller: ['$scope', '$http', function($scope, $http){
                                 
-                this.submitCategory = function(){
+                $scope.submitCategory = function(){
                     
                     var cname = this.cateObject.name;
                     var cpath = this.cateObject.path;
                 
-                    $http.post('/category', {'path':cpath, 'name':cname}).then(function(){
+                    $http.post('/category', {'path':cpath, 'name':cname}).
+                    success(function(response){
                         alert('request complete');
                         this.cateObject = {};
+                    }).
+                    error(function(response){
+                        
                     });
                 };            
             }],
@@ -567,15 +739,21 @@
         return {
             restrict: 'E',
             templateUrl: 'view/load-problems.html',
-            controller: ['$scope', '$http', '$modal', '$log', 'categoryFactory', '$window', function($scope, $http, $modal, $log, categoryFactory, $window){                
-                
+            controller: ['$scope', '$http', '$modal', '$log', 'categoryFactory', '$window', 'stringFactory', function($scope, $http, $modal, $log, categoryFactory, $window, stringFactory){                
                 $scope.category = {};
                 $scope.category.selections = new Array();
                 $scope.masterProblem = [];
+                $scope.problemType = 'Question';
                     
                 $scope.loadProblems = function(){
                     
-                    $http.post('/load_problems', {'categories': angular.toJson($scope.category.selections)})
+                    var problemNumber = $scope.problemNumber;
+                    // default problem Number
+                    if(problemNumber<=0 || problemNumber== null) {
+                        problemNumber = 20;
+                    }
+                    
+                    $http.post('/load_problems', {'categories': angular.toJson($scope.category.selections), 'problemNumber':problemNumber})
                     .then(function(response){
 
                         var data = response.data;
@@ -583,6 +761,8 @@
                         
                         $scope.masterProblem = new ProblemMaster();
                         $scope.masterProblem.setMasterProblem(data);
+                        
+                        console.log(JSON.parse(JSON.stringify($scope.masterProblem)));
                     });
                 };
                 
@@ -598,7 +778,9 @@
                 
                 $scope.updateProblem = function (item) {
                     
-                    var newProblem = new Problem(item);
+                    // problem deep copy
+                    var newProblem = new Problem(jQuery.extend(true, {}, item));
+//                    var newProblem = new Problem(item);
                     
                     var modalInstance = $modal.open({
                         animation: true,
@@ -613,14 +795,19 @@
                     });
 
                     modalInstance.result.then(function (selectedItem) {
+                        $log.info('Modal success');
                         $scope.masterProblem.changeProblem(selectedItem);
                     }, function () {
                         $log.info('Modal dismissed at: ' + new Date());
                     });
                 };
                 
-                $scope.printProblem = function(){
-                    $window.print();
+                $scope.printProblems = function() {
+                    $window.print();   
+                };
+                
+                $scope.getExampleNumber = function (number){
+                    return stringFactory.getCircleNumber(number);
                 };
 
             }],
@@ -628,7 +815,8 @@
         };
     });
     
-    app.controller('ModalInstanceCtrl', ['$scope', '$http', '$modalInstance', 'item', 'categoryFactory', 'Upload', function ($scope, $http, $modalInstance, item, categoryFactory, Upload) {
+    
+    app.controller('ModalInstanceCtrl', ['$scope', '$http', '$modalInstance', 'item', 'categoryFactory', 'Upload', '$window', function ($scope, $http, $modalInstance, item, categoryFactory, Upload, $window) {
         $scope.problem = item;
         $scope.update = function (item) {
             
@@ -639,18 +827,24 @@
             var imageFiles = [];
             if(item.images.questions.length){
                 for(var i=0; i<item.images.questions.length; i++){
-                    formDataNames.push('questionAttached');    
-                    imageFiles.push(item.images.questions[i].image);
+                    var imageData = item.images.questions[i];
+                    if(imageData.imageType == 'new'){
+                        formDataNames.push('questionAttached');    
+                        imageFiles.push(imageData.image);   
+                    }
                 }                        
             }
             if(item.images.explanations.length){
                 for(var i=0; i<item.images.explanations.length; i++){
-                    formDataNames.push('explanationAttached');
-                    imageFiles.push(item.images.explanations[i].image);
+                    var imageData = item.images.explanations[i];
+                    if(imageData.imageType == 'new'){
+                        formDataNames.push('explanationAttached');
+                        imageFiles.push(imageData.image);
+                    }
                 }                        
             }
 
-            var url = '/problem/'+item.pid; 
+            var url = '/problem/'+item.pid;
             $scope.upload = Upload.upload({
                 url: url,
                 method: 'PUT',
@@ -666,22 +860,17 @@
 
                 if(imageFiles.length){
                     $window.alert(imageFiles.length + '개 이미지와 문제를 성공적으로 수정하였습니다.');
+                    $modalInstance.close($scope.problem);
                 }else {
                     $window.alert('이미지 없는 문제를 성공적으로 수정하였습니다.');
                 }
 
                 $scope.problem = new Problem();
             }).error(function(response){
+                console.log('Modal update error ' +response);
                 $window.alert('문제 수정에 실패했습니다. 다시 시도해 주세요.');
             }); 
             
-//            $http.put('/problem/'+item.pid, {data: item.getValuesToJson()})
-//            .success(function(response){
-//                $modalInstance.close(item); 
-//                alert('문제를 성공적으로 수정하였습니다.');
-//            }).error(function(response){
-//                alert('문제를 수정하지 못했습니다. 다시 시도해주세요.' + response.error);
-//            });
         };
 
         $scope.cancel = function () {
@@ -695,12 +884,17 @@
             templateUrl: 'view/show-problem.html',
             scope: {
                 problem: '=item',
-                index: '='
+                problemIndex: '=index',
+                type: '='
             },
-            controller: ['$scope', 'categoryFactory', function($scope, categoryFactory){
+            controller: ['$scope', 'categoryFactory', 'stringFactory', function($scope, categoryFactory, stringFactory){
                 $scope.getCategoryName = function (cid){
                     return categoryFactory.getCategoryName(cid);
-                }
+                };
+                
+                $scope.getExampleNumber = function (index){
+                    return stringFactory.getCircleNumber(index);
+                };
             }]
         };
     });
@@ -714,15 +908,17 @@
                 selections: '=',
                 alters: '='
             },
-            controller: ['$scope', '$http', 'categoryFactory', function($scope, $http, categoryFactory){
+            controller: ['$scope', '$http', 'categoryFactory', '$modal', function($scope, $http, categoryFactory, $modal){
                 $scope.categories = [];
                 categoryFactory.getCategories.then(function(data){
                     $scope.categories = data.masterCategory.categories;
+                    console.log(JSON.parse(JSON.stringify($scope.categories)));
                 }, function(data){
                     alert('카테고리를 불러오지 못했습니다. 다시 시도해 주세요.');
                 });
                 
-                $scope.addCategory = function(name, item){
+                $scope.addBroCategory = function(item){
+                    var name = item.newBroCategoryName;
                     var theCategory = new Category(item.cid, item.name, item.path);
                     var parentId = theCategory.getParentId();
                     var parentRelativePath = '';
@@ -730,21 +926,48 @@
                         parentRelativePath = rowData[parentId -1].relativePath;   
                     }
                       
-                    httpPostCategory(parentId, name, theCategory.path);
+                    httpPostCategory(parentId, name, theCategory.path, function(response){
+                        var newCid = response.cid;
+                        var newCategory = new Category(newCid, name, theCategory.path);
+                        categoryFactory.insertCategory(newCategory);
+                        
+                        item.newBroCategoryName = '';
+                        item.isCollapsed = !item.isCollapsed;
+                    });
                 };
                 
-                $scope.addChildCategory = function(name, item){
-                    
+                $scope.addChildCategory = function(item){
+                    var name = item.newChildCategoryName;
                     var newPath = item.path + item.cid.toString() + '/';
-                    httpPostCategory(item.cid, name, newPath);
+                    httpPostCategory(item.cid, name, newPath, function(response){
+                        var newCid = response.cid;
+                        var newCategory = new Category(newCid, name, newPath);
+                        categoryFactory.insertCategory(newCategory);
+                        
+                        item.newChildCategoryName = '';
+                        item.isChildCollapsed = !item.isChildCollapsed;
+                    });
                 };
                 
-                $scope.deleteCategory = function(cid){
-                    $http.delete('/category/'+cid)
-                    .success(function(response){
-                        alert('카테고리를 삭제했습니다.');
-                    }).error(function(response){
-                        alert('카테고리를 삭제하지 못했습니다. 다시 시도해 주세요.');
+                $scope.deleteCategory = function(item){
+                    
+                    var checkModal = $modal.open({
+                        animation: true,
+                        templateUrl: 'view/check-modal.html',
+                        controller: 'CheckModalCtrl',
+                        size: 'sm',
+                        resolve: {
+                            item: function () {
+                                return item;
+                            }
+                        }
+                    });
+
+                    checkModal.result.then(function (selectedItem) {
+                        console.log('Check Modal Success');
+                        categoryFactory.deleteCategory(selectedItem);
+                    }, function () {
+                        console.error('Modal dismissed at: ' + new Date());
                     });
                 };
                 
@@ -775,19 +998,56 @@
                     return $scope.selections.indexOf(cid);
                 }
                 
-                function httpPostCategory (parentId, name, absPath){
+                function httpPostCategory (parentId, name, absPath, callback){
                     $http.post('/category', {'parentId':parentId, 'name':name, 'path':absPath})
                     .success(function(response){
-                        alert('insert category SUCCESS');
+                        alert('카테고리를 성공적으로 입력했습니다.');
+                        callback(response);
                     }).error(function(response){
-                        alert('insert category error');
+                        alert('카테고리를 입력하지 못했습니다. 다시 시도해 주세요.');
                     });
                 };
+                
+                $scope.clickedAddChildCategory = function(item){
+                    if(!item.nodeCollapsed){
+                        item.nodeCollapsed = !item.nodeCollapsed;
+                    }
+                    if(item.isCollapsed){
+                        item.isCollapsed = !item.isCollapsed;
+                    }
+                    item.isChildCollapsed = !item.isChildCollapsed; 
+                };
+                
+                $scope.clickedAddBroCategory = function(item){
+                    item.isCollapsed = !item.isCollapsed;
+                    if(item.isChildCollapsed){
+                        item.isChildCollapsed = !item.isChildCollapsed; 
+                    }
+                }
 
             }],
             controllerAs: 'selectCategoryCtrl'
         };
     });
+    
+    app.controller('CheckModalCtrl', ['$scope', '$http', '$modalInstance', 'item', function ($scope, $http, $modalInstance, item) {
+        
+        $scope.category = item;
+        
+        $scope.deleteCategory = function () {
+            
+            $http.delete('/category/'+item.cid)
+            .success(function(response){
+                $modalInstance.close(item);  
+            }).error(function(response){
+                alert('카테고리를 삭제하지 못했습니다. 다시 시도해 주세요.');
+            });
+        };
+        
+        $scope.cancel = function () {
+            $modalInstance.dismiss('cancel');
+        };
+    }]);
     
     app.directive('nodesRenderer', function(){
         return {

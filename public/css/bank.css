@@ -25,78 +25,68 @@
     #load_problem {
     }   
     
-    #print_answer_section {
-        display: none;
-    }
-    
-    .problemNumber {
-        display: none;
+    .problemExampleNumber {
+        font-size: 15pt;
     }
 }
 
 
 /* for print */
+
+@page {
+    size: A4;
+    margin: 0;
+    padding: 0;
+}
+
 @media print {
     .no_print {
         display: none;
     }
     
-    .print {
-        margin: auto;
-/*        width: 100%;*/
-        width: 21.7cm;
-        height: 29.0cm;
+    .print_problems {
+        margin: 0px;
+        padding: 0px;
+/*        width: 21cm;*/
+        overflow: auto;
+        
+/*
+        border-style: dotted;
+        border-width: medium;
+        border-color: black;
+*/
     }
         
     .problem_for_print {
         width: 50%;
-        height: 14.85cm;
-/*        max-height: 14.85cm;*/
-        overflow: auto;
-        float: left;
+        height: 14cm;
+        margin: 0px;
+        padding: auto;
+        float: left !important;
+        page-break-inside: avoid;
+        overflow: hidden;
+        
+/*
+        border-style: dashed;
+        border-width: thin;
+        border-color: black;
+*/
     }
     
-    #print_question_section {
-/*        page-break-before: auto;*/
-    }
-    
-    #print_answer_section {
-        page-break-before: always;
-/*        page-break-after: auto;*/
-    }
-    
-    .problemCategoriesLabel, .problemQuestionLabel, .problemExamplesLabel, #print_question_section .problemAnswerLabel, #print_question_section .problemAnswerContent, #print_question_section .problemExplanationLabel, #print_question_section .problemExplanationContent {
-        display: none;
-    }
-    
-    #print_question_section pre, #print_answer_section pre {
+    .problem_for_print *{
         border-style: none;
     }
     
-/*
-    #print_question_section .problemExampleContent {
-        display: block;
-    }
-*/
-/*
-    #print_answer_section .problemQuestionContent{
-        display: none;
-    }
-*/
-    
-    #print_answer_section .problemCategoriesContent, #print_answer_section .problemQuestionContent, #print_answer_section .problemExamples {
-        display: none;
+    .problemQuestionImages {
+/*        max-width: 3cm !important;*/
     }
     
+    .problemImageContent {
+        width: 100px !important; 
+    }
     
-/*
-    #print_question_section .questionLabel {
-        display: none;
+    .problemExampleNumber {
+        font-size: 15pt;
     }
-*/
-/*
-    .problem_for_print pre {
-        overflow: hidden;
-    }
-*/
+
 }

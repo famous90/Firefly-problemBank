@@ -2,10 +2,6 @@
 <html ng-app="problemBank">
     <head>
         <meta charset="utf-8">
-<!--
-        for IE8
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
--->
         <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="css/angular-ui-tree.min.css"/>
         <link rel="stylesheet" type="text/css" href="css/bank.css"/>
@@ -22,15 +18,38 @@
         <script type="text/javascript" src="js/ng-file-upload-shim.min.js"></script> 
         <script type="text/javascript" src="js/ng-file-upload.min.js"></script>
         
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.js"></script>
     </head>
     
-    <body ng-controller="BankController as bank">     
+    <body ng-controller="BankController as bank" class="">     
         
+<!--
         <header id="main_header" class="no_print">
+            <nav class="navbar navbar-default">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="/">Angular Routing Example</a>
+                </div>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#"><i class="fa fa-home"></i> Home</a></li>
+                    <li><a href="#about"><i class="fa fa-shield"></i> About</a></li>
+                    <li><a href="#contact"><i class="fa fa-comment"></i> Contact</a></li>
+                </ul>
+            </div>
+            </nav>
+        </header>
+        
+        <div id="main" ng-controller="mainController">
+            <div ng-view></div>
+        </div>
+-->
+        
+        <section class="no_print">
             <h1 class="text-center">{{"초롱불"}}</h1>
             <hr>
-        </header>
-                    
+        </section>
+            
         <section id="insert_problem" class="row no_print">
             <div class="col-md-10 col-md-offset-1" style="padding-bottom:50px;">
                 <h3 class="text-center">{{"문제 입력하기"}}</h3>
@@ -50,7 +69,7 @@
             <div class="col-md-10 col-md-offset-1" style="margin-bottom:50px;">
                 <load-problems></load-problems>
             </div>
-            <hr class="col-md-12">
+            <hr class="col-md-12 no_print">
         </section>
         
         <!-- Bank Footer -->
