@@ -6,14 +6,32 @@ var fs = require('fs');
 var path = require('path');
 var os = require('os');
 var async = require('async');
+var AWS = require('aws-sdk');
+var randomString = require('randomstring');
 
 
-// connect with DB
-var client = mysql.createConnection({
-    user: 'root',
+// local DB for test
+//var client = mysql.createConnection({
+//    user: 'root',
+//    password: 'q1w2e3r4',
+//    database: 'bank'
+//});
+// AWS RDS
+var rdsEndpoint = {
+    host: 'problembankdbinstance.cu3kda75wdql.ap-northeast-1.rds.amazonaws.com',
+    database: 'problemBankDB',
+    user: 'bankAdmin',
     password: 'q1w2e3r4',
-    database: 'bank'
+    port: 3306
+};
+var client = mysql.createConnection({
+    host: rdsEndpoint.host,
+    user: rdsEndpoint.user,
+    password: rdsEndpoint.password,
+    port: rdsEndpoint.port,
+    database: rdsEndpoint.database
 });
+
 
 // make web server
 var app = express();
@@ -22,32 +40,49 @@ app.use(express.bodyParser());
 //app.use(app.router);  
 
 
+// aws
+AWS.config.update({
+    accessKeyId: "AKIAJ5M4777I2ENGEWHA",
+    secretAccessKey: "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",
+    region: 'ap-northeast-1'
+});
+var s3Bucket = 'problem-bank';
+// aws for local test
+//AWS.config.update({
+//    accessKeyId: "AKIAIEXRFJXTWX4IQXNA",
+//    secretAccessKey: "PcVXrBmESiTyjr/D2ZjAZ9U5rPEE90aXK+Nw3Tf0",
+//    region: 'ap-northeast-1'
+//});
+//var s3Bucket = 'example-photo-90.image';
+
+
 // object
-function fileDateSet (path, newPath, type, fileName){
+function fileDateSet (path, type, fileName){
     this.path = path;
-    this.newPath = newPath;
     this.type = type;
     this.fileName = fileName;
 }
 
-function getImageDataArray (array, data, imageType, insertStr){
-    var defaultPath = 'public/asset/images/';
+function getImageDataSet (data, imageType, pid){
     
+    var theImageDataArray = new Array();
+    
+    // if data is array
     if(data.length){
         for(var i=0; i<data.length; i++){
             var filePath = data[i].path;
-            var fileName = imageType + '_image_' + insertStr + '_' + i + path.extname(filePath);
-            var newPath = defaultPath + fileName;
-            var theFileDataSet = new fileDateSet(filePath, newPath, imageType, fileName);
-            array.push(theFileDataSet);
+            var fileName = imageType.substring(0, 2).toUpperCase() + '_' + pid + '_' + i + '_' + randomString.generate(20) + path.extname(filePath);
+            var theFileDataSet = new fileDateSet(filePath, imageType, fileName);
+            theImageDataArray.push(theFileDataSet);
         }                                
     }else{
         var filePath = data.path;
-        var fileName = imageType + '_image_' + insertStr + path.extname(filePath);
-        var newPath = defaultPath + fileName;
-        var theFileDataSet = new fileDateSet(filePath, newPath, imageType, fileName);
-        array.push(theFileDataSet);
+        var fileName = imageType.substring(0, 2).toUpperCase() + '_' + pid + '_' + randomString.generate(20) + path.extname(filePath);
+        var theFileDataSet = new fileDateSet(filePath, imageType, fileName);
+        theImageDataArray.push(theFileDataSet);
     }
+    
+    return theImageDataArray;
 }
 
 function writeImageData (fileDataArray, pid, callback) {
@@ -55,42 +90,140 @@ function writeImageData (fileDataArray, pid, callback) {
     for(var i=0; i<fileDataArray.length; i++){        
         (function(i){
             var fileData = fileDataArray[i];
-
-            fs.readFile(fileData.path, function(err, data){
+            var filename = fileData.fileName;
+            var key = 'images/' + filename;
+            var s3obj = new AWS.S3({
+                params: {
+                    Bucket: s3Bucket, 
+                    Key: key
+            }});
+            
+            async.waterfall([
+                
+                // read file
+                function(asyncCallback){
+                    console.log('image file path : '+fileData.path);
+                    fs.readFile(fileData.path, function (err, data) {
+                        if(err){
+                            console.log('file read error');
+                            throw err;   
+                        }else {
+                            asyncCallback(null, data);
+                        }
+                    });
+                },
+                
+                // upload to s3
+                function(data, asyncCallback){
+                    s3obj.upload({
+                        ACL: "public-read",
+                        Body: data
+                    }, function(error, result){
+                        if (error) {       
+                            console.log("Error uploading data: ", error);
+                            throw error;
+                        } else {
+                            console.log("Successfully uploaded data to myBucket/myKey");
+                            console.log(JSON.parse(JSON.stringify(result)));
+                            asyncCallback(null, result);
+                        }
+                    });
+                },
+                
+                // insert to db
+                function(result, asyncCallback){
+                    client.query('INSERT INTO ProblemImages (pid, imageType, location, s3_object_key) VALUES(?, ?, ?, ?)', [pid, fileData.type, result.Location, key], function(err, info){
+                        if(err){
+                            throw err;
+                        }else{
+                            console.log('write file '+fileData.fileName);
+                            asyncCallback(null);
+                        }
+                    });
+                }
+                
+                // after call back
+            ], function(err, results){
                 if(err){
                     throw err;
-                }else{                                
-                    fs.writeFile(fileData.newPath, data, 'binary', function(writeError){
-                        if(writeError){ 
-                            throw writeError;
-                        }else{
-
-                            client.query('INSERT INTO problemImages (name, pid, imageType) VALUES(?, ?, ?)', [fileData.fileName, pid, fileData.type], function(imageQueryError, imageQueryInfo){
-                                if(imageQueryError){
-                                    throw imageQueryError;
-                                }else{
-                                    console.log('write file '+fileData.fileName);
-                                    if(i == fileDataArray.length-1){
-                                        console.log('last image uploaded');
-                                        callback();
-                                        return;
-                                    }
-                                }
-                            });
-                        }
-                    });     
-                }   
+                }else{
+                    if(i == fileDataArray.length-1){
+                        console.log('last image inserted');
+                        callback();
+                        return;
+                    }
+                }
             });                            
         })(i);
     }                            
 }
 
-// Exception Handler 등록
-process.on('uncaughtException', function (err) {
-    console.log('Caught exception: ' + err);
-    // 추후 trace를 하게 위해서 err.stack 을 사용하여 logging하시기 바랍니다.
-    // Published story에서 beautifule logging winston 참조
-});
+function getBucketObjects (data){
+    var objects = new Array();
+    
+    for(var i=0; i<data.length; i++){
+        var object = {
+            Key: data[i].s3_object_key  
+        };
+        objects.push(object);
+    }
+    
+    return objects;
+}
+
+function deleteImageFromS3andDB (data, pid, types, callback) {
+    var objects = getBucketObjects(data);
+    var s3 = new AWS.S3();
+    var params = {
+        Bucket: s3Bucket,
+        Delete: {
+            Objects: objects
+        },
+        RequestPayer: 'requester'
+    };
+    
+    async.waterfall([
+        
+        // request delete images to s3
+        function(asyncCallback){
+            s3.deleteObjects(params, function(err, data){
+                if (err) {
+                    console.error(err); // an error occurred
+                    throw err;
+                } else {
+                    console.log(data);           // successful response
+                    asyncCallback(null);   
+                }
+            });
+        },
+        
+        // delete images from db
+        function(asyncCallback){
+            var query = 'delete from ProblemImages where (pid = ?)';
+            if(types.length == 1){
+                query += ' && (imageType = "' + types[0] + '")';   
+            }
+            client.query(query, [pid], function(err, data){
+                if(err){
+                    console.error(err);
+                    throw err;
+                }else {
+                    asyncCallback(null);
+                }
+            });
+        }
+        
+        // after async waterfall 
+    ], function(err, results){
+        if (err) {
+            console.log(err, err.stack); // an error occurred
+            throw err;
+        } else {
+            console.log(results);           // successful response 
+            callback();
+        }
+    });
+}
 
 // restful api
 app.get('/problemImage?', function(request, response){
@@ -112,7 +245,7 @@ app.get('/problemImage?', function(request, response){
 });
 
 app.get('/problems', function(request, response){
-    client.query('select * from problems', function(error, data){
+    client.query('select * from Problems', function(error, data){
         response.send(data);
     });
 });
@@ -154,12 +287,11 @@ app.post('/problem', function(request, response){
         console.log('IMAGE NOT CONTAINED');
     }
     
-    
     async.waterfall([
         
         // insert problem
         function(callback){
-            client.query('INSERT INTO problems (question, answer, explanation, hasQImage, hasExplnImage, notAnswerExamples, answerType) VALUES(?, ?, ?, ?, ?, ?, ?)', [question, answer, explanation, hasQuestionImage, hasExplanationImage, notAnswerExamples, answerType], function(error, info){
+            client.query('INSERT INTO Problems (question, answer, explanation, hasQImage, hasExplnImage, notAnswerExamples, answerType) VALUES(?, ?, ?, ?, ?)', [question, answer, explanation, notAnswerExamples, answerType], function(error, info){
 
                 if(error){
                     console.log('INSERT PROBLEM : insert problem error with problem');    
@@ -181,7 +313,7 @@ app.post('/problem', function(request, response){
                 
                 // insert pclink
                 function(subCallback){
-                    var pclinkQuery = 'INSERT INTO pcLinks (pid, cid) VALUES ';
+                    var pclinkQuery = 'INSERT INTO PcLinks (pid, cid) VALUES ';
                     for(i=0; i<categories.length; i++){
                         if(i != 0){
                             pclinkQuery += ',';
@@ -205,13 +337,12 @@ app.post('/problem', function(request, response){
                 function(subCallback){
                     if(hasImage){
                         var fileDataArray = new Array();
-                        var defaultPath = 'public/asset/images/';
 
                         if(hasQuestionImage){
-                            getImageDataArray(fileDataArray, request.files.questionAttached, 'question', pid);
+                            fileDataArray.push.apply(fileDataArray, getImageDataSet(request.files.questionAttached, 'question', pid));
                         }
                         if(hasExplanationImage){
-                            getImageDataArray(fileDataArray, request.files.explanationAttached, 'explanation', pid);   
+                            fileDataArray.push.apply(fileDataArray, getImageDataSet(request.files.explanationAttached, 'explanation', pid));
                         }
 
                         writeImageData(fileDataArray, pid, function(){
@@ -258,7 +389,7 @@ app.post('/load_problems', function(request, response){
         
         // load problems
         function(callback){
-            var problemsQuery = 'SELECT DISTINCT problems.* FROM problems RIGHT JOIN pcLinks ON problems.pid = pcLinks.pid';
+            var problemsQuery = 'SELECT DISTINCT Problems.* FROM Problems RIGHT JOIN PcLinks ON Problems.pid = PcLinks.pid';
             
             // connect category query
             if(categories.length){
@@ -266,7 +397,7 @@ app.post('/load_problems', function(request, response){
                 problemsQuery += ' WHERE (';
 
                 for(var i=0; i<categories.length; i++){
-                    problemsQuery += 'pcLinks.cid = '+categories[i];
+                    problemsQuery += 'PcLinks.cid = '+categories[i];
                     if(i != categories.length - 1){
                         problemsQuery += ' || ';
                     }
@@ -300,7 +431,7 @@ app.post('/load_problems', function(request, response){
                 
                 // load categories
                 function(subCallback){
-                    var pclinkQuery = 'SELECT DISTINCT * FROM pcLinks WHERE (';
+                    var pclinkQuery = 'SELECT DISTINCT * FROM PcLinks WHERE (';
                     for(var i=0; i<problemResults.length; i++){
                         pclinkQuery += 'pid = '+problemResults[i].pid;
                         if(i != problemResults.length - 1){
@@ -325,7 +456,7 @@ app.post('/load_problems', function(request, response){
                 
                 // load images
                 function(subCallback){
-                    var imageQuery = 'SELECT DISTINCT * FROM problemImages WHERE (';
+                    var imageQuery = 'SELECT DISTINCT * FROM ProblemImages WHERE (';
                     for(var i=0; i<problemResults.length; i++){ 
                         imageQuery += 'pid = '+problemResults[i].pid;
                         if(i != problemResults.length - 1){
@@ -382,12 +513,13 @@ app.put('/problem/:pid', function(request, response){
     
     console.log('pid : '+pid);
     console.log(JSON.parse(JSON.stringify(parameters)));
+    console.log(JSON.parse(JSON.stringify(request.files)));
     
     async.parallel([
         
         // update problem content
         function(callback){
-            client.query('UPDATE problems SET question = ?, answer = ?, explanation = ?, notAnswerExamples = ?, answerType = ? WHERE pid = ?', [question, answer, explanation, notAnswerExamples, answerType, pid], function(error, data){
+            client.query('UPDATE Problems SET question = ?, answer = ?, explanation = ?, notAnswerExamples = ?, answerType = ? WHERE pid = ?', [question, answer, explanation, notAnswerExamples, answerType, pid], function(error, data){
                 if(error){
                     console.log('UPDATE PROBLEM : update problem error with problem id '+pid);
                     callback(error);
@@ -402,7 +534,7 @@ app.put('/problem/:pid', function(request, response){
         // insert new category
         function(callback){
             if(newCategories.length){
-                var insertQuery = 'INSERT INTO pcLinks (pid, cid) VALUES ';
+                var insertQuery = 'INSERT INTO PcLinks (pid, cid) VALUES ';
                 for(i=0; i<newCategories.length; i++){
                     if(i != 0){
                         insertQuery += ',';
@@ -427,7 +559,7 @@ app.put('/problem/:pid', function(request, response){
         // delete exist category
         function(callback){
             if(deleteCategories.length){
-                var deleteQuery = 'DELETE FROM pcLinks WHERE ';
+                var deleteQuery = 'DELETE FROM PcLinks WHERE ';
                 for(i=0; i<deleteCategories.length; i++){
                     if(i != 0){
                         deleteQuery += '||';
@@ -452,21 +584,65 @@ app.put('/problem/:pid', function(request, response){
         // image file update
         function(callback){
             if(request.files.questionAttached || request.files.explanationAttached){
-                var fileDataArray = new Array();
-
-                var defaultPath = 'public/asset/images/';
+                var newFiles = new Array();
+                var imageTypes = new Array();
 
                 if(request.files.questionAttached){
-                    getImageDataArray(fileDataArray, request.files.questionAttached, 'question', pid);
+                    newFiles.push.apply(newFiles, getImageDataSet(request.files.questionAttached, 'question', pid));
+                    imageTypes.push('question');
                 }
                 if(request.files.explanationAttached){
-                    getImageDataArray(fileDataArray, request.files.explanationAttached, 'explanation', pid);
+                    newFiles.push.apply(newFiles, getImageDataSet(request.files.explanationAttached, 'explanation', pid));
+                    imageTypes.push('explanation');
                 }
-
-                writeImageData(fileDataArray, pid, function(){
-                    callback(null, 'file insert', fileDataArray);
-                });
+                console.log('new files');
+                console.log(JSON.parse(JSON.stringify(newFiles)));
+                console.log(JSON.parse(JSON.stringify(imageTypes)));
                 
+                async.waterfall([
+                    
+                    // get images
+                    function(subCallback){
+                        var getQuery = 'select * from ProblemImages where (pid = ?)';
+                        if(imageTypes.length == 1){
+                            getQuery += ' && (imageType = "' + imageTypes[0] + '")'; 
+                        }
+                        client.query(getQuery, [pid], function(err, results){
+                            if(err){
+                                throw err;
+                            }else {
+                                console.log('get objects');
+                                console.log(JSON.parse(JSON.stringify(results)));
+                                subCallback(null, results);
+                            }
+                        });
+                        
+                    },
+                    
+                    // delete images
+                    function(results, subCallback){
+                        if(results && results.length > 0){
+                            deleteImageFromS3andDB(results, pid, imageTypes, function(){
+                                console.log('delete images');
+                                subCallback(null);
+                            });        
+                        }else {
+                            subCallback(null);
+                        }
+                    },
+                    
+                    // insert images
+                    function(subCallback){
+                        writeImageData(newFiles, pid, function(){
+                            console.log('write new files');
+                            subCallback(null);
+                        });    
+                    }
+                    
+                    // after call back
+                ], function(err, result){
+                    callback(null, 'file insert', newFiles);
+                });
             }else {
                 callback(null, 'file insert');
             }
@@ -499,7 +675,7 @@ app.del('/problem/:pid', function(request, response){
         
         // delete pclinks
         function(callback){
-            client.query('DELETE FROM pcLinks WHERE pid = ?', [pid], function(error, results){
+            client.query('DELETE FROM PcLinks WHERE pid = ?', [pid], function(error, results){
                 if(error){
                     console.error('DELETE PROBLEM : delete pclinks error with problem id '+pid);
                     throw error;
@@ -517,7 +693,7 @@ app.del('/problem/:pid', function(request, response){
                 
                 // find images
                 function(subCallback){
-                    var queryForProblemImages = 'SELECT * FROM problemImages WHERE pid = ?';
+                    var queryForProblemImages = 'SELECT * FROM ProblemImages WHERE pid = ?';
                     client.query(queryForProblemImages, [pid], function(error, results){
                         if(error){
                             console.log('DELETE PROBLEM : select problemImages error with problem id '+pid);
@@ -558,7 +734,7 @@ app.del('/problem/:pid', function(request, response){
                 
                 // delete problem images
                 function(subCallback){
-                    client.query('DELETE FROM problemImages WHERE pid = ?', [pid], function(removeError, data){
+                    client.query('DELETE FROM ProblemImages WHERE pid = ?', [pid], function(removeError, data){
                         if(removeError){
                             response.statusCode = 400;
                             console.log('DELETE PROBLEM : delete problemImages error with problemImages id '+results[i].imgid);
@@ -577,7 +753,7 @@ app.del('/problem/:pid', function(request, response){
         
         // delete problem
         function(callback){
-            client.query('DELETE FROM problems WHERE pid = ?', [pid], function(error, results){
+            client.query('DELETE FROM Problems WHERE pid = ?', [pid], function(error, results){
                 if(error){
                     console.log('DELETE PROBLEM : delete problem error with problem id '+pid);
                     throw error;
@@ -593,36 +769,57 @@ app.del('/problem/:pid', function(request, response){
 });
 
 app.get('/categories', function(request, response){
-    client.query('select * from categories', function(error, data){
+//    db_Category.findAll().success(function(categories){
+//        console.log('LOAD ALL CATEGORIES : complete');
+//        response.send(data);
+//        response.end('success');        
+//    });
+    console.log('get categories');
+
+    client.query('select * from Categories', function(error, data){
         if(error){
             console.error('LOAD ALL CATEGORIES : error');
             throw error;
         }else{
-            console.log('LOAD ALL CATEGORIES : complete');
+            console.log('LOAD ALL CATEGORIES : complete ' + data.length);
+            console.log(JSON.parse(JSON.stringify(data)));
             response.send(data);
-            response.end('success');
+            response.end('success');        
         }
     });
 });
 
 app.post('/category', function(request, response){
     
-    var name = request.param('name');
-    var parentId = request.param('parentId');
-    var path = request.param('path');
-    
-    console.log('post category path,name: ' + path +','+ name +', parentId : '+ parentId);
-    
-    client.query('INSERT INTO categories (name, path) VALUES(?, ?)', [name, path], function(err, info){
-        if(err){
-            console.log('INSERT CATEGORY : insert category error');
-            throw err;
-        }else{
-            console.log('INSERT CATEGORY : insert category complete');
-            response.send({cid: info.insertId});
-            response.end('inserted');
-        }
-    });
+//    var name = request.param('name');
+//    var parentId = request.param('parentId');
+//    var path = request.param('path');
+//    
+//    console.log('post category path,name: ' + path +','+ name +', parentId : '+ parentId);
+//    
+//    var newCategory = db_category.build({
+//        name: name,
+//        path: path
+//    });
+//    
+//    newCategory.save().success(function(){
+//        console.log('INSERT CATEGORY : insert category complete');
+//        response.send({cid: info.insertId});
+        response.end('inserted');        
+//    })
+//        .error(function(){
+//        console.log('INSERT CATEGORY : insert category error');
+//    });
+//    client.query('INSERT INTO categories (name, path) VALUES(?, ?)', [name, path], function(err, info){
+//        if(err){
+//            console.log('INSERT CATEGORY : insert category error');
+//            throw err;
+//        }else{
+//            console.log('INSERT CATEGORY : insert category complete');
+//            response.send({cid: info.insertId});
+//            response.end('inserted');
+//        }
+//    });
 });
 
 app.del('/category/:cid', function(request, response){
@@ -630,7 +827,7 @@ app.del('/category/:cid', function(request, response){
     var cid = Number(request.param('cid'));
     
     
-    client.query('SELECT * FROM categories WHERE cid='+cid, function(error, results){
+    client.query('SELECT * FROM Categories WHERE cid='+cid, function(error, results){
         
         if(error){
             response.statusCode = 400;
@@ -643,7 +840,7 @@ app.del('/category/:cid', function(request, response){
             var deletingCategoryPath = results[0].path;
             deletingCategoryPath = deletingCategoryPath + cid.toString() + '/';
             
-            client.query('DELETE FROM categories WHERE path LIKE "%'+deletingCategoryPath+'%"', function(error2){
+            client.query('DELETE FROM Categories WHERE path LIKE "%'+deletingCategoryPath+'%"', function(error2){
                 
                 if(error2){
                     response.statusCode = 400;
@@ -652,7 +849,7 @@ app.del('/category/:cid', function(request, response){
                 
                 }else{
                 
-                    client.query('DELETE FROM categories WHERE cid=?', [cid], function(err, data){
+                    client.query('DELETE FROM Categories WHERE cid=?', [cid], function(err, data){
                         
                         if(err){
                             response.statusCode = 400;

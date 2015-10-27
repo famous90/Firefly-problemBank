@@ -1,0 +1,15 @@
+{
+    "name": "testbank",
+    "desciption": "test bank elastic beanstalk",
+    "version": "0.2.0",
+    "dependencies": {
+        "express": "3.4.7",
+        "path": "*",
+        "body-parser": "*",
+        "mysql": "*",
+        "async": "*",
+        "https": "*",
+        "aws-sdk": "*",
+        "randomstring": "*"
+    }
+}

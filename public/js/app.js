@@ -169,36 +169,39 @@
             var absPath = item.path;
             var parentIdsArray = new Array();
             
-            
-            // separate parents ids
-            var tempId = '';
-            for(i=0 ;i<absPath.length; i++){
-                if(absPath.charAt(i)=='/'){
-                    parentIdsArray.push(tempId);
-                    tempId = '';
-                }else{
-                    tempId = tempId.concat(absPath.charAt(i));
+            if(absPath == null){
+                this.categories.push(category);
+            }else {
+                // separate parents ids
+                var tempId = '';
+                console.log('path : ' + absPath);
+                for(i=0 ;i<absPath.length; i++){
+                    if(absPath.charAt(i)=='/'){
+                        parentIdsArray.push(tempId);
+                        tempId = '';
+                    }else{
+                        tempId = tempId.concat(absPath.charAt(i));
+                    }
+                }
+
+                var parentCategory = this;
+                for(var j=0; j<=parentIdsArray.length; j++){
+
+                    var parentId = parentIdsArray[j];
+                    // last leaf
+                    if(j == parentIdsArray.length){
+                        parentCategory.categories.push(category);
+                    }else{
+                        // parentCategory change
+                        for(var l=0; l<parentCategory.categories.length; l++){
+                            if(parentCategory.categories[l].cid == parentId){
+                                parentCategory = parentCategory.categories[l];
+                            }
+                        }        
+                    }   
                 }
             }
-            
-            var parentCategory = this;
-            
-            for(var j=0; j<=parentIdsArray.length; j++){
-                
-                var parentId = parentIdsArray[j];
-
-                // last leaf
-                if(j == parentIdsArray.length){
-                    parentCategory.categories.push(category);
-                }else{
-                    // parentCategory change
-                    for(var l=0; l<parentCategory.categories.length; l++){
-                        if(parentCategory.categories[l].cid == parentId){
-                            parentCategory = parentCategory.categories[l];
-                        }
-                    }        
-                }   
-            }            
+                            
         }
     };
     
@@ -307,14 +310,15 @@
     };
     
     function ImageFile (data){
-        this.imgid = '', this.pid = '', this.name = '', this.imageType = '', this.image;
+        this.imgid, this.pid, this.imageType, this.image, this.location, this.s3_object_key;
         
         if(arguments.length){
             var data = arguments[0];
             this.imgid = data.imgid;
             this.pid = data.pid;
-            this.name = data.name;
             this.imageType = data.imageType;
+            this.location = data.location;
+            this.s3_object_key = data.s3_object_key;
             this.image;
         }
     }
@@ -657,6 +661,18 @@
                         alert('카테고리를 선택해주세요');    
                         return;
                     }
+                    if(!$scope.problem.question){
+                        alert('문제 입력은 필수입니다');    
+                        return;
+                    }
+                    if(!$scope.problem.answer){
+                        alert('답을 입력해주세요');    
+                        return;
+                    }
+                    if(!$scope.problem.explanation){
+                        alert('해설 입력은 필수입니다');    
+                        return;
+                    }
                     
                     var formDataNames = [];
                     var imageFiles = [];
@@ -860,17 +876,16 @@
 
                 if(imageFiles.length){
                     $window.alert(imageFiles.length + '개 이미지와 문제를 성공적으로 수정하였습니다.');
-                    $modalInstance.close($scope.problem);
                 }else {
                     $window.alert('이미지 없는 문제를 성공적으로 수정하였습니다.');
                 }
-
+                $modalInstance.close($scope.problem);
                 $scope.problem = new Problem();
+                
             }).error(function(response){
                 console.log('Modal update error ' +response);
                 $window.alert('문제 수정에 실패했습니다. 다시 시도해 주세요.');
-            }); 
-            
+            });   
         };
 
         $scope.cancel = function () {

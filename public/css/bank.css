@@ -60,17 +60,15 @@
     .problem_for_print {
         width: 50%;
         height: 14cm;
-        margin: 0px;
-        padding: auto;
+        margin: auto;
+        padding: 10px;
         float: left !important;
         page-break-inside: avoid;
         overflow: hidden;
         
-/*
         border-style: dashed;
         border-width: thin;
         border-color: black;
-*/
     }
     
     .problem_for_print *{
