@@ -37,6 +37,102 @@
 //        $scope.message = 'Contact us! JK. This is just a demo.';
 //    });
     
+    app.constant('AUTH_EVENTS', {
+        loginSuccess: 'auth-login-success',
+        loginFailed: 'auth-login-failed',
+        logoutSuccess: 'auth-logout-success',
+        sessionTimeout: 'auth-session-timeout',
+        notAuthenticated: 'auth-not-authenticated',
+        notAuthorized: 'auth-not-authorized'
+    });
+    
+    app.constant('USER_ROLES', {
+        all: '*',
+        admin: 'admin',
+        editor: 'editor',
+        user: 'user',
+        guest: 'guest'
+    });
+    
+    app.service('Session', function(){
+       this.create = function(sessionId, userId, userRole){
+           this.id = sessionId;
+           this.userId = userId;
+           this.userRole = userRole;
+       }
+       
+       this.destroy = function(){
+           this.id = null;
+           this.userId = null;
+           this.userRole = null;
+       }
+    });
+    
+    app.factory('AuthService', ['$http', 'Session', function($http, Session){
+        var authService = {};
+        
+        authService.login = function (credentials) {
+            return $http.post('/login', credentials).then(function(res){
+                Session.create(res.data.id, res.data.user.uid, res.data.user.role);
+                return res.data.user;
+            }, function(res){
+                return null;
+            });
+        };
+        
+        authService.isAuthenticated = function () {
+            return !!Session.userId;
+        };
+        
+        authService.isAuthorized = function (authorizedRoles) {
+            if(!angular.isArray(authorizedRoles)){
+                authorizedRoles = [authorizedRoles];
+            }
+            return (authService.isAuthenticated() && authorizedRoles.indexOf(Session.userRole) !== -1);
+        };
+        
+        return authService;
+    }]);
+    
+    // login 
+    app.directive('login', function(){
+       return {
+           restrict: 'EA',
+           templateUrl: 'view/login-form.html',
+           controller: ['$scope', '$rootScope', 'AUTH_EVENTS', 'AuthService', function($scope, $rootScope, AUTH_EVENTS, AuthService){
+               $scope.credentials = {
+                   username: '',
+                   password: ''
+               };
+               $scope.login = function (credentials) {
+                   AuthService.login(credentials).then(function (user) {
+                       $rootScope.$broadcast(AUTH_EVENTS.loginSuccess);
+                       $scope.setCurrentUser(user);
+                   }, function () {
+                       $rootScope.$broadcast(AUTH_EVENTS.loginFailed);
+                   });
+               };
+           }]
+       };
+    });
+    
+    app.directive('loginDialog', function(AUTH_EVENTS){
+        return{
+            restrict: 'A',
+            templateUrl: 'view/loginDialog.html',
+            link: function(scope){
+                var shoDialog = function(){
+                    scope.visible = true;
+                };
+             
+                scope.visible = false;
+                scope.$on(AUTH_EVENTS.notAuthenticated, showDialog);
+                scope.$on(AUTH_EVENTS.sessionTimeout, showDialog);
+            }
+        };
+    });
+    
+    
     app.factory('stringFactory', function(){
         
         function getCircleNumber(index) {
@@ -174,7 +270,6 @@
             }else {
                 // separate parents ids
                 var tempId = '';
-                console.log('path : ' + absPath);
                 for(i=0 ;i<absPath.length; i++){
                     if(absPath.charAt(i)=='/'){
                         parentIdsArray.push(tempId);
@@ -207,7 +302,7 @@
     
     Category.prototype.getParentId = function(){
         
-        if(this.path.length && this.path){
+        if(this.path){
 
             var parentId = {};
             var pathStringLength = this.path.length;
@@ -244,34 +339,38 @@
     
     Category.prototype.insertCategory = function(item){
         var parentIdsArray = new Array();
-            
-        // separate parents ids
-        var tempId = '';
-        for(i=0 ;i<item.path.length; i++){
-            if(item.path.charAt(i)=='/'){
-                parentIdsArray.push(tempId);
-                tempId = '';
-            }else{
-                tempId = tempId.concat(item.path.charAt(i));
+        
+        if(item.path == null){
+            this.categories.push(item);
+        }else{
+            // separate parents ids
+            var tempId = '';
+            for(i=0 ;i<item.path.length; i++){
+                if(item.path.charAt(i)=='/'){
+                    parentIdsArray.push(tempId);
+                    tempId = '';
+                }else{
+                    tempId = tempId.concat(item.path.charAt(i));
+                }
             }
-        }
 
-        var parentCategory = this;
+            var parentCategory = this;
 
-        for(var j=0; j<=parentIdsArray.length; j++){
+            for(var j=0; j<=parentIdsArray.length; j++){
 
-            var parentId = parentIdsArray[j];
+                var parentId = parentIdsArray[j];
 
-            // last leaf
-            if(j == parentIdsArray.length){
-                parentCategory.categories.push(item);
-            }else{
-                // parentCategory change
-                for(var l=0; l<parentCategory.categories.length; l++){
-                    if(parentCategory.categories[l].cid == parentId){
-                        parentCategory = parentCategory.categories[l];
-                    }
-                }        
+                // last leaf
+                if(j == parentIdsArray.length){
+                    parentCategory.categories.push(item);
+                }else{
+                    // parentCategory change
+                    for(var l=0; l<parentCategory.categories.length; l++){
+                        if(parentCategory.categories[l].cid == parentId){
+                            parentCategory = parentCategory.categories[l];
+                        }
+                    }        
+                }   
             }   
         }
     };
@@ -615,8 +714,15 @@
         return this.masterData;  
     };
         
-    app.controller('BankController', ['$scope', '$http', function($scope, $http){
-        var bank = this;
+    // Application Controller
+    app.controller('BankController', ['$scope', 'USER_ROLES', 'AuthService', function($scope, USER_ROLES, AuthService){
+        $scope.currentUser = null;
+        $scope.userRoles = USER_ROLES;
+        $scope.isAuthorized = AuthService.isAuthorized;
+        
+        $scope.setCurrentUser = function (user){
+            $scope.currentUser = user;
+        }
     }]);
     
     app.directive('insertProblem', function(){
@@ -736,7 +842,7 @@
                     
                     var cname = this.cateObject.name;
                     var cpath = this.cateObject.path;
-                
+                    
                     $http.post('/category', {'path':cpath, 'name':cname}).
                     success(function(response){
                         alert('request complete');
@@ -1081,5 +1187,8 @@
             }
         };
     });
+    
+    
+    
     
 })();

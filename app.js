@@ -36,7 +36,7 @@ var client = mysql.createConnection({
 // make web server
 var app = express();
 app.use(express.static('public'));
-app.use(express.bodyParser());
+//app.use(express.bodyParser());
 //app.use(app.router);  
 
 
@@ -57,6 +57,12 @@ var s3Bucket = 'problem-bank';
 
 
 // object
+function User (data){
+    this.uid = data.uid;
+    this.username = data.name;
+    this.role = data.role;
+}
+
 function fileDateSet (path, type, fileName){
     this.path = path;
     this.type = type;
@@ -225,6 +231,16 @@ function deleteImageFromS3andDB (data, pid, types, callback) {
     });
 }
 
+
+// home page
+app.get(['/', '/index.html'], function(req, res){
+    fs.readFile('./index.html', function(err, data){
+        res.contentType('text/html');
+        res.send(data);
+    });
+});
+
+
 // restful api
 app.get('/problemImage?', function(request, response){
     var imageName = request.param('name');
@@ -291,7 +307,7 @@ app.post('/problem', function(request, response){
         
         // insert problem
         function(callback){
-            client.query('INSERT INTO Problems (question, answer, explanation, hasQImage, hasExplnImage, notAnswerExamples, answerType) VALUES(?, ?, ?, ?, ?)', [question, answer, explanation, notAnswerExamples, answerType], function(error, info){
+            client.query('INSERT INTO Problems (question, answer, explanation, notAnswerExamples, answerType) VALUES(?, ?, ?, ?, ?)', [question, answer, explanation, notAnswerExamples, answerType], function(error, info){
 
                 if(error){
                     console.log('INSERT PROBLEM : insert problem error with problem');    
@@ -769,12 +785,6 @@ app.del('/problem/:pid', function(request, response){
 });
 
 app.get('/categories', function(request, response){
-//    db_Category.findAll().success(function(categories){
-//        console.log('LOAD ALL CATEGORIES : complete');
-//        response.send(data);
-//        response.end('success');        
-//    });
-    console.log('get categories');
 
     client.query('select * from Categories', function(error, data){
         if(error){
@@ -782,7 +792,6 @@ app.get('/categories', function(request, response){
             throw error;
         }else{
             console.log('LOAD ALL CATEGORIES : complete ' + data.length);
-            console.log(JSON.parse(JSON.stringify(data)));
             response.send(data);
             response.end('success');        
         }
@@ -791,41 +800,27 @@ app.get('/categories', function(request, response){
 
 app.post('/category', function(request, response){
     
-//    var name = request.param('name');
-//    var parentId = request.param('parentId');
-//    var path = request.param('path');
-//    
-//    console.log('post category path,name: ' + path +','+ name +', parentId : '+ parentId);
-//    
-//    var newCategory = db_category.build({
-//        name: name,
-//        path: path
-//    });
-//    
-//    newCategory.save().success(function(){
-//        console.log('INSERT CATEGORY : insert category complete');
-//        response.send({cid: info.insertId});
-        response.end('inserted');        
-//    })
-//        .error(function(){
-//        console.log('INSERT CATEGORY : insert category error');
-//    });
-//    client.query('INSERT INTO categories (name, path) VALUES(?, ?)', [name, path], function(err, info){
-//        if(err){
-//            console.log('INSERT CATEGORY : insert category error');
-//            throw err;
-//        }else{
-//            console.log('INSERT CATEGORY : insert category complete');
-//            response.send({cid: info.insertId});
-//            response.end('inserted');
-//        }
-//    });
+    var name = request.param('name');
+    var parentId = request.param('parentId');
+    var path = request.param('path');
+    
+    console.log('post category path,name: ' + path +','+ name +', parentId : '+ parentId);
+    
+    client.query('INSERT INTO Categories (name, path) VALUES(?, ?)', [name, path], function(err, info){
+        if(err){
+            console.log('INSERT CATEGORY : insert category error');
+            throw err;
+        }else{
+            console.log('INSERT CATEGORY : insert category complete');
+            response.send({cid: info.insertId});
+            response.end('inserted');
+        }
+    });
 });
 
 app.del('/category/:cid', function(request, response){
         
     var cid = Number(request.param('cid'));
-    
     
     client.query('SELECT * FROM Categories WHERE cid='+cid, function(error, results){
         
@@ -867,8 +862,32 @@ app.del('/category/:cid', function(request, response){
     });
 });
 
+app.post('/login', function(request, response){
+    console.log(JSON.parse(JSON.stringify(request.body)));
+    var username = request.param('username');
+    var password = request.param('password');
+    
+    client.query('SELECT uid, name, role FROM Users WHERE name = ? AND password = ?', [username, password], function (err, results){
+        if(err){
+            response.statusCode = 520;
+            response.end('login error');
+            throw err;
+        }else {
+            console.log(JSON.parse(JSON.stringify(results)));
+            if(results.length){
+                var theUser = new User(results[0]);
+                response.statusCode = 200;
+                response.send({user: theUser});
+                response.end('user checked');
+            }else{
+                response.statusCode = 401;
+                response.end('there is no user');
+            }
+        }
+    });
+});
+
 // check server running
-//http.createServer(app).listen(process.env.PORT || 3000, function(req, res){
 http.createServer(app).listen(process.env.PORT || 3000, function(req, res){
     
     var ifaces = os.networkInterfaces();
