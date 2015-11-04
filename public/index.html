@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html ng-app="problemBank">
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="css/angular-ui-tree.min.css"/>
+        <link rel="stylesheet" type="text/css" href="css/bank.css"/>
+        <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/javascript" src="js/angular.min.js"></script>
+        <script type="text/javascript" src="js/app.js"></script>
+        <script type="text/javascript" src="js/app-mathjax.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+        <script type="text/javascript" src="js/bank_jquery.js"></script>
+        <script type="text/javascript" src="js/mathjax_dynamic.js"></script>
+        <script type="text/javascript" src="js/angular-ui-tree.min.js"></script>
+        <script type="text/javascript" src="js/ui-bootstrap-tpls-0.13.0.min.js"></script>
+        
+        <script type="text/javascript" src="js/ng-file-upload-shim.min.js"></script> 
+        <script type="text/javascript" src="js/ng-file-upload.min.js"></script>
+        
+        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.js"></script>
+    </head>
+    
+    <body ng-controller="BankController as bank" class="">     
+        
+        <section class="row">
+            <div class="col-md-10 col-md-offset-1" style="margin-bottom:50px;">
+                <login></login>
+            </div>
+            <hr class="col-md-12 no_print">
+        </section>
+        
+<!--
+        <header id="main_header" class="no_print">
+            <nav class="navbar navbar-default">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="/">Angular Routing Example</a>
+                </div>
+
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#"><i class="fa fa-home"></i> Home</a></li>
+                    <li><a href="#about"><i class="fa fa-shield"></i> About</a></li>
+                    <li><a href="#contact"><i class="fa fa-comment"></i> Contact</a></li>
+                </ul>
+            </div>
+            </nav>
+        </header>
+        
+        <div id="main" ng-controller="mainController">
+            <div ng-view></div>
+        </div>
+-->
+        
+        <section class="no_print">
+            <h1 class="text-center">{{"초롱불"}}</h1>
+            <hr>
+        </section>
+            
+        <section id="insert_problem" class="row no_print">
+            <div class="col-md-10 col-md-offset-1" style="padding-bottom:50px;">
+                <h3 class="text-center">{{"문제 입력하기"}}</h3>
+                <insert-problem></insert-problem>
+            </div>
+            <hr class="col-md-12">
+        </section>
+        
+        <section id="edit_category" class="row no_print">
+            <div class="col-md-10 col-md-offset-1" style="padding-bottom:50px;">
+                <edit-category></edit-category>
+            </div>
+            <hr class="col-md-12">
+        </section>
+        
+        <section id="load_problem" class="row">
+            <div class="col-md-10 col-md-offset-1" style="margin-bottom:50px;">
+                <load-problems></load-problems>
+            </div>
+            <hr class="col-md-12 no_print">
+        </section>
+        
+        <!-- Bank Footer -->
+        <footer>
+        </footer>
+    </body>
+</html>
