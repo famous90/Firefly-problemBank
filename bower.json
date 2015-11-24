@@ -1,0 +1,18 @@
+{
+    "name": "problem_bank",
+    "dependencies": {
+        "angular": "~1.4.7",
+        "angular-route": "~1.2.25"
+    },
+    "description": "",
+    "moduleType": [
+        "node"
+    ],
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ]
+}

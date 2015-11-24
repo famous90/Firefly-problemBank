@@ -1,0 +1,13 @@
+<nav class="navbar navbar-fixed-top navbar-default" style="padding-top:10px;" ng-click="$event.preventDefault()">
+    <div class="container-fluid">
+    <!-- When a link in the menu is clicked, we set the active variable -->
+        <ul class="nav nav-pills">
+            <li><a ng-click="vm.showLogin()" ng-show="!$root.globals">로그인</a></li>
+            <li><a ng-click="vm.showLogout()" ng-show="$root.globals">로그아웃</a></li>
+            <li><a ng-click="vm.showLoadProblem()">문제 불러오기</a></li>
+            <li><a ng-click="vm.showInsertProblem()">문제 입력하기</a></li>
+            <li><a ng-click="vm.showEditCategory()">카테고리 편집</a></li>
+            <p class="navbar-text pull-right">사용자: {{vm.user.username}}</p>
+        </ul>
+    </div>
+</nav>

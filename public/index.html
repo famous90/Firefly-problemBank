@@ -2,34 +2,71 @@
 <html ng-app="problemBank">
     <head>
         <meta charset="utf-8">
+        
         <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="css/angular-ui-tree.min.css"/>
-        <link rel="stylesheet" type="text/css" href="css/bank.css"/>
+        <link rel="stylesheet" type="text/css" href="app-content/angular-ui-tree.min.css"/>
+        <link rel="stylesheet" type="text/css" href="app-content/app.css"/>
+        
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
         <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/javascript" src="js/angular.min.js"></script>
-        <script type="text/javascript" src="js/app.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.29/angular-route.js"></script>
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-cookies.js"></script>
+        <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+        
+        <script type="text/javascript" src="app.js"></script>
+        
+        <script type="text/javascript" src="lib/mathjax_dynamic.js"></script>
+        <script type="text/javascript" src="lib/angular-ui-tree.min.js"></script>
+        <script type="text/javascript" src="lib/ui-bootstrap-tpls-0.13.0.min.js"></script>
+        <script type="text/javascript" src="lib/ng-file-upload-shim.min.js"></script> 
+        <script type="text/javascript" src="lib/ng-file-upload.min.js"></script>
+        
         <script type="text/javascript" src="js/app-mathjax.js"></script>
-        <script type="text/javascript" src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-        <script type="text/javascript" src="js/bank_jquery.js"></script>
-        <script type="text/javascript" src="js/mathjax_dynamic.js"></script>
-        <script type="text/javascript" src="js/angular-ui-tree.min.js"></script>
-        <script type="text/javascript" src="js/ui-bootstrap-tpls-0.13.0.min.js"></script>
         
-        <script type="text/javascript" src="js/ng-file-upload-shim.min.js"></script> 
-        <script type="text/javascript" src="js/ng-file-upload.min.js"></script>
+        <script type="text/javascript" src="main/bank.controller.js"></script>
+        <script type="text/javascript" src="main/nav.directive.js"></script>
         
-        <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.25/angular-route.js"></script>
+        <script type="text/javascript" src="category/category.factory.js"></script>
+        <script type="text/javascript" src="category/edit.category.directive.js"></script>
+        <script type="text/javascript" src="category/nodeRenderer.category.directive.js"></script>
+        <script type="text/javascript" src="category/select.category.directive.js"></script>
+        <script type="text/javascript" src="category/modal.category.controller.js"></script>
+        
+        <script type="text/javascript" src="util/string.factory.js"></script>
+        <script type="text/javascript" src="util/array.factory.js"></script>
+        <script type="text/javascript" src="util/data.factory.js"></script>
+        <script type="text/javascript" src="util/encrypt.factory.js"></script>
+        
+        <script type="text/javascript" src="user/user.role.constant.js"></script>
+        
+        <script type="text/javascript" src="login/login.auth.constant.js"></script>
+        <script type="text/javascript" src="login/session.service.js"></script>
+        <script type="text/javascript" src="login/authentication.factory.js"></script>
+<!--        <script type="text/javascript" src="login/login.directive.js"></script>-->
+        <script type="text/javascript" src="login/login.form.controller.js"></script>
+        
+        <script type="text/javascript" src="problem/problemMaster.factory.js"></script>
+        <script type="text/javascript" src="problem/load.problem.directive.js"></script>
+        <script type="text/javascript" src="problem/show.problem.directive.js"></script>
+        <script type="text/javascript" src="problem/modal.problem.controller.js"></script>
+        <script type="text/javascript" src="problem/insert.problem.js"></script>
+        
+        <script type="text/javascript" src="image/image.frame.directive.js"></script>
+        
     </head>
     
     <body ng-controller="BankController as bank" class="">     
         
+        <main-nav></main-nav>
+<!--
         <section class="row">
             <div class="col-md-10 col-md-offset-1" style="margin-bottom:50px;">
-                <login></login>
+                <login-form></login-form>
             </div>
             <hr class="col-md-12 no_print">
         </section>
         
+-->
 <!--
         <header id="main_header" class="no_print">
             <nav class="navbar navbar-default">
@@ -53,7 +90,7 @@
 -->
         
         <section class="no_print">
-            <h1 class="text-center">{{"초롱불"}}</h1>
+            <h1 class="text-center">{{"이젠 문제집을 뽑아 쓰세요"}}</h1>
             <hr>
         </section>
             

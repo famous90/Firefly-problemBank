@@ -1,15 +1,28 @@
 {
-    "name": "testbank",
-    "desciption": "test bank elastic beanstalk",
-    "version": "0.2.0",
-    "dependencies": {
-        "express": "3.4.7",
-        "path": "*",
-        "body-parser": "*",
-        "mysql": "*",
-        "async": "*",
-        "https": "*",
-        "aws-sdk": "*",
-        "randomstring": "*"
-    }
+  "name": "problem_bank",
+  "desciption": "local test for problem bank",
+  "version": "1.0.0",
+  "dependencies": {
+    "async": "*",
+    "aws-sdk": "*",
+    "body-parser": "^1.14.1",
+    "connect-multiparty": "^2.0.0",
+    "express": "^4.13.3",
+    "https": "*",
+    "mysql": "*",
+    "path": "*",
+    "randomstring": "*"
+  },
+  "devDependencies": {
+    "blanket": "^1.2.1",
+    "chai": "^3.4.1",
+    "karma": "^0.13.15",
+    "karma-chai": "^0.1.0",
+    "karma-mocha": "^0.2.1",
+    "karma-phantomjs-launcher": "^0.2.1",
+    "mocha": "^2.3.3",
+    "phantomjs": "^1.9.18",
+    "protractor": "^2.5.1",
+    "supertest": "^1.1.0"
+  }
 }
