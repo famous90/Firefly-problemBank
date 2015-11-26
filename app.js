@@ -14,6 +14,7 @@ app.use(require('./server/api/category'));
 app.use(require('./server/api/problem'));
 app.use(require('./server/api/login'));
 app.use(require('./server/api/image'));
+app.use(require('./server/api/user'));
 
 
 // home page

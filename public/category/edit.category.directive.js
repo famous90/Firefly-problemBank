@@ -7,8 +7,8 @@
     
     function editCategory(){
         return {
-            restrict: 'E',
-            templateUrl: 'view/edit-category.html'
+            restrict: 'EA',
+            templateUrl: 'category/edit.category.html'
         };
     }
 })();

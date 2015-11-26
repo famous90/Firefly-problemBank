@@ -8,7 +8,7 @@
     function imageFrame(){
         return {
             restrict: 'EA',
-            templateUrl: 'view/image-frame.html',
+            templateUrl: 'image/image.frame.html',
             scope: {
                 imageFile: '=',
                 width: '='

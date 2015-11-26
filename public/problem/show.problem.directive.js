@@ -8,7 +8,7 @@
     function showProblem(){
         return {
             restrict: 'EA',
-            templateUrl: 'view/show-problem.html',
+            templateUrl: 'problem/show.problem.html',
             scope: {
                 problem: '=item',
                 problemIndex: '=index',

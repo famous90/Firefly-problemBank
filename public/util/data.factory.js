@@ -10,6 +10,8 @@
     function dataFactory($http, Upload){
         return {
             authenticate: authenticate,
+            createUser: createUser,
+            getUsers: getUsers,
             getCategories: getCategories,
             insertCategory: insertCategory,
             deleteCategory: deleteCategory,
@@ -23,6 +25,16 @@
         // login
         function authenticate(credentials){
             return $http.post('/api/authenticate', credentials);
+        }
+        
+        
+        // user
+        function createUser(user){
+            return $http.post('/api/users', user);
+        }
+        
+        function getUsers(user){
+            return $http.get('/api/users');
         }
         
         

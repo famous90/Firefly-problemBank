@@ -27,13 +27,15 @@
             });
         }
         
-        function setCredentials(username, password) {
-            var authdata = encryptFactory.encode(username + ':' + password);
+        function setCredentials(password, data) {
+            var authdata = encryptFactory.encode(data.user.username + ':' + password);
             
             $rootScope.globals = {
                 currentUser: {
-                    username: username,
-                    authdata: authdata
+                    username: data.user.username,
+                    authdata: authdata,
+                    uid: data.user.uid,
+                    role: data.user.role
                 }
             };
             

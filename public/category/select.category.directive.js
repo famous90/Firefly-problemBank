@@ -8,7 +8,7 @@
     function selectCategory(){
         return {
             restrict: 'E',
-            templateUrl: 'view/select-category.html',
+            templateUrl: 'category/select.category.html',
             scope: {
                 type: '=',
                 selections: '=',
@@ -23,6 +23,7 @@
     
     function selectCategoryController($scope, categoryFactory, $modal, arrayFactory){
         $scope.categories = [];
+        $scope.selections = [];
         categoryFactory.getCategories.then(function(data){
             $scope.categories = data.masterCategory.categories;
         }, function(data){
@@ -73,7 +74,7 @@
 
             var checkModal = $modal.open({
                 animation: true,
-                templateUrl: 'view/check-modal.html',
+                templateUrl: 'category/modal.category.html',
                 controller: 'CheckModalController',
                 size: 'sm',
                 resolve: {
@@ -92,7 +93,7 @@
         
         function selectCategory(cid){
             var theIndex = $scope.selections.indexOf(cid);
-
+             
             if(theIndex != -1){
                 // already has category
                 $scope.selections.splice(theIndex, 1);

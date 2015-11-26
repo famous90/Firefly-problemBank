@@ -3,16 +3,7 @@
     
     angular
         .module('problemBank')
-        .directive('insertProblem', insertProblem);
-    
-    function insertProblem(){
-        return {
-            restrict: 'E',
-            templateUrl: 'view/insert-problem.html',
-            controller: insertProblemController,
-            controllerAs: 'inserProblemCtrl'
-        };
-    }
+        .controller('insertProblemController', insertProblemController);
     
     insertProblemController.$inject = ['$scope', '$window', 'dataFactory'];
                                                  

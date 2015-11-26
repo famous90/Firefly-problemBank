@@ -7,8 +7,8 @@
     
     function nodesRenderer(){
         return {
-            restrict: 'E',
-            templateUrl: 'view/nodes-renderer.html'
+            restrict: 'EA',
+            templateUrl: 'category/nodeRenderer.category.html'
         };
     }
     

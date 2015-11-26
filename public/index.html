@@ -24,10 +24,11 @@
         <script type="text/javascript" src="js/app-mathjax.js"></script>
         
         <script type="text/javascript" src="main/bank.controller.js"></script>
-        <script type="text/javascript" src="main/nav.directive.js"></script>
+        <script type="text/javascript" src="main/main.nav.directive.js"></script>
+        <script type="text/javascript" src="app.config.js"></script>
+        <script type="text/javascript" src="app.run.js"></script>
         
         <script type="text/javascript" src="category/category.factory.js"></script>
-        <script type="text/javascript" src="category/edit.category.directive.js"></script>
         <script type="text/javascript" src="category/nodeRenderer.category.directive.js"></script>
         <script type="text/javascript" src="category/select.category.directive.js"></script>
         <script type="text/javascript" src="category/modal.category.controller.js"></script>
@@ -38,18 +39,21 @@
         <script type="text/javascript" src="util/encrypt.factory.js"></script>
         
         <script type="text/javascript" src="user/user.role.constant.js"></script>
+        <script type="text/javascript" src="user/manage.user.controller.js"></script>
         
         <script type="text/javascript" src="login/login.auth.constant.js"></script>
         <script type="text/javascript" src="login/session.service.js"></script>
         <script type="text/javascript" src="login/authentication.factory.js"></script>
-<!--        <script type="text/javascript" src="login/login.directive.js"></script>-->
         <script type="text/javascript" src="login/login.form.controller.js"></script>
         
+        <script type="text/javascript" src="register/form.register.controller.js"></script>
+        
         <script type="text/javascript" src="problem/problemMaster.factory.js"></script>
-        <script type="text/javascript" src="problem/load.problem.directive.js"></script>
+        <script type="text/javascript" src="problem/load.problem.controller.js"></script>
         <script type="text/javascript" src="problem/show.problem.directive.js"></script>
         <script type="text/javascript" src="problem/modal.problem.controller.js"></script>
-        <script type="text/javascript" src="problem/insert.problem.js"></script>
+        <script type="text/javascript" src="problem/insert.problem.controller.js"></script>
+        <script type="text/javascript" src="problem/insert.problem.directive.js"></script>
         
         <script type="text/javascript" src="image/image.frame.directive.js"></script>
         
@@ -57,66 +61,16 @@
     
     <body ng-controller="BankController as bank" class="">     
         
-        <main-nav></main-nav>
-<!--
-        <section class="row">
-            <div class="col-md-10 col-md-offset-1" style="margin-bottom:50px;">
-                <login-form></login-form>
-            </div>
-            <hr class="col-md-12 no_print">
-        </section>
-        
--->
-<!--
-        <header id="main_header" class="no_print">
-            <nav class="navbar navbar-default">
-            <div class="container">
-                <div class="navbar-header">
-                    <a class="navbar-brand" href="/">Angular Routing Example</a>
-                </div>
-
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="#"><i class="fa fa-home"></i> Home</a></li>
-                    <li><a href="#about"><i class="fa fa-shield"></i> About</a></li>
-                    <li><a href="#contact"><i class="fa fa-comment"></i> Contact</a></li>
-                </ul>
-            </div>
-            </nav>
+        <header>
+            <main-nav></main-nav>
         </header>
-        
-        <div id="main" ng-controller="mainController">
-            <div ng-view></div>
-        </div>
--->
-        
-        <section class="no_print">
+                
+        <div class="no_print">
             <h1 class="text-center">{{"이젠 문제집을 뽑아 쓰세요"}}</h1>
             <hr>
-        </section>
-            
-        <section id="insert_problem" class="row no_print">
-            <div class="col-md-10 col-md-offset-1" style="padding-bottom:50px;">
-                <h3 class="text-center">{{"문제 입력하기"}}</h3>
-                <insert-problem></insert-problem>
-            </div>
-            <hr class="col-md-12">
-        </section>
-        
-        <section id="edit_category" class="row no_print">
-            <div class="col-md-10 col-md-offset-1" style="padding-bottom:50px;">
-                <edit-category></edit-category>
-            </div>
-            <hr class="col-md-12">
-        </section>
-        
-        <section id="load_problem" class="row">
-            <div class="col-md-10 col-md-offset-1" style="margin-bottom:50px;">
-                <load-problems></load-problems>
-            </div>
-            <hr class="col-md-12 no_print">
-        </section>
-        
-        <!-- Bank Footer -->
+        </div>
+        <div class="col-md-8 col-md-offset-2" ng-view></div>
+             
         <footer>
         </footer>
     </body>

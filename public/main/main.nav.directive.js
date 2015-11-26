@@ -14,17 +14,27 @@
        };
     };
     
-    mainNavController.$inject = ['$modal', '$rootScope'];
+    mainNavController.$inject = ['$modal', '$rootScope', 'authenticationFactory', '$log'];
     
-    function mainNavController($modal, $rootScope) {
+    function mainNavController($modal, $rootScope, authenticationFactory, $log) {
         var vm = this;
+        
         vm.user = {};
         vm.showLogin = showLogin;
         vm.logout = logout;
         vm.showLoadProblem = showLoadProblem;
         vm.showInsertProblem = showInsertProblem;
         vm.showEditCategory = showEditCategory;
+        vm.showUsersInfo = showUsersInfo;
         
+        initUser();
+        
+        function initUser(){
+            if($rootScope.globals.currentUser){
+                vm.user = $rootScope.globals.currentUser;
+            }
+        }
+                
         function showLogin(){
             var modalInstance = $modal.open({
                 animation: true,
@@ -35,20 +45,22 @@
             });
 
             modalInstance.result.then(function () {
-                console.log('login success and modal close');
-                console.log($rootScope.globals);
+                $log.info('login success and modal close');
                 vm.user = $rootScope.globals.currentUser;
             }, function () {
-                console.log('login canceled');
+                $log.info('login canceled');
             });
         };
         
         function logout() {
-              
+            authenticationFactory.clearCredentials();
+            vm.user = {};
+            alert('로그아웃 되었습니다.');
         };
         
         function showLoadProblem() {};
         function showInsertProblem() {};
         function showEditCategory() {};
+        function showUsersInfo() {};
     };
 })();

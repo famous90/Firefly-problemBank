@@ -22,8 +22,9 @@
         function login() {
             vm.dataLoading = true;
             authenticationFactory.login(vm.username, vm.password, function(response){
-                console.log('login success');
-                authenticationFactory.setCredentials(vm.username, vm.password);
+                console.log(response);
+                authenticationFactory.setCredentials(vm.password, response);
+                $location.path('/home');
                 $modalInstance.close();
             }, function(response){
                 console.error('login error');
@@ -34,7 +35,7 @@
         };
         
         function register() {
-            
+            $modalInstance.dismiss('cancel');
         }
         
         function cancel() {

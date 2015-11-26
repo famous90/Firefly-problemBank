@@ -3,20 +3,11 @@
     
     angular
         .module('problemBank')
-        .directive('loadProblems', loadProblems);
+        .controller('loadProblemController', loadProblemController);
     
-    function loadProblems(){
-        return {
-            restrict: 'E',
-            templateUrl: 'view/load-problems.html',
-            controller: loadProblemsController,
-            controllerAs: 'loadProblemsCtrl'
-        };
-    }
+    loadProblemController.$inject = ['$scope', '$modal', '$log', '$window', 'stringFactory', 'problemMasterFactory'];
     
-    loadProblemsController.$inject = ['$scope', '$modal', '$log', '$window', 'stringFactory', 'problemMasterFactory'];
-    
-    function loadProblemsController($scope, $modal, $log, $window, stringFactory, problemMasterFactory){                
+    function loadProblemController($scope, $modal, $log, $window, stringFactory, problemMasterFactory){                
         $scope.category = {};
         $scope.category.selections = new Array();
         $scope.masterProblem = [];
@@ -53,9 +44,10 @@
 
         function updateProblem(item) {
             var newProblem = new Problem(item);
+            console.log(newProblem);
             var modalInstance = $modal.open({
                 animation: true,
-                templateUrl: 'view/edit-problem-modal.html',
+                templateUrl: 'problem/modal.problem.html',
                 controller: 'ModalInstanceCtrl',
                 size: 'lg',
                 resolve: {
