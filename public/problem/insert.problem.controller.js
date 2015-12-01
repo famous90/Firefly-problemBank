@@ -46,62 +46,73 @@
          
         function submitForm(questionImages, explanationImages){
 
+            var formDataNames = [];
+            var imageFiles = [];
+            
+            if(!checkProblemForm()){
+                return;
+            }
+            
+            setImageFileAndFormNames();
+            uploadProblem();
+            
+            function setImageFileAndFormNames(){
+                if(questionImages){
+                    for(var i=0; i<questionImages.length; i++){
+                        formDataNames.push('questionAttached');    
+                        imageFiles.push(questionImages[i]);
+                    }                        
+                }
+                if(explanationImages){
+                    for(var i=0; i<explanationImages.length; i++){
+                        formDataNames.push('explanationAttached');
+                        imageFiles.push(explanationImages[i]);
+                    }                        
+                }
+            };
+        };
+        
+        function checkProblemForm(){
             if(!$scope.problem.selections.length){
                 alert('카테고리를 선택해주세요');    
-                return;
+                return false;
             }
             if(!$scope.problem.question){
                 alert('문제 입력은 필수입니다');    
-                return;
+                return false;
             }
             if(!$scope.problem.answer){
                 alert('답을 입력해주세요');    
-                return;
+                return false;
             }
             if(!$scope.problem.explanation){
                 alert('해설 입력은 필수입니다');    
-                return;
+                return false;
             }
+            return true;
+        };
+        
+        function uploadProblem(){
+            dataFactory
+                .insertProblem($scope.problem, imageFiles, formDataNames)
+                .success(function(response){
+                    if(imageFiles.length){
+                        $window.alert(imageFiles.length + '개 이미지와 문제 업로드 성공');
+                    }else {
+                        $window.alert('이미지 없는 문제 업로드 성공');
+                    }
 
-            var formDataNames = [];
-            var imageFiles = [];
-            if(questionImages){
-                for(var i=0; i<questionImages.length; i++){
-                    formDataNames.push('questionAttached');    
-                    imageFiles.push(questionImages[i]);
-                }                        
-            }
-            if(explanationImages){
-                for(var i=0; i<explanationImages.length; i++){
-                    formDataNames.push('explanationAttached');
-                    imageFiles.push(explanationImages[i]);
-                }                        
-            }
-            
-            uploadProblem();
-            
-            function uploadProblem(){
-                dataFactory
-                    .insertProblem($scope.problem, imageFiles, formDataNames)
-                    .success(function(response){
-                        if(imageFiles.length){
-                            $window.alert(imageFiles.length + '개 이미지와 문제 업로드 성공');
-                        }else {
-                            $window.alert('이미지 없는 문제 업로드 성공');
-                        }
+                // initialize problem
+                    var selections = $scope.problem.selections;
+                    $scope.problem = new Problem();
+                    $scope.problem.selections = selections;
+                    $scope.questionImages = [];
+                    angular.element($('#questionImages')[0]).val(null);
+                    angular.element($('#explanationImages')[0]).val(null);
 
-                    // initialize problem
-                        var selections = $scope.problem.selections;
-                        $scope.problem = new Problem();
-                        $scope.problem.selections = selections;
-                        $scope.questionImages = [];
-                        angular.element($('#questionImages')[0]).val(null);
-                        angular.element($('#explanationImages')[0]).val(null);
-
-                }).error(function(response){
-                    $window.alert('업로드에 실패했습니다. 다시 시도해 주세요.');
-                });
-            }
+            }).error(function(response){
+                $window.alert('업로드에 실패했습니다. 다시 시도해 주세요.');
+            });
         };
     }
 

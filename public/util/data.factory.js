@@ -9,6 +9,7 @@
     
     function dataFactory($http, Upload){
         return {
+            setHeaderAuthorization: setHeaderAuthorization,
             authenticate: authenticate,
             createUser: createUser,
             getUsers: getUsers,
@@ -19,6 +20,11 @@
             getProblems: getProblems,
             updateProblem: updateProblem,
             deleteProblem: deleteProblem
+        };
+        
+        // http header
+        function setHeaderAuthorization(authdata){
+            $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata // jshint ignore:line  
         };
         
         

@@ -20,12 +20,17 @@ router.get('/api/users', function(request, response){
 
 router.post('/api/users', function(request, response){
     
-    var user = request.body;
-    var username = user.username;
-    var password = user.password;
+    if(!request.body.username || !request.body.password){
+        response.statusCode = 400;
+        response.end('request Error');
+        return;
+    }
+    
+    var username = request.body.username;
+    var password = request.body.password;
     var role = 'user';
-    if(user.role){
-        role = user.role;
+    if(request.body.role){
+        role = request.body.role;
     }
     
     async.waterfall([
@@ -36,7 +41,7 @@ router.post('/api/users', function(request, response){
                 if(result == true){
                     callback('username duplication');
                 }else{
-                    callback('null');
+                    callback(null);
                 }
             }, function(error){
                 callback(error);
@@ -48,7 +53,6 @@ router.post('/api/users', function(request, response){
             client.query('INSERT INTO Users (name, password, role) VALUES (?,?,?)', [username, password, role], function (err, results){
                 if(err){
                     callback(err);
-                    throw err;
                 }else {
                     callback(null);
                 }
@@ -57,7 +61,7 @@ router.post('/api/users', function(request, response){
         
     ], function(err, results){
         if(err){
-            console.log(err);
+            console.error(err);
             response.statusCode = 400;
             response.end(err);
         }else{
@@ -97,7 +101,6 @@ function isUserInList(username, onSuccess, onError){
     client.query('SELECT * FROM Users WHERE Users.name = ?', [username], function(err, results){
        if(err){
            onError(err);
-           throw err;
        }else{
            if(results.length){
                onSuccess(true);

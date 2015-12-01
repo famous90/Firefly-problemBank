@@ -5,14 +5,14 @@
         .module('problemBank')
         .run(run);
     
-    run.$inject = ['$rootScope', '$location', '$cookieStore', '$http'];
+    run.$inject = ['$rootScope', '$location', '$cookieStore', 'dataFactory'];
     
     // register listener to watch route changes
-    function run($rootScope, $location, $cookieStore, $http){
+    function run($rootScope, $location, $cookieStore, dataFactory){
         // keep user logged in after page refresh
         $rootScope.globals = $cookieStore.get('globals') || {};
         if($rootScope.globals.currentUser){
-            $http.defaults.headers.common['Authorization'] = 'Basic ' + $rootScope.globals.currentUser.authdata;
+            dataFactory.setHeaderAuthorization($rootScope.globals.currentUser.authdata);
         }
         
         $rootScope.$on('$locationChangeStart', function(event, next, current){

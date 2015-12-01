@@ -3,14 +3,21 @@ var client = require('../mysql-client');
 var User = require('../model/User');
 
 router.post('/api/authenticate', function(request, response){
-    console.log(JSON.parse(JSON.stringify(request.body)));
+    
+    if(!request.body.username || !request.body.password){
+        response.statusCode = 400;
+        response.end('request Error');
+        return;
+    }
+    
     var username = request.body.username;
     var password = request.body.password;
     
-    client.query('SELECT uid, name, role FROM Users WHERE name = ? AND password = ?', [username, password], function (err, results){
+    client.query('SELECT Users.uid, Users.name, Users.role FROM Users WHERE name = ? AND password = ?', [username, password], function (err, results){
         if(err){
-            response.statusCode = 520;
-            response.end('login error');
+            response.statusCode = 400;
+            response.end(err);
+            console.error(err);
             throw err;
         }else {
             console.log(JSON.parse(JSON.stringify(results)));

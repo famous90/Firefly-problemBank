@@ -4,14 +4,15 @@ var async = require('async');
 
 router.get('/categories', function(request, response){
     
-    console.log(request.headers);
-
     client.query('select * from Categories', function(error, data){
         if(error){
-            console.error('LOAD ALL CATEGORIES : error');
+            response.statusCode = 400;
+            response.end(error);
+            console.error(error);
             throw error;
         }else{
-            console.log('LOAD ALL CATEGORIES : complete ' + data.length);
+            response.statusCode = 200;
+            console.log(data);
             response.send(data);
             response.end('success');        
         }
@@ -19,20 +20,17 @@ router.get('/categories', function(request, response){
 });
 
 router.post('/category', function(request, response){
-
-    console.log(request.headers);
-
     var name = request.body.name;
     var path = request.body.path;
     
-    console.log('post category path,name: ' + path +','+ name);
-    
     client.query('INSERT INTO Categories (name, path) VALUES(?, ?)', [name, path], function(err, info){
         if(err){
-            console.log('INSERT CATEGORY : insert category error');
+            response.statusCode = 400;
+            response.end(err);
+            console.error(err);
             throw err;
         }else{
-            console.log('INSERT CATEGORY : insert category complete');
+            response.statusCode = 200;
             response.send({cid: info.insertId});
             response.end('inserted');
         }
@@ -54,9 +52,7 @@ router.delete('/category/:cid', function(request, response){
                     var queryForChildren = "DELETE FROM Categories WHERE path LIKE '%"+cid+"%'";
                     client.query(queryForChildren, function(error){
                         if(error){
-                            response.statusCode = 400;
-                            console.log('DELETE CATEGORY : select children categories error');
-                            subCallback(null);
+                            subCallback(error);
                             throw error;
                         }else{
                             console.log('DELETE CATEGORY : completely delete children categories');
@@ -69,9 +65,7 @@ router.delete('/category/:cid', function(request, response){
                 function(subCallback) {
                     client.query("DELETE FROM PcLinks WHERE cid = ?", [cid], function(error){
                         if(error){
-                            response.statusCode = 400;
-                            console.log('DELETE CATEGORY : select pclinks error');
-                            subCallback(null);
+                            subCallback(error);
                             throw error;
                         }else{
                             console.log('DELETE CATEGORY : completely delete pclinks');
@@ -82,9 +76,10 @@ router.delete('/category/:cid', function(request, response){
                 
             ], function(err) {
                 if(err){
-                    throw err;
+                    callback(err);
+                }else {
+                    callback(null);   
                 }
-                callback(null);
             });
         },
         
@@ -92,8 +87,7 @@ router.delete('/category/:cid', function(request, response){
         function(callback){
             client.query('DELETE FROM Categories WHERE cid=?', [cid], function(err, data){
                 if(err){
-                    response.statusCode = 400;
-                    console.log('DELETE CATEGORY : delete category error');
+                    callback(err);
                     throw err;
                 }else{
                     callback(null);
@@ -104,10 +98,11 @@ router.delete('/category/:cid', function(request, response){
     ], function(err){
         if(err){
             response.statusCode = 400;
-            response.end('ERROR');
+            response.end(err);
+            console.error(err);
         }else{
             console.log('DELETE CATEGORY : delete category complete');
-            response.end('OK');   
+            response.end('completely category deleted');   
         }
     });
 });

@@ -27,9 +27,8 @@
                 $location.path('/home');
                 $modalInstance.close();
             }, function(response){
-                console.error('login error');
                 console.error(response);
-                vm.error = response;
+                vm.error = '로그인 중 오류가 발생했습니다. 다시 시도해주세요.';
                 vm.dataLoading = false;
             });
         };

@@ -16,7 +16,6 @@
             setMasterProblem: setMasterProblem,
             loadProblemsWithCount: loadProblemsWithCount,
             deleteProlblemWithPid: deleteProblemWithPid,
-//            deleteProblem: deleteProblem,
             changeProblem: changeProblem,
             getMasterDataLength: getMasterDataLength
         };

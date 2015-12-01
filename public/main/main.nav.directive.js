@@ -22,10 +22,6 @@
         vm.user = {};
         vm.showLogin = showLogin;
         vm.logout = logout;
-        vm.showLoadProblem = showLoadProblem;
-        vm.showInsertProblem = showInsertProblem;
-        vm.showEditCategory = showEditCategory;
-        vm.showUsersInfo = showUsersInfo;
         
         initUser();
         
@@ -38,7 +34,7 @@
         function showLogin(){
             var modalInstance = $modal.open({
                 animation: true,
-                templateUrl: '../login/login-form.html',
+                templateUrl: '../login/form.login.html',
                 controller: 'loginController',
                 controllerAs: 'vm',
                 size: 'lg'
@@ -57,10 +53,6 @@
             vm.user = {};
             alert('로그아웃 되었습니다.');
         };
-        
-        function showLoadProblem() {};
-        function showInsertProblem() {};
-        function showEditCategory() {};
-        function showUsersInfo() {};
+    
     };
 })();

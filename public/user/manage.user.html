@@ -1,6 +1,11 @@
 <div>
     <h3 class="text-center">사용자 관리</h3>
-    <div ng-repeat="user in vm.users">
-        <h6>{{$index+1}}. 이름: {{user.name}}</h6>
+    <div class="user-list col-md-6 col-md-offset-3">
+        <ul class="col-md-12">
+            <li ng-repeat="user in vm.users" style="padding: 10px;">
+                {{user.uid}} {{user.name}}<span>{{user.role}}</span>
+            </li>
+        </ul>
     </div>
+    
 </div>

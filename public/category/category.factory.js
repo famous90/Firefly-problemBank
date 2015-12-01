@@ -20,6 +20,8 @@
                 rowCategories: rowCategories,
                 masterCategory: masterCategory
             });
+        }, function(response){
+            console.error(response);
         });
         
         return {
@@ -44,7 +46,11 @@
         function makeCategoryTree(data){
             for(var k=0; k<data.length; k++){
                 var item = data[k];
-                var paths = JSON.parse(item.path);
+                var paths = '';
+                if(item.path){
+                    console.log(item.path);
+                    paths = JSON.parse(item.path);   
+                }
                 var theCategory = new Category(item.cid, item.name, paths);
                 insertCategory(theCategory);
             }

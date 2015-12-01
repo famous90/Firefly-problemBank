@@ -37,6 +37,38 @@
         color: #5e5b64;
         padding-top: 70px;
     }
+    
+    /*-------------------------
+        The order form
+    --------------------------*/
+    .user-list{
+        background-color: #E4FEC8;
+        border-radius: 2px;
+        box-shadow: 0 1px 1px #ccc;
+/*        padding: 35px 60px;*/
+/*        margin: 80px auto;*/
+    }
+
+    .user-list ul{
+        list-style:none;
+        color:#fff;
+        font-size:20px;
+        font-weight:bold;
+        text-align: left;
+        margin-top:20px;
+        margin-bottom: 15px;
+    }
+
+    .user-list ul li{
+        background-color:#8ec16d;
+        margin-bottom:8px;
+        box-shadow:0 1px 1px rgba(0,0,0,0.1);
+        cursor:pointer;
+    }
+
+    .user-list ul li span{
+        float:right;
+    }
 }
 
 

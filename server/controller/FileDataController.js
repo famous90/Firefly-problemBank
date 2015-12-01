@@ -14,7 +14,7 @@ FileDataController.prototype.writeImageData = writeImageData;
 FileDataController.prototype.getImageDataSet = getImageDataSet;
 FileDataController.prototype.deleteImageFromS3andDB = deleteImageFromS3andDB;
 
-function writeImageData (fileDataArray, pid, callback) {
+function writeImageData (fileDataArray, pid, onSuccess, onError) {
     console.log(JSON.parse(JSON.stringify(fileDataArray)));
     for(var i=0; i<fileDataArray.length; i++){        
         (function(i){
@@ -32,42 +32,40 @@ function writeImageData (fileDataArray, pid, callback) {
             async.waterfall([
                 
                 // read file
-                function(asyncCallback){
+                function(callback){
                     fs.readFile(fileData.path, function (err, data) {
                         if(err){
-                            console.log('file read error');
-                            throw err; 
+                            callback(err);
                         }else {
-                            asyncCallback(null, data);
+                            callback(null, data);
                         }
                     });
                 },
                 
                 // upload to s3
-                function(data, asyncCallback){
+                function(data, callback){
                     s3obj.upload({
                         ACL: "public-read",
                         Body: data
                     }, function(error, result){
                         if (error) {       
-                            console.log("Error uploading data: ", error);
-                            throw error;
+                            callback(error);
                         } else {
                             console.log("Successfully uploaded data to myBucket/myKey");
                             console.log(JSON.parse(JSON.stringify(result)));
-                            asyncCallback(null, result);
+                            callback(null, result);
                         }
                     });
                 },
                 
                 // insert to db
-                function(result, asyncCallback){
+                function(result, callback){
                     client.query('INSERT INTO ProblemImages (pid, imageType, location, s3_object_key) VALUES(?, ?, ?, ?)', [pid, fileData.type, result.Location, key], function(err, info){
                         if(err){
-                            throw err;
+                            callback(err);
                         }else{
                             console.log('write file '+fileData.fileName);
-                            asyncCallback(null);
+                            callback(null);
                         }
                     });
                 }
@@ -75,11 +73,12 @@ function writeImageData (fileDataArray, pid, callback) {
                 // after call back
             ], function(err, results){
                 if(err){
-                    throw err;
+                    console.error(err);
+                    onError(err);
                 }else{
                     if(i == fileDataArray.length-1){
                         console.log('last image inserted');
-                        callback();
+                        onSuccess();
                         return;
                     }
                 }
@@ -110,7 +109,7 @@ function getImageDataSet (data, imageType, pid){
     return theImageDataArray;
 };
 
-function deleteImageFromS3andDB (data, pid, types, callback) {
+function deleteImageFromS3andDB (data, pid, types, onSuccess, onError) {
     var objects = getBucketObjects(data);
     var s3 = new AWS.S3();
     var params = {
@@ -124,30 +123,28 @@ function deleteImageFromS3andDB (data, pid, types, callback) {
     async.waterfall([
         
         // request delete images to s3
-        function(asyncCallback){
+        function(callback){
             s3.deleteObjects(params, function(err, data){
                 if (err) {
-                    console.error(err); // an error occurred
-                    throw err;
+                    callback(err);
                 } else {
                     console.log(data);           // successful response
-                    asyncCallback(null);   
+                    callback(null);   
                 }
             });
         },
         
         // delete images from db
-        function(asyncCallback){
+        function(callback){
             var query = 'delete from ProblemImages where (pid = ?)';
             if(types.length == 1){
                 query += ' && (imageType = "' + types[0] + '")';   
             }
             client.query(query, [pid], function(err, data){
                 if(err){
-                    console.error(err);
-                    throw err;
+                    callback(err);
                 }else {
-                    asyncCallback(null);
+                    callback(null);
                 }
             });
         }
@@ -155,11 +152,11 @@ function deleteImageFromS3andDB (data, pid, types, callback) {
         // after async waterfall 
     ], function(err, results){
         if (err) {
-            console.log(err, err.stack); // an error occurred
-            throw err;
+            onError(err);
+            console.error(err);
         } else {
             console.log(results);           // successful response 
-            callback();
+            onSuccess();
         }
     });
 };

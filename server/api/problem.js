@@ -7,8 +7,18 @@ var FileDataController = require('../controller/FileDataController');
 
 
 router.get('/problems', function(request, response){
+    
     client.query('select * from Problems', function(error, data){
-        response.send(data);
+        if(error){
+            response.statusCode = 400;
+            response.end(error);
+            console.error(error);
+            throw error;
+        }else {
+            response.statusCode = 200;
+            response.send(data);
+            response.end();
+        }
     });
 });
 
@@ -54,15 +64,11 @@ router.post('/problem', multipartyMiddleware, function(request, response){
         // insert problem
         function(callback){
             client.query('INSERT INTO Problems (question, answer, explanation, notAnswerExamples, answerType) VALUES(?, ?, ?, ?, ?)', [question, answer, explanation, notAnswerExamples, answerType], function(error, info){
-
                 if(error){
-                    console.log('INSERT PROBLEM : insert problem error with problem');    
+                    callback(error);
                     throw error;
-
                 }else{
-
                     insertId = info.insertId;    
-                    console.log('INSERT PROBLEM : insert problem complete with id :'+insertId);
                     callback(null, info.insertId);
                 }
             });        
@@ -86,10 +92,9 @@ router.post('/problem', multipartyMiddleware, function(request, response){
 
                     client.query(pclinkQuery, [pid, cid], function(cateError){
                         if(cateError){
-                            console.log('INSERT PROBLEM : insert problem_category_link error with ('+pid+', '+cid+')');
+                            subCallback(cateError);
                             throw cateError;
                         }else{
-                            console.log('INSERT PROBLEM : insert problem_category_link complete');
                             subCallback(null, 'categories');
                         }                
                     });                
@@ -98,23 +103,22 @@ router.post('/problem', multipartyMiddleware, function(request, response){
                 // insert images
                 function(subCallback){
                     if(hasImage){
-                        
                         var fileDataController = new FileDataController();
                         var fileDataArray = new Array();
 
                         if(hasQuestionImage){
-                            console.log('question image insert');
                             var qstImages = fileDataController.getImageDataSet(request.files.questionAttached, 'question', pid);
                             fileDataArray.push.apply(fileDataArray, qstImages);
                         }
                         if(hasExplanationImage){
-                            console.log('question image insert');
                             var explnImages = fileDataController.getImageDataSet(request.files.explanationAttached, 'explanation', pid);
                             fileDataArray.push.apply(fileDataArray, explnImages);
                         }
 
                         fileDataController.writeImageData(fileDataArray, pid, function(){
                             subCallback(null, 'images');
+                        }, function(error){
+                            subCallback(error);
                         });                        
 
                     }else {
@@ -124,6 +128,7 @@ router.post('/problem', multipartyMiddleware, function(request, response){
                 
             ], function(error, results){
                 if(error){
+                    callback(error);
                     throw error;
                 }else{
                     callback(null);   
@@ -134,9 +139,13 @@ router.post('/problem', multipartyMiddleware, function(request, response){
         // callback result
     ], function(err, results){
         if(err){
+            response.statusCode = 400;
+            response.end(err);
+            console.error(err);
             throw err;
         }else {
-            response.end('insert');   
+            response.statusCode = 200;
+            response.end('insert');  
         }
     });
     
@@ -145,7 +154,6 @@ router.post('/problem', multipartyMiddleware, function(request, response){
 router.put('/problem/:pid', multipartyMiddleware, function(request, response){
     
     var parameters = JSON.parse(request.body.data).problem;
-    console.log(parameters);
     var pid = request.params.pid;
     var question = parameters.question;
     var answer = parameters.answer;
@@ -165,7 +173,6 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
         function(callback){
             client.query('UPDATE Problems SET question = ?, answer = ?, explanation = ?, notAnswerExamples = ?, answerType = ? WHERE pid = ?', [question, answer, explanation, notAnswerExamples, answerType, pid], function(error, data){
                 if(error){
-                    console.log('UPDATE PROBLEM : update problem error with problem id '+pid);
                     callback(error);
                     throw error;
                 }else {
@@ -188,7 +195,7 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                 }
                 client.query(insertQuery, function(err, results){
                     if(err){
-                        console.log('UPDATE PROBLEM : insert pclinks error with problem id '+pid);
+                        callback(err);
                         throw err;
                     }else {
                         console.log('UPDATE PROBLEM : insert pclinks complete');
@@ -213,7 +220,7 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                 }
                 client.query(deleteQuery, function(err, results){
                     if(err){
-                        console.log('UPDATE PROBLEM : delete pclinks error with problem id '+pid);
+                        callback(err);
                         throw err;
                     }else {
                         console.log('UPDATE PROBLEM : delete pclinks complete');
@@ -246,8 +253,8 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                 console.log(JSON.parse(JSON.stringify(newFiles)));
                 console.log(JSON.parse(JSON.stringify(imageTypes)));
                 
-                async.waterfall([
-                    
+                // change images
+                async.waterfall([    
                     // get images
                     function(subCallback){
                         var getQuery = 'select * from ProblemImages where (pid = ?)';
@@ -256,10 +263,9 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                         }
                         client.query(getQuery, [pid], function(err, results){
                             if(err){
+                                subCallback(err);
                                 throw err;
                             }else {
-                                console.log('get objects');
-                                console.log(JSON.parse(JSON.stringify(results)));
                                 subCallback(null, results);
                             }
                         });
@@ -270,8 +276,9 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                     function(results, subCallback){
                         if(results && results.length > 0){
                             fileDataController.deleteImageFromS3andDB(results, pid, imageTypes, function(){
-                                console.log('delete images');
                                 subCallback(null);
+                            }, function(error){
+                                subCallback(error);
                             });        
                         }else {
                             subCallback(null);
@@ -281,14 +288,19 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                     // insert images
                     function(subCallback){
                         fileDataController.writeImageData(newFiles, pid, function(){
-                            console.log('write new files');
                             subCallback(null);
+                        }, function(error){
+                            subCallback(error);
                         });    
                     }
                     
                     // after call back
                 ], function(err, result){
-                    callback(null, 'file insert', newFiles);
+                    if(err){
+                        callback(err);
+                    }else {
+                        callback(null, 'file insert', newFiles);   
+                    }
                 });
             }else {
                 callback(null, 'file insert');
@@ -297,9 +309,9 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
         
         //  callback result
     ], function(err, results){
-        console.log(arguments);
         if(err){
             response.statusCode = 400;
+            response.end(err);
             throw err;
         }else {
             if(results[3].length > 1){
@@ -324,7 +336,7 @@ router.delete('/problem/:pid', function(request, response){
         function(callback){
             client.query('DELETE FROM PcLinks WHERE pid = ?', [pid], function(error, results){
                 if(error){
-                    console.error('DELETE PROBLEM : delete pclinks error with problem id '+pid);
+                    callback(error);
                     throw error;
                 }else{
                     console.log('DELETE PROBLEM : delete pclinks complete');
@@ -343,7 +355,7 @@ router.delete('/problem/:pid', function(request, response){
                     var queryForProblemImages = 'SELECT * FROM ProblemImages WHERE pid = ?';
                     client.query(queryForProblemImages, [pid], function(error, results){
                         if(error){
-                            console.log('DELETE PROBLEM : select problemImages error with problem id '+pid);
+                            subCallback(error);
                             throw error;
                         }else{
                             console.log('DELETE PROBLEM : select problemImages complete');
@@ -358,15 +370,20 @@ router.delete('/problem/:pid', function(request, response){
                         var fileDataController = new FileDataController();
                         fileDataController.deleteImageFromS3andDB(results, pid, '', function(){
                             subCallback(null);
+                        }, function(error){
+                            subCallback(error);
                         });
                     }else{
                         subCallback(null);
                     }
                         
                 }
-            ], function(err){
-                console.log('DELETE PROBLEM : delete all problemImages complete');
-                callback(null);
+            ], function(err, results){
+                if(err){
+                    callback(err);
+                }else{
+                    callback(null);   
+                }
             });
         },
         
@@ -374,7 +391,7 @@ router.delete('/problem/:pid', function(request, response){
         function(callback){
             client.query('DELETE FROM Problems WHERE pid = ?', [pid], function(error, results){
                 if(error){
-                    console.log('DELETE PROBLEM : delete problem error with problem id '+pid);
+                    callback(error);
                     throw error;
                 }else{
                     console.log('DELETE PROBLEM : delete problem complete');
@@ -383,8 +400,14 @@ router.delete('/problem/:pid', function(request, response){
             });
         }
     ], function(err){
-        console.log('DELETE PROBLEM : delete problem transaction complete');
-        response.end('deleted');
+        if(err){
+            response.statusCode = 400;
+            response.end(err);
+            console.error(err);
+        }else {
+            console.log('DELETE PROBLEM : delete problem transaction complete');
+            response.end('deleted');   
+        }
     });
 });
 
@@ -408,9 +431,7 @@ router.post('/load_problems', function(request, response){
             
             // connect category query
             if(categories.length){
-                console.log('LOAD PROBLEMS : with category');
                 problemsQuery += ' WHERE (';
-
                 for(var i=0; i<categories.length; i++){
                     problemsQuery += 'PcLinks.cid = '+categories[i];
                     if(i != categories.length - 1){
@@ -426,7 +447,7 @@ router.post('/load_problems', function(request, response){
 
             client.query(problemsQuery, function(error, problemResults){
                 if(error){
-                    console.log('LOAD PROBLEMS : load problems error');
+                    callback(error);
                     throw error;
                 }else{
                     console.log('LOAD PROBLEMS : load problems complete');
@@ -457,7 +478,7 @@ router.post('/load_problems', function(request, response){
 
                     client.query(pclinkQuery, function(error, results){
                         if(error){
-                            console.log('LOAD PROBLEMS : load pclink error');
+                            subCallback(error);
                             throw error;
                         }else{
                             console.log('LOAD PROBLEMS : load pclink complete');
@@ -482,7 +503,7 @@ router.post('/load_problems', function(request, response){
                     
                     client.query(imageQuery, function(imageError, imageResults){
                         if(imageError){
-                            console.log('LOAD PROBLEMS : load problem images error');
+                            subCallback(imageError);
                             throw imageError;
                         }else{
                             console.log('LOAD PROBLEMS : load problem images complete');
@@ -495,7 +516,7 @@ router.post('/load_problems', function(request, response){
                 }
             ], function(err, results){
                 if(err){
-                    throw err;
+                    callback(err);
                 }else{
                     callback(null);    
                 }
@@ -505,8 +526,10 @@ router.post('/load_problems', function(request, response){
         // callback results
     ], function(err, results){
         if(err){
-            throw err;
+            response.statusCode = 400;
+            response.end(err);
         }else{
+            response.statusCode = 200;
             response.send(responseResults);
             response.end('loaded');
         }

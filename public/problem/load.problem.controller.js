@@ -44,7 +44,6 @@
 
         function updateProblem(item) {
             var newProblem = new Problem(item);
-            console.log(newProblem);
             var modalInstance = $modal.open({
                 animation: true,
                 templateUrl: 'problem/modal.problem.html',
