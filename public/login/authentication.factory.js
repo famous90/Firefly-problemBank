@@ -23,29 +23,29 @@
                     username: username, 
                     password: result 
                 }).success(function(response){
-                    console.log(response);
                     onSuccess(response);
                 }).error(function(response){
                     onError(response);
                 });
-
             };
         }
         
         function setCredentials(password, data) {
-            var authdata = encryptFactory.encodeWithBCrypt(data.user.username + ':' + password);
+            var authdata = encryptFactory.encodeWithBCrypt(data.user.username + ':' + password, encryptResult);
             
-            $rootScope.globals = {
-                currentUser: {
-                    username: data.user.username,
-                    authdata: authdata,
-                    uid: data.user.uid,
-                    role: data.user.role
-                }
-            };
-            
-            dataFactory.setHeaderAuthorization(authdata);
-            $cookieStore.put('globals', $rootScope.globals);
+            function encryptResult(){
+                $rootScope.globals = {
+                    currentUser: {
+                        username: data.user.username,
+                        authdata: authdata,
+                        uid: data.user.uid,
+                        role: data.user.role
+                    }
+                };
+
+                dataFactory.setHeaderAuthorization(authdata);
+                $cookieStore.put('globals', $rootScope.globals);   
+            }
         }
         
         function clearCredentials() {

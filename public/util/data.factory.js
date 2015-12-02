@@ -24,7 +24,8 @@
         
         // http header
         function setHeaderAuthorization(authdata){
-            $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata // jshint ignore:line  
+            $http.defaults.headers.common['Authorization'] = 'Basic';   // jshint ignore:line  
+//            $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata; // jshint ignore:line  
         };
         
         

@@ -29,7 +29,7 @@
             if($rootScope.globals.currentUser){
                 vm.user = $rootScope.globals.currentUser;
             }
-        }
+        };
                 
         function showLogin(){
             var modalInstance = $modal.open({
@@ -53,6 +53,5 @@
             vm.user = {};
             alert('로그아웃 되었습니다.');
         };
-    
     };
 })();
