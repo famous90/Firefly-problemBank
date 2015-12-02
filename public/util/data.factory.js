@@ -11,6 +11,7 @@
         return {
             setHeaderAuthorization: setHeaderAuthorization,
             authenticate: authenticate,
+            deleteAuthorization: deleteAuthorization,
             createUser: createUser,
             getUsers: getUsers,
             getCategories: getCategories,
@@ -32,6 +33,10 @@
         // login
         function authenticate(credentials){
             return $http.post('/api/authenticate', credentials);
+        }
+        
+        function deleteAuthorization(uid){
+            return $http.delete('/api/authorization/' + uid);
         }
         
         

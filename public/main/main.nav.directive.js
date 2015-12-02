@@ -35,6 +35,7 @@
         };
         
         function logout() {
+            authenticationFactory.logout($rootScope.globals.currentUser.uid);
             authenticationFactory.clearCredentials();
             vm.user = {};
             alert('로그아웃 되었습니다.');

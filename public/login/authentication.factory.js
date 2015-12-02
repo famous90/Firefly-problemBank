@@ -10,6 +10,7 @@
     function authenticationFactory(encryptFactory, $cookieStore, $rootScope, dataFactory){
         return {
             login: login,
+            logout: logout,
             setCredentials: setCredentials,
             clearCredentials: clearCredentials
         };
@@ -29,6 +30,12 @@
                     onError(response);
                 });
             };
+        }
+        
+        function logout(uid, callback){
+            dataFactory.deleteAuthorization(uid).then(function(){
+                callback();
+            });
         }
         
         function setCredentials(data) {
