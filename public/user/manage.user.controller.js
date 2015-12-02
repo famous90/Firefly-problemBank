@@ -5,18 +5,17 @@
         .module('problemBank')
         .controller('UserManageController', UserManageController);
     
-    UserManageController.$inject = ['dataFactory', '$log'];
+    UserManageController.$inject = ['dataFactory'];
     
-    function UserManageController(dataFactory, $log) {
+    function UserManageController(dataFactory) {
         var vm = this;
         
         vm.users = {};
         
         dataFactory.getUsers().then(function(response){
             vm.users = response.data;
-            $log.info(vm.users);
         }, function(error){
-            $log.error(error.data);
+            console.error(error.data);
         });
     }
 })();

@@ -42,6 +42,14 @@
                 controller: 'RegisterController',
                 controllerAs: 'vm'
             })
+
+        // route for the login page
+            .when('/login', {
+                templateUrl : 'login/form.login.html',
+                controller: 'LoginController',
+                controllerAs: 'vm'
+            })
+        
             .otherwise({ redirectTo: '/home' });
         
     }

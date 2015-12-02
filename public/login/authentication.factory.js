@@ -23,6 +23,7 @@
                     username: username, 
                     password: result 
                 }).success(function(response){
+                    setCredentials(response);
                     onSuccess(response);
                 }).error(function(response){
                     onError(response);
@@ -30,22 +31,17 @@
             };
         }
         
-        function setCredentials(password, data) {
-            var authdata = encryptFactory.encodeWithBCrypt(data.user.username + ':' + password, encryptResult);
-            
-            function encryptResult(){
-                $rootScope.globals = {
-                    currentUser: {
-                        username: data.user.username,
-                        authdata: authdata,
-                        uid: data.user.uid,
-                        role: data.user.role
-                    }
-                };
+        function setCredentials(data) {
+            $rootScope.globals = {
+                currentUser: {
+                    username: data.user.username,
+                    uid: data.user.uid,
+                    role: data.user.role
+                }
+            };
 
-                dataFactory.setHeaderAuthorization(authdata);
-                $cookieStore.put('globals', $rootScope.globals);   
-            }
+            dataFactory.setHeaderAuthorization('');
+            $cookieStore.put('globals', $rootScope.globals);   
         }
         
         function clearCredentials() {
