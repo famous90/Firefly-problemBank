@@ -22,7 +22,6 @@
         function login() {
             vm.dataLoading = true;
             authenticationFactory.login(vm.username, vm.password, function(response){
-                console.log(response);
                 $location.path('/home');
             }, function(response){
                 console.error(response);

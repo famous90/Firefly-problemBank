@@ -5,9 +5,9 @@
         .module('problemBank')
         .factory('dataFactory', dataFactory);
     
-    dataFactory.$inject = ['$http', 'Upload'];
+    dataFactory.$inject = ['$http', 'Upload', '$rootScope'];
     
-    function dataFactory($http, Upload){
+    function dataFactory($http, Upload, $rootScope){
         return {
             setHeaderAuthorization: setHeaderAuthorization,
             authenticate: authenticate,
@@ -42,13 +42,19 @@
         
         // user
         function createUser(user){
-            return $http.post('/api/users', user);
+            return $http.post('/api/user/create', user);
         }
         
-        function getUsers(user){
-            return $http.get('/api/users');
+        function updateUser(uid, newUser){
+            return $http.put('/api/user/'+uid, newUser);
         }
         
+        function getUsers(){
+            return $http.post('/api/users', {
+                uid: $rootScope.globals.currentUser.uid, 
+                authkey: $rootScope.globals.currentUser.authkey
+            });
+        }
         
         // category
         function getCategories() {
@@ -56,14 +62,20 @@
         }
         
         function insertCategory(item) {
-            return $http.post('/category', {
+            return $http.post('/api/category/create', {
                 name: item.name, 
-                path: item.path
+                path: item.path,
+                uid: $rootScope.globals.currentUser.uid,
+                authkey: $rootScope.globals.currentUser.authkey
             });
         }
         
         function deleteCategory(cid) {
-            return $http.delete('/category/'+cid);
+            return $http.post('/api/category/delete', {
+                cid: cid,
+                uid: $rootScope.globals.currentUser.uid,
+                authkey: $rootScope.globals.currentUser.authkey
+            });
         }
         
         

@@ -43,10 +43,12 @@
                 currentUser: {
                     username: data.user.username,
                     uid: data.user.uid,
-                    role: data.user.role
+                    role: data.user.role,
+                    authkey: data.user.authkey
                 }
             };
 
+            console.log($rootScope.globals.currentUser);
             dataFactory.setHeaderAuthorization('');
             $cookieStore.put('globals', $rootScope.globals);   
         }

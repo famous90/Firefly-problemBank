@@ -2,23 +2,65 @@ var async = require('async');
 var router = require('express').Router();
 var client = require('../mysql-client');
 var User = require('../model/User');
+var AuthController = require('../controller/AuthController');
 
-router.get('/api/users', function(request, response){
-    client.query('SELECT * FROM Users', function(err, results){
+router.post('/api/users', function(request, response){
+    
+    var uid = {};
+    var authkey = {};
+    
+    async.waterfall([
+        
+        // get parameters
+        function(callback){
+            if(!request.body.uid || !request.body.authkey){
+                callback(400);
+            }
+            uid = request.body.uid;
+            authkey = request.body.authkey;
+            
+            callback(null);
+        },
+        
+        // check authorization
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(uid, authkey, ['admin'], function(result){
+                if(result){
+                    callback(null);
+                }else{
+                    callback(401);
+                }
+            }, function(err){
+                callback(400);
+            });
+        },
+        
+        // send users info
+        function(callback){
+            client.query('SELECT * FROM Users', function(err, results){
+                if(err){
+                    callback(400);
+                }else {
+                    callback(null, results);
+                }
+            });            
+        },
+        
+    ], function(err, results){
         if(err){
-            response.statusCode = 400;
-            console.error(err);
-            response.end(err);
-            throw err;
+            response.statusCode = err;
+            response.end();
         }else {
             response.statusCode = 200;
             response.send(results);
             response.end();
         }
     });
+    
 });
 
-router.post('/api/users', function(request, response){
+router.post('/api/user/create', function(request, response){
     
     if(!request.body.username || !request.body.password){
         response.statusCode = 400;
@@ -72,21 +114,47 @@ router.post('/api/users', function(request, response){
     });
 });
 
-router.put('/api/users/:uid', function(request, response){
+router.put('/api/user/:uid', function(request, response){
     
-    var user = request.body;
-    var uid = request.params.uid;
-    var username = user.username;
-    var password = user.password;
-    var role = user.role;
+    var user = {};
+    var uid = {};
+    var username = {};
+    var password = {};
+    var role = {};
     
-    client.query('UPDATE Users SET name = ?, password = ? WHERE uid = ?', [uid], function(err, result){
+    async.waterfall([
+        
+        // check parameter
+        function(callback){
+            if(!request.body || !request.params.uid){
+                callback(400);
+            }
+            user = request.body;
+            uid = request.params.uid;
+            username = user.username;
+            password = user.password;
+            role = user.role;
+            
+            callback(null);
+        },
+        
+        // update user
+        function(callback){
+            client.query('UPDATE Users SET name = ?, password = ?, role = ? WHERE uid = ?', [username, password, role, uid], function(err, result){
+                if(err){
+                    callback(400);
+                    throw err;
+                }else {
+                    callback(null);
+                }
+            });
+        },
+        
+    ], function(err, result){
         if(err){
-            response.statusCode = 400;
-            console.error(err);
-            response.end(err);
-            throw err;
-        }else {
+            response.statusCode = err;
+            response.end();
+        } else {
             response.statusCode = 200;
             response.end();
         }
