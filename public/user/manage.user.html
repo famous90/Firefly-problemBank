@@ -1,11 +1,20 @@
 <div>
     <h3 class="text-center">사용자 관리</h3>
     <div class="user-list col-md-6 col-md-offset-3">
-        <ul class="col-md-12">
-            <li ng-repeat="user in vm.users" style="padding: 10px;">
-                {{user.uid}} {{user.name}}<span>{{user.role}}</span>
-            </li>
-        </ul>
+        <div>
+            <ul class="col-md-12">
+                <li ng-repeat="user in vm.users" style="padding: 10px;">
+                    {{user.uid}} {{user.name}} {{user.role}} {{user.newRole}}
+                    <select ng-model="user.newRole" ng-change="vm.changeUserRole(user)" ng-init="user.newRole = user.role">
+                        <option value="admin">관리자</option>
+                        <option value="editor">문제입력자</option>
+                        <option value="user">일반유저</option>
+                    </select>
+                </li>
+            </ul>
+        </div>
+<!--        <button ng-click="vm.initUserInfo()" class="btn btn-warning" style="float:right; margin:10px;">되돌리기</button>-->
+        <button ng-click="vm.updateUserInfo()" class="btn btn-primary" style="float:right; margin:10px;">저장</button>
     </div>
     
 </div>

@@ -14,6 +14,7 @@
             deleteAuthorization: deleteAuthorization,
             createUser: createUser,
             getUsers: getUsers,
+            alterUsers: alterUsers,
             getCategories: getCategories,
             insertCategory: insertCategory,
             deleteCategory: deleteCategory,
@@ -53,6 +54,13 @@
             return $http.post('/api/users', {
                 uid: $rootScope.globals.currentUser.uid, 
                 authkey: $rootScope.globals.currentUser.authkey
+            });
+        }
+        
+        function alterUsers(users){
+            return $http.post('/api/users/alter', {
+                users: users,
+                authUser: $rootScope.globals.currentUser
             });
         }
         

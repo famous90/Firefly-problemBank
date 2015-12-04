@@ -38,7 +38,7 @@ router.post('/api/users', function(request, response){
         
         // send users info
         function(callback){
-            client.query('SELECT * FROM Users', function(err, results){
+            client.query('SELECT Users.uid, Users.name, Users.role FROM Users', function(err, results){
                 if(err){
                     callback(400);
                 }else {
@@ -110,6 +110,72 @@ router.post('/api/user/create', function(request, response){
             console.log(results);
             response.statusCode = 200;
             response.end('created user');
+        }
+    });
+});
+
+router.post('/api/users/alter', function(request, response){
+    console.log(request.body);
+    
+    var users = {};
+    var authUser = [];
+    
+    async.waterfall([
+        
+       // check parameters
+        function(callback){
+            if(!request.body.users || !request.body.authUser){
+                callback(400);
+            }
+            users = request.body.users;
+            authUser = request.body.authUser;
+            
+            callback(null);
+        },
+        
+        // is authorized
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(authUser.uid, authUser.authkey, ['admin'], function(result){
+                if(result){
+                    callback(null);
+                }else{
+                    callback(401);
+                }
+            }, function(err){
+                callback(400);
+            });
+        },
+        
+        // alter user info
+        function(callback){
+            console.log(users);
+            for(var i=0; i<users.length; i++){
+                (function(i){
+                    var theUser = users[i];
+                    console.log(theUser);
+client.query('UPDATE Users SET role = ? WHERE uid = ?', [theUser.newRole, theUser.uid], function(err){
+                        if(err, data){
+                            callback(400);
+                            throw err;
+                        }else {
+                            if(i == users.length-1){
+                                callback(null);   
+                            }
+                        }
+                    });
+                })();       
+            }
+        },
+         
+        
+    ], function(err, result){
+        if(err){
+            response.statusCode = err;
+            response.end();
+        } else {
+            response.statusCode = 200;
+            response.end();
         }
     });
 });

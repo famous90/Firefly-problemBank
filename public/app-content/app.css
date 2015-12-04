@@ -52,7 +52,7 @@
     .user-list ul{
         list-style:none;
         color:#fff;
-        font-size:20px;
+        font-size:15px;
         font-weight:bold;
         text-align: left;
         margin-top:20px;
@@ -66,7 +66,7 @@
         cursor:pointer;
     }
 
-    .user-list ul li span{
+    .user-list ul li select{
         float:right;
     }
 }
