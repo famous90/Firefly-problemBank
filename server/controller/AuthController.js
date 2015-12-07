@@ -1,4 +1,5 @@
 var client = require('../mysql-client');
+var StringController = require('./StringController');
 
 function AuthController (){
 }
@@ -7,18 +8,10 @@ AuthController.prototype.isAuthorizatedWithRoles = isAuthorizatedWithRoles;
 
 function isAuthorizatedWithRoles(uid, authkey, roles, onSuccess, onError){
     
+    var stringController = new StringController();
+    
     var query = "SELECT * FROM Users WHERE (uid = ? AND role in ";
-    var roleQuery = "(";
-    for(var i=0; i<roles.length; i++){
-        if(i>0){
-            roleQuery += ", ";
-        }
-        roleQuery += "'";
-        roleQuery += roles[i];
-        roleQuery += "'";
-    }
-    roleQuery += ")";
-    query += roleQuery;
+    query += stringController.getQueryForMultiCondition(roles, 'string');
     query += " AND authkey = ?)";
     
     client.query(query, [uid, authkey], function(err, result){

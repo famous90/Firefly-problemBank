@@ -20,8 +20,8 @@
         $rootScope.$on('$locationChangeStart', function(event, next, current){
             // redirect to login page if not logged in and trying to access a restricted page
             var restrictedPage = $.inArray($location.path(), ['/login', '/register', '/home', '', '/']) === -1;
-            var restrictedPageForUser = $.inArray($location.path(), ['/login', '/register', '/home', '/problem/load']) === -1;
-            var restrictedPageForEditor = $.inArray($location.path(), ['/login', '/register', '/home', '/problem/load', '/problem/insert']) === -1;
+            var restrictedPageForUser = $.inArray($location.path(), ['/login', '/register', '/home', '/problem/load', '/user/myinfo']) === -1;
+            var restrictedPageForEditor = $.inArray($location.path(), ['/login', '/register', '/home', '/problem/load', '/problem/insert', '/user/myinfo']) === -1;
             var loggedIn = $rootScope.globals.currentUser;
             if(restrictedPage && !loggedIn) {
                 alert('로그인 후 이용해 주시기 바랍니다.');

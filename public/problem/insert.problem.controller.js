@@ -54,7 +54,7 @@
             }
             
             setImageFileAndFormNames();
-            uploadProblem();
+            uploadProblem($scope.problem, imageFiles, formDataNames);
             
             function setImageFileAndFormNames(){
                 if(questionImages){
@@ -92,12 +92,12 @@
             return true;
         };
         
-        function uploadProblem(){
+        function uploadProblem(theProblem, images, imageNames){
             dataFactory
-                .insertProblem($scope.problem, imageFiles, formDataNames)
+                .insertProblem(theProblem, images, imageNames)
                 .success(function(response){
-                    if(imageFiles.length){
-                        $window.alert(imageFiles.length + '개 이미지와 문제 업로드 성공');
+                    if(images.length){
+                        $window.alert(images.length + '개 이미지와 문제 업로드 성공');
                     }else {
                         $window.alert('이미지 없는 문제 업로드 성공');
                     }
@@ -204,3 +204,12 @@ Problem.prototype.insertAnswerToExamples = function () {
     this.examples.splice(answerIndex, 0, answerExample);
 }
 
+Problem.prototype.changeAnswerType = function(){
+    if(this.answerType == 'single'){
+        this.answerType == 'multiple';
+        this.answerPlaceholder = '정답인 보기를 입력해 주세요';        
+    }else {
+        this.answerType == 'single';
+        this.answerPlaceholder = '정답을 입력해 주세요';        
+    }  
+};

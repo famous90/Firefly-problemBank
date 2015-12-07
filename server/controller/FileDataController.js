@@ -15,7 +15,6 @@ FileDataController.prototype.getImageDataSet = getImageDataSet;
 FileDataController.prototype.deleteImageFromS3andDB = deleteImageFromS3andDB;
 
 function writeImageData (fileDataArray, pid, onSuccess, onError) {
-    console.log(JSON.parse(JSON.stringify(fileDataArray)));
     for(var i=0; i<fileDataArray.length; i++){        
         (function(i){
             var fileData = fileDataArray[i];
@@ -48,7 +47,7 @@ function writeImageData (fileDataArray, pid, onSuccess, onError) {
                         ACL: "public-read",
                         Body: data
                     }, function(error, result){
-                        if (error) {       
+                        if (error) {
                             callback(error);
                         } else {
                             console.log("Successfully uploaded data to myBucket/myKey");

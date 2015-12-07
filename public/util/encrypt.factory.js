@@ -13,8 +13,6 @@
         
         function encodeWithBCrypt(input, callback){
             var bcrypt = new bCrypt();
-            
-//            var salt = '$2a$08$b0MHMsT3ErLoTRjpjzsCie';
             var salt = '$2a$10$KJR9oKB8s8cDPCSbYtz1Ye';
 
             bcrypt.hashpw(input, salt, function(newhash){

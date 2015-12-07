@@ -90,13 +90,14 @@
         // problem
         function insertProblem(problem, images, imageNames) {
             return Upload.upload({
-                url: '/problem',
+                url: '/api/problem/create',
                 method: 'POST',
-                headers: {
-                    'Content-Type': undefined
-                },
+//                headers: {
+//                    'Content-Type': undefined
+//                },
                 data: {
-                    problem: problem
+                    problem: problem,
+                    user: $rootScope.globals.currentUser
                 },
                 file: images,
                 fileFormDataName: imageNames

@@ -36,6 +36,13 @@
                 controllerAs: 'vm'
             })
 
+        // route for the my info page
+            .when('/user/myinfo', {
+                templateUrl : 'user/myinfo.user.html',
+                controller: 'MyinfoController',
+                controllerAs: 'vm'
+            })
+        
         // route for the register page
             .when('/register', {
                 templateUrl : 'register/form.register.html',

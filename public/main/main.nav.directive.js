@@ -14,9 +14,9 @@
        };
     };
     
-    MainNavController.$inject = ['$rootScope', 'authenticationFactory'];
+    MainNavController.$inject = ['$rootScope', 'authenticationFactory', '$location'];
     
-    function MainNavController($rootScope, authenticationFactory) {
+    function MainNavController($rootScope, authenticationFactory, $location) {
         var vm = this;
         
         vm.user = {};
@@ -40,6 +40,7 @@
             authenticationFactory.clearCredentials();
             vm.user = {};
             alert('로그아웃 되었습니다.');
+            $location.path('/home');
         };
     };
 })();

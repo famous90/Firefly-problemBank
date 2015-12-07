@@ -1,6 +1,6 @@
 {
   "name": "problem_bank",
-  "desciption": "local test for problem bank",
+  "desciption": "add action after logout",
   "version": "1.0.0",
   "dependencies": {
     "async": "*",

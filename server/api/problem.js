@@ -4,6 +4,8 @@ var multipartyMiddleware = multiparty();
 var router = require('express').Router();
 var client = require('../mysql-client');
 var FileDataController = require('../controller/FileDataController');
+var AuthController = require('../controller/AuthController');
+var StringController = require('../controller/StringController');
 
 
 router.get('/problems', function(request, response){
@@ -22,9 +24,12 @@ router.get('/problems', function(request, response){
     });
 });
 
-router.post('/problem', multipartyMiddleware, function(request, response){
+// create problem
+router.post('/api/problem/create', multipartyMiddleware, function(request, response){
     
-    var parameters = JSON.parse(request.body.data).problem;
+    var data = JSON.parse(request.body.data);
+    var parameters = data.problem;
+    var user = data.user;
     var question = parameters.question;
     var answer = parameters.answer;
     var explanation = parameters.explanation;
@@ -37,6 +42,7 @@ router.post('/problem', multipartyMiddleware, function(request, response){
     var insertId = {};
     
     console.log(JSON.parse(JSON.stringify(parameters)));
+    console.log(JSON.parse(JSON.stringify(user)));
     console.log(JSON.parse(JSON.stringify(request.files)));
     
     if(!(question && answer)){
@@ -60,6 +66,20 @@ router.post('/problem', multipartyMiddleware, function(request, response){
     }
     
     async.waterfall([
+        
+        // check authorization
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(user.uid, user.authkey, ['admin', 'editor'], function(result){
+                if(result){
+                    callback(null);
+                }else{
+                    callback(401);
+                }
+            }, function(err){
+                callback(400);
+            });
+        },
         
         // insert problem
         function(callback){
@@ -95,7 +115,7 @@ router.post('/problem', multipartyMiddleware, function(request, response){
                             subCallback(cateError);
                             throw cateError;
                         }else{
-                            subCallback(null, 'categories');
+                            subCallback(null);
                         }                
                     });                
                 },
@@ -116,13 +136,13 @@ router.post('/problem', multipartyMiddleware, function(request, response){
                         }
 
                         fileDataController.writeImageData(fileDataArray, pid, function(){
-                            subCallback(null, 'images');
+                            subCallback(null);
                         }, function(error){
                             subCallback(error);
                         });                        
 
                     }else {
-                        subCallback(null, 'images');
+                        subCallback(null);
                     }
                 }
                 
@@ -131,9 +151,21 @@ router.post('/problem', multipartyMiddleware, function(request, response){
                     callback(error);
                     throw error;
                 }else{
-                    callback(null);   
+                    callback(null);
                 }
             });
+        },
+        
+        // increase user's createProblemCount
+        function(callback){
+            client.query('UPDATE Users SET createProblemCount = createProblemCount+1 WHERE uid = ?', [user.uid], function(err, result){
+                if(err){
+                    callback(400);
+                    throw err;
+                } else {
+                    callback(null);
+                }
+            })
         }
         
         // callback result
@@ -145,12 +177,13 @@ router.post('/problem', multipartyMiddleware, function(request, response){
             throw err;
         }else {
             response.statusCode = 200;
-            response.end('insert');  
+            response.end();  
         }
     });
     
 });
 
+// update problem
 router.put('/problem/:pid', multipartyMiddleware, function(request, response){
     
     var parameters = JSON.parse(request.body.data).problem;
@@ -406,6 +439,7 @@ router.delete('/problem/:pid', function(request, response){
             console.error(err);
         }else {
             console.log('DELETE PROBLEM : delete problem transaction complete');
+            response.statusCode = 200;
             response.end('deleted');   
         }
     });
@@ -420,70 +454,53 @@ router.post('/load_problems', function(request, response){
         pcLinks: [],
         problemImages: []
     };
-    
-    console.log(categories);
+    var stringController = new StringController();
     
     async.waterfall([
         
         // load problems
         function(callback){
-            var problemsQuery = 'SELECT DISTINCT Problems.* FROM Problems RIGHT JOIN PcLinks ON Problems.pid = PcLinks.pid';
+            var query = 'SELECT DISTINCT Problems.* FROM Problems RIGHT JOIN PcLinks ON Problems.pid = PcLinks.pid';
             
             // connect category query
             if(categories.length){
-                problemsQuery += ' WHERE (';
-                for(var i=0; i<categories.length; i++){
-                    problemsQuery += 'PcLinks.cid = '+categories[i];
-                    if(i != categories.length - 1){
-                        problemsQuery += ' || ';
-                    }
-                }
-                problemsQuery += ')';
-            }else {
-                console.log('LOAD PROBLEMS : without category');
+                query += ' WHERE PcLinks.cid in ';
+                query += stringController.getQueryForMultiCondition(categories, 'integer');
             }
-//            problemsQuery += ' ORDER BY RAND() LIMIT ' + problemNumber;
-            problemsQuery += ' ORDER BY pid LIMIT ' + problemNumber;
+//            query += ' ORDER BY RAND() LIMIT ' + problemNumber;
+            query += ' ORDER BY pid LIMIT ' + problemNumber;
 
-            client.query(problemsQuery, function(error, problemResults){
-                if(error){
-                    callback(error);
-                    throw error;
+            client.query(query, function(err, results){
+                if(err){
+                    callback({message: err, statusCode: 400});
+                    throw err;
                 }else{
-                    console.log('LOAD PROBLEMS : load problems complete');
-                    console.log(JSON.parse(JSON.stringify(problemResults)));
-                    
-                    responseResults.problems = problemResults;
-                    callback(null, problemResults);
+                    if(results.length){
+                        responseResults.problems = results;
+                        callback(null, results);   
+                    }else {
+                        callback({message: 'no problem', statusCode: 400});
+                    }
                 }
             });        
         },
         
-        
         // load categories and images
-        function(problemResults, callback){
+        function(problems, callback){
             
             async.parallel([
                 
                 // load categories
                 function(subCallback){
-                    var pclinkQuery = 'SELECT DISTINCT * FROM PcLinks WHERE (';
-                    for(var i=0; i<problemResults.length; i++){
-                        pclinkQuery += 'pid = '+problemResults[i].pid;
-                        if(i != problemResults.length - 1){
-                            pclinkQuery += ' || ';
-                        }
-                    }
-                    pclinkQuery += ') ORDER BY pid';
+                    var query = 'SELECT DISTINCT * FROM PcLinks WHERE pid in ';
+                    query += stringController.getQueryForMultiConditionInProblems(problems);
+                    query += ' ORDER BY pid';
 
-                    client.query(pclinkQuery, function(error, results){
+                    client.query(query, function(error, results){
                         if(error){
-                            subCallback(error);
+                            subCallback({message: error, statusCode: 400});
                             throw error;
                         }else{
-                            console.log('LOAD PROBLEMS : load pclink complete');
-                            console.log(JSON.parse(JSON.stringify(results)));
-
                             responseResults.pcLinks = results;
                             subCallback(null);
                         }
@@ -492,24 +509,16 @@ router.post('/load_problems', function(request, response){
                 
                 // load images
                 function(subCallback){
-                    var imageQuery = 'SELECT DISTINCT * FROM ProblemImages WHERE (';
-                    for(var i=0; i<problemResults.length; i++){ 
-                        imageQuery += 'pid = '+problemResults[i].pid;
-                        if(i != problemResults.length - 1){
-                            imageQuery += ' || ';
-                        }
-                    }
-                    imageQuery += ') ORDER BY pid';
+                    var query = 'SELECT DISTINCT * FROM ProblemImages WHERE pid in ';
+                    query += stringController.getQueryForMultiConditionInProblems(problems);
+                    query += ' ORDER BY pid';
                     
-                    client.query(imageQuery, function(imageError, imageResults){
-                        if(imageError){
-                            subCallback(imageError);
-                            throw imageError;
+                    client.query(query, function(err, results){
+                        if(err){
+                            subCallback({message: err, statusCode: 400});
+                            throw err;
                         }else{
-                            console.log('LOAD PROBLEMS : load problem images complete');
-                            console.log(JSON.parse(JSON.stringify(imageResults)));
-
-                            responseResults.problemImages = imageResults;
+                            responseResults.problemImages = results;
                             subCallback(null);
                         }
                     });
@@ -526,12 +535,14 @@ router.post('/load_problems', function(request, response){
         // callback results
     ], function(err, results){
         if(err){
-            response.statusCode = 400;
-            response.end(err);
+            response.statusCode = err.statusCode;
+            response.end(err.message);
+            console.error(err.message);
         }else{
             response.statusCode = 200;
+            console.log(responseResults);
             response.send(responseResults);
-            response.end('loaded');
+            response.end();
         }
     });
     

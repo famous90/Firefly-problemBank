@@ -1,6 +1,5 @@
 var router = require('express').Router();
 var client = require('../mysql-client');
-var User = require('../model/User');
 var randomString = require('randomstring');
 var bcrypt = require('bcrypt');
 var async = require('async');
@@ -26,15 +25,13 @@ router.post('/api/authenticate', function(request, response){
         
         // get user info
         function(callback){
-            client.query('SELECT Users.uid, Users.name, Users.role FROM Users WHERE name = ? AND password = ?', [username, password], function (err, results){
+            client.query('SELECT uid, name, role, createProblemCount, balance FROM Users WHERE name = ? AND password = ?', [username, password], function (err, results){
                 if(err){
                     callback(400);
                     throw err;
                 }else {
-                    console.log(JSON.parse(JSON.stringify(results)));
                     if(results.length){
-                        var theUser = new User(results[0]);
-                        callback(null, theUser);
+                        callback(null, results[0]);
                     }else{
                         callback(401);
                     }
@@ -50,7 +47,7 @@ router.post('/api/authenticate', function(request, response){
                 // generate key
                 function (subCallback){
                     generateAuthorizationKey(function(result){
-                        theUser.authkey = result;    
+                        theUser.authkey = result; 
                         subCallback(null, result);
                     });
                 },
@@ -70,7 +67,7 @@ router.post('/api/authenticate', function(request, response){
                 if(err){
                     callback(400);
                 }else {
-                    callback(null, theUser);    
+                    callback(null, theUser);
                 }
             });
         },
@@ -80,7 +77,6 @@ router.post('/api/authenticate', function(request, response){
             response.statusCode = err;
             response.end('authentication error');
         }else {
-            console.log(result);
             response.statusCode = 200;
             response.send({user: result});
             response.end();
