@@ -48,7 +48,6 @@
                 }
             };
 
-            console.log($rootScope.globals.currentUser);
             dataFactory.setHeaderAuthorization('');
             $cookieStore.put('globals', $rootScope.globals);   
         }
