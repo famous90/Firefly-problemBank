@@ -9,7 +9,6 @@ var StringController = require('../controller/StringController');
 
 
 router.get('/problems', function(request, response){
-    
     client.query('select * from Problems', function(error, data){
         if(error){
             response.statusCode = 400;
@@ -37,6 +36,8 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
     var notAnswerExamples = JSON.stringify(parameters.notAnswerExamples);
     var answerType = parameters.answerType;
     
+    var stringController = new StringController();
+
     var hasQuestionImage = false;
     var hasExplanationImage = false;
     var insertId = {};
@@ -90,6 +91,19 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
                 }else{
                     insertId = info.insertId;    
                     callback(null, info.insertId);
+                }
+            });        
+        },
+        
+        // insert problem log
+        function(pid, callback){
+            var createLog = stringController.getUpdateLogWithUid(user.uid, 'create');
+            client.query('INSERT INTO ProblemLogs (pid, log, type) VALUES(?, ?, ?)', [pid, createLog, 'create'], function(error, result){
+                if(error){
+                    callback(error);
+                    throw error;
+                }else{
+                    callback(null, pid);
                 }
             });        
         },
@@ -186,7 +200,9 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
 // update problem
 router.put('/problem/:pid', multipartyMiddleware, function(request, response){
     
-    var parameters = JSON.parse(request.body.data).problem;
+    var data = JSON.parse(request.body.data);
+    var parameters = data.problem;
+    var user = data.user;
     var pid = request.params.pid;
     var question = parameters.question;
     var answer = parameters.answer;
@@ -196,6 +212,8 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
     var newCategories = parameters.alterSelections.new;
     var deleteCategories = parameters.alterSelections.delete;
     
+    var stringController = new StringController();
+    
     console.log('pid : '+pid);
     console.log(JSON.parse(JSON.stringify(parameters)));
     console.log(JSON.parse(JSON.stringify(request.files)));
@@ -204,15 +222,42 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
         
         // update problem content
         function(callback){
-            client.query('UPDATE Problems SET question = ?, answer = ?, explanation = ?, notAnswerExamples = ?, answerType = ? WHERE pid = ?', [question, answer, explanation, notAnswerExamples, answerType, pid], function(error, data){
-                if(error){
-                    callback(error);
-                    throw error;
-                }else {
-                    console.log('UPDATE PROBLEM : update problem complete');
-                    callback(null, 'problem');
+            
+            async.waterfall([
+                
+                // update problem
+                function(subCallback){
+                    var query = 'UPDATE Problems SET question = ?, answer = ?, explanation = ?, notAnswerExamples = ?, answerType = ? WHERE pid = ?';
+                    client.query(query, [question, answer, explanation, notAnswerExamples, answerType, pid], function(error, data){
+                        if(error){
+                            subCallback(error);
+                            throw error;
+                        }else {
+                            subCallback(null);
+                        }
+                    });
+                },
+                
+                // insert problem log
+                function(subCallback){
+                    var updateLog = stringController.getUpdateLogWithUid(user.uid, 'update');
+                    client.query('INSERT INTO ProblemLogs (pid, log, type) VALUES (?, ?, ?)', [pid, updateLog, 'update'], function(err, result){
+                        if(err){
+                            subCallback(err);
+                            throw err;
+                        } else {
+                            subCallback(null);
+                        }
+                    });
                 }
-            });
+                
+            ], function(err, result){
+                if(err){
+                    callback(err);
+                } else {
+                    callback(null);
+                }
+            });            
         }, 
         
         // insert new category

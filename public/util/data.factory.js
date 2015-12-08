@@ -116,11 +116,12 @@
             return Upload.upload({
                 url: '/problem/'+pid,
                 method: 'PUT',
-                headers: {
-                    'Content-Type': undefined
-                },
+//                headers: {
+//                    'Content-Type': undefined
+//                },
                 data: {
-                    problem: problem
+                    problem: problem,
+                    user: $rootScope.globals.currentUser
                 },
                 file: images,
                 fileFormDataName: imageNames

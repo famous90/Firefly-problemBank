@@ -3,6 +3,7 @@ function StringController (){
 
 StringController.prototype.getQueryForMultiCondition = getQueryForMultiCondition;
 StringController.prototype.getQueryForMultiConditionInProblems = getQueryForMultiConditionInProblems;
+StringController.prototype.getUpdateLogWithUid = getUpdateLogWithUid;
 
 function getQueryForMultiCondition(array, type){
     
@@ -39,5 +40,18 @@ function getQueryForMultiConditionInProblems(problems){
     
     return query;
 };
+
+function getUpdateLogWithUid(uid, type){
+    var now = new Date();
+    var updateInfo = {};
+    if(type == 'create'){
+        updateInfo = {createdAt:now.getTime(), createdBy:uid};   
+    }else {
+        updateInfo = {updatedAt:now.getTime(), updatedBy:uid};
+    }
+    var updatedLog = JSON.stringify(updateInfo);
+    
+    return updatedLog;
+}
 
 module.exports = StringController;

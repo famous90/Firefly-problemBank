@@ -148,6 +148,7 @@ function Problem (){
         explanations: []
     };
     this.answerOfMultiple = 0;
+    this.updateLog = [];
 
     if(arguments.length){
         var data = arguments[0];
