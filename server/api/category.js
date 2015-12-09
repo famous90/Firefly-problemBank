@@ -10,7 +10,6 @@ router.get('/categories', function(request, response){
             response.statusCode = 400;
             response.end(error);
             console.error(error);
-            throw error;
         }else{
             response.statusCode = 200;
             console.log(data);
@@ -61,7 +60,6 @@ router.post('/api/category/create', function(request, response){
             client.query('INSERT INTO Categories (name, path) VALUES(?, ?)', [name, path], function(err, info){
                 if(err){
                     callback(400);
-                    throw err;
                 }else{
                     callback(null, info);
                 }
@@ -125,7 +123,6 @@ router.post('/api/category/delete', function(request, response){
                     client.query(queryForChildren, function(error){
                         if(error){
                             subCallback(400);
-                            throw error;
                         }else{
                             subCallback(null);
                         }
@@ -137,7 +134,6 @@ router.post('/api/category/delete', function(request, response){
                     client.query("DELETE FROM PcLinks WHERE cid = ?", [cid], function(error){
                         if(error){
                             subCallback(400);
-                            throw error;
                         }else{
                             subCallback(null);
                         }

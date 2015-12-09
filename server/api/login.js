@@ -28,7 +28,6 @@ router.post('/api/authenticate', function(request, response){
             client.query('SELECT uid, name, role, createProblemCount, balance FROM Users WHERE name = ? AND password = ?', [username, password], function (err, results){
                 if(err){
                     callback(400);
-                    throw err;
                 }else {
                     if(results.length){
                         callback(null, results[0]);
@@ -92,7 +91,6 @@ router.delete('/api/authorization/:uid', function(request, response){
        if(err){
            response.statusCode = 400;
            response.end();
-           throw err;
        } else {
            response.statusCode = 200;
            response.end();

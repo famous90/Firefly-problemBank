@@ -1,4 +1,5 @@
 var async = require('async');
+var XLSX = require('xlsx');
 var multiparty = require('connect-multiparty');
 var multipartyMiddleware = multiparty();
 var router = require('express').Router();
@@ -14,7 +15,6 @@ router.get('/problems', function(request, response){
             response.statusCode = 400;
             response.end(error);
             console.error(error);
-            throw error;
         }else {
             response.statusCode = 200;
             response.send(data);
@@ -87,7 +87,6 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
             client.query('INSERT INTO Problems (question, answer, explanation, notAnswerExamples, answerType) VALUES(?, ?, ?, ?, ?)', [question, answer, explanation, notAnswerExamples, answerType], function(error, info){
                 if(error){
                     callback(error);
-                    throw error;
                 }else{
                     insertId = info.insertId;    
                     callback(null, info.insertId);
@@ -101,7 +100,6 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
             client.query('INSERT INTO ProblemLogs (pid, log, type) VALUES(?, ?, ?)', [pid, createLog, 'create'], function(error, result){
                 if(error){
                     callback(error);
-                    throw error;
                 }else{
                     callback(null, pid);
                 }
@@ -127,7 +125,6 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
                     client.query(pclinkQuery, [pid, cid], function(cateError){
                         if(cateError){
                             subCallback(cateError);
-                            throw cateError;
                         }else{
                             subCallback(null);
                         }                
@@ -163,7 +160,6 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
             ], function(error, results){
                 if(error){
                     callback(error);
-                    throw error;
                 }else{
                     callback(null);
                 }
@@ -175,7 +171,6 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
             client.query('UPDATE Users SET createProblemCount = createProblemCount+1 WHERE uid = ?', [user.uid], function(err, result){
                 if(err){
                     callback(400);
-                    throw err;
                 } else {
                     callback(null);
                 }
@@ -188,7 +183,6 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
             response.statusCode = 400;
             response.end(err);
             console.error(err);
-            throw err;
         }else {
             response.statusCode = 200;
             response.end();  
@@ -231,7 +225,6 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                     client.query(query, [question, answer, explanation, notAnswerExamples, answerType, pid], function(error, data){
                         if(error){
                             subCallback(error);
-                            throw error;
                         }else {
                             subCallback(null);
                         }
@@ -244,7 +237,6 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                     client.query('INSERT INTO ProblemLogs (pid, log, type) VALUES (?, ?, ?)', [pid, updateLog, 'update'], function(err, result){
                         if(err){
                             subCallback(err);
-                            throw err;
                         } else {
                             subCallback(null);
                         }
@@ -274,7 +266,6 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                 client.query(insertQuery, function(err, results){
                     if(err){
                         callback(err);
-                        throw err;
                     }else {
                         console.log('UPDATE PROBLEM : insert pclinks complete');
                         callback(null, 'new category');
@@ -299,7 +290,6 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                 client.query(deleteQuery, function(err, results){
                     if(err){
                         callback(err);
-                        throw err;
                     }else {
                         console.log('UPDATE PROBLEM : delete pclinks complete');
                         callback(null, 'delete category');
@@ -342,7 +332,6 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
                         client.query(getQuery, [pid], function(err, results){
                             if(err){
                                 subCallback(err);
-                                throw err;
                             }else {
                                 subCallback(null, results);
                             }
@@ -390,7 +379,6 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
         if(err){
             response.statusCode = 400;
             response.end(err);
-            throw err;
         }else {
             if(results[3].length > 1){
                 var fileData = results[3][1];
@@ -415,7 +403,6 @@ router.delete('/problem/:pid', function(request, response){
             client.query('DELETE FROM PcLinks WHERE pid = ?', [pid], function(error, results){
                 if(error){
                     callback(error);
-                    throw error;
                 }else{
                     console.log('DELETE PROBLEM : delete pclinks complete');
                     callback(null);
@@ -434,7 +421,6 @@ router.delete('/problem/:pid', function(request, response){
                     client.query(queryForProblemImages, [pid], function(error, results){
                         if(error){
                             subCallback(error);
-                            throw error;
                         }else{
                             console.log('DELETE PROBLEM : select problemImages complete');
                             subCallback(null, results);
@@ -470,7 +456,6 @@ router.delete('/problem/:pid', function(request, response){
             client.query('DELETE FROM Problems WHERE pid = ?', [pid], function(error, results){
                 if(error){
                     callback(error);
-                    throw error;
                 }else{
                     console.log('DELETE PROBLEM : delete problem complete');
                     callback(null);
@@ -488,6 +473,99 @@ router.delete('/problem/:pid', function(request, response){
             response.end('deleted');   
         }
     });
+});
+
+router.post('/api/problem/create/excel', multipartyMiddleware, function(request, response){
+    
+    var file = {};
+    var data = {};
+    var user = {};
+    var categories = {};
+        
+    async.waterfall([
+        
+        // check parameter
+        function(callback){
+            if(!request.body.data || !request.files.file){
+                callback({message:'no parameter', statusCode:400});
+            }
+
+            file = request.files.file;
+            data = JSON.parse(request.body.data);
+            user = data.user;
+            categories = data.categories;
+            
+            callback(null);
+        },
+        
+        // is authorized
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(user.uid, user.authkey, ['admin', 'editor'], function(result){
+                if(result){
+                    callback(null);
+                }else{
+                    callback({message:'not authorized', statusCode:401});
+                }
+            }, function(err){
+                callback({message:err.code, error: err, statusCode:400});
+            });
+        },
+        
+        // insert problems
+        function(callback){
+            // insert array to mysql
+            setProblemsFromExcel(file, function(data){
+                client.query('INSERT INTO Problems (question, explanation, answer, notAnswerExamples, answerType) VALUES ?', [data], function(err, result){
+                    if(err){
+                        callback({message: err.code, error: err, statusCode: 400});
+                    }else {
+                        callback(null, result);
+                    }
+                })
+            });
+        },
+        
+        // insert pclink
+        function(data, callback){
+            setPids(data, function(pids){
+                setPclinksArrayForQueryFromPCids(pids, categories, function(results){
+                    client.query('INSERT INTO PcLinks (pid, cid) VALUES ?', results, function(err){
+                        if(err){
+                            callback({message: err.code, error: err, statusCode: 400});
+                        }else{
+                            callback(null, pids);
+                        }                
+                    });        
+                })
+            }, function(err){
+                callback({message: err, statusCode:400});
+            });
+        },
+        
+        // insert problem log
+        function(pids, callback){
+            setUpdateLogArrayForQueryFromPids(pids, user.uid, 'create', function(results){
+                client.query('INSERT INTO ProblemLogs (pid, log, type) VALUES ?', [results], function(err, result){
+                    if(err){
+                        callback({error: err, message:err.code, statusCode:400});
+                    }else{
+                        callback(null);
+                    }
+                });
+            });
+        }
+        
+    ], function(err, result){
+        if(err){
+            console.error(err);
+            response.statusCode = err.statusCode;
+            response.end(err.message);
+        } else {
+            response.statusCode = 200;
+            response.end();
+        }
+    })
 });
 
 router.post('/load_problems', function(request, response){
@@ -518,7 +596,6 @@ router.post('/load_problems', function(request, response){
             client.query(query, function(err, results){
                 if(err){
                     callback({message: err, statusCode: 400});
-                    throw err;
                 }else{
                     if(results.length){
                         responseResults.problems = results;
@@ -544,7 +621,6 @@ router.post('/load_problems', function(request, response){
                     client.query(query, function(error, results){
                         if(error){
                             subCallback({message: error, statusCode: 400});
-                            throw error;
                         }else{
                             responseResults.pcLinks = results;
                             subCallback(null);
@@ -561,7 +637,6 @@ router.post('/load_problems', function(request, response){
                     client.query(query, function(err, results){
                         if(err){
                             subCallback({message: err, statusCode: 400});
-                            throw err;
                         }else{
                             responseResults.problemImages = results;
                             subCallback(null);
@@ -594,3 +669,131 @@ router.post('/load_problems', function(request, response){
 });
 
 module.exports = router;
+
+function setProblemsFromExcel(file, callback){
+    var problems = new Array();
+    
+    var workbook = XLSX.readFile(file.path);    //  get excel file
+    var sheet_name_list = workbook.SheetNames;  
+    
+    for(var i=0; i<sheet_name_list.length; i++){    // seperate sheet
+        var theSheet = sheet_name_list[i];
+        var worksheet = workbook.Sheets[theSheet];
+        var theProblem;
+
+        for (z in worksheet) {     // get text from the sheet
+            /* all keys that do not begin with "!" correspond to cell addresses */
+            if(z[0] === '!') continue;
+
+            switch(z.charAt(0)){
+                case 'A': {     // question
+                    if(theProblem){
+                        getArrayForQueryFromProblem(theProblem, function(result){
+                            problems.push(result);
+                        });
+                    }
+                    theProblem = {
+                        question: {},
+                        explanation: {},
+                        answer: {},
+                        notAnswerExamples: [
+                            {content: {}},
+                            {content: {}},
+                            {content: {}},
+                            {content: {}}
+                        ],
+                        answerType: 'single'
+                    };
+
+                    theProblem.question = worksheet[z].v;
+                    break;
+                }
+                case 'B': {     // explanation
+                    theProblem.explanation = worksheet[z].v;
+                    break;
+                }
+                case 'C': {     // answer
+                    theProblem.answer = worksheet[z].v;
+                    break;
+                }
+                case 'D': {     // first example with not answer
+                    theProblem.notAnswerExamples[0].content = worksheet[z].v;
+                    theProblem.answerType = 'multiple'
+                    break;
+                }
+                case 'E': {     // second example with not answer
+                    theProblem.notAnswerExamples[1].content = worksheet[z].v;
+                    break;
+                }
+                case 'F': {     // third example with not answer
+                    theProblem.notAnswerExamples[2].content = worksheet[z].v;
+                    break;
+                }
+                case 'G': {     // fourth example with not answer
+                    theProblem.notAnswerExamples[3].content = worksheet[z].v;
+                    break;
+                }
+                default: {      // not allowed if other cell input
+                    continue;    
+                }
+            }
+        }
+        getArrayForQueryFromProblem(theProblem, function(result){
+            problems.push(result);
+        });
+    }
+    
+    callback(problems);
+}
+
+function getArrayForQueryFromProblem(problem, callback){
+    var theArray = new Array();
+    for(theObject in problem){
+        var theValue = problem[theObject];
+        if(theObject == 'notAnswerExamples'){
+            theArray.push(JSON.stringify(theValue));
+        }else {
+            theArray.push(theValue);
+        }
+    }
+    callback(theArray);
+}
+
+function setPids(data, onSuccess, onError){
+    if(!data.insertId){
+        onError('not inserted');
+    }
+    
+    var theArray = new Array();
+    var pid = data.insertId;
+    for(var i=0; i<data.affectedRows; i++){
+        theArray.push(pid++);
+    }
+    
+    onSuccess(theArray);
+}
+
+function setPclinksArrayForQueryFromPCids(pids, cids, callback){
+    var theArray = new Array();
+    for(var i=0; i<pids.length; i++){
+        var pid = pids[i];
+        for(var j=0; j<cids.length; j++){
+            var pclink = [pid, cids[j]];
+            theArray.push(pclink);
+        }
+    }
+    
+    callback(theArray);
+}
+
+function setUpdateLogArrayForQueryFromPids(pids, uid, type, callback){
+    var stringController = new StringController();
+    var theArray = new Array();
+    
+    for(var i=0; i<pids.length; i++){
+        var updateLog = stringController.getUpdateLogWithUid(uid, type);
+        theArray.push([pids[i], updateLog, type]);
+    }
+    
+    callback(theArray);
+}

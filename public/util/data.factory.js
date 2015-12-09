@@ -19,6 +19,7 @@
             insertCategory: insertCategory,
             deleteCategory: deleteCategory,
             insertProblem: insertProblem,
+            insertProblemsWithExcel: insertProblemsWithExcel,
             getProblems: getProblems,
             updateProblem: updateProblem,
             deleteProblem: deleteProblem
@@ -101,6 +102,18 @@
                 },
                 file: images,
                 fileFormDataName: imageNames
+            });
+        }
+        
+        function insertProblemsWithExcel(file, categories){
+            return Upload.upload({
+                url: '/api/problem/create/excel',
+                method: 'POST',
+                data: { 
+                    categories: categories,
+                    user: $rootScope.globals.currentUser 
+                },
+                file: file
             });
         }
         

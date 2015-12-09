@@ -157,7 +157,6 @@ router.post('/api/users/alter', function(request, response){
 client.query('UPDATE Users SET role = ? WHERE uid = ?', [theUser.newRole, theUser.uid], function(err){
                         if(err, data){
                             callback(400);
-                            throw err;
                         }else {
                             if(i == users.length-1){
                                 callback(null);   
@@ -209,7 +208,6 @@ router.put('/api/user/:uid', function(request, response){
             client.query('UPDATE Users SET name = ?, password = ?, role = ? WHERE uid = ?', [username, password, role, uid], function(err, result){
                 if(err){
                     callback(400);
-                    throw err;
                 }else {
                     callback(null);
                 }

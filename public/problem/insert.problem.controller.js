@@ -17,6 +17,8 @@
         $scope.setImageFiles = setImageFiles; 
         $scope.answerTypeButtonTapped = answerTypeButtonTapped; 
         $scope.submitForm = submitForm; 
+        $scope.setExcelFile = setExcelFile;
+        $scope.submitExcelFile = submitExcelFile;
          
         function setImageFiles(files, type){
             var imageArray = [];
@@ -112,6 +114,23 @@
 
             }).error(function(response){
                 $window.alert('업로드에 실패했습니다. 다시 시도해 주세요.');
+            });
+        };
+        
+        function setExcelFile(file){
+        };
+        
+        function submitExcelFile(file){
+            if(!$scope.problem.selections.length){
+                alert('카테고리를 선택해주세요');    
+                return;
+            }
+            
+            dataFactory.insertProblemsWithExcel(file, $scope.problem.selections).then(function(response){
+                angular.element($('#problemsExcel')[0]).val(null);
+                $window.alert('문제를 성공적으로 입력하였습니다.');
+            }, function(response){
+                $window.alert('문제 입력에 실패했습니다. 다시 시도해 주세요.');
             });
         };
     }

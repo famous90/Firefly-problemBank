@@ -12,7 +12,8 @@
     "https": "*",
     "mysql": "*",
     "path": "*",
-    "randomstring": "*"
+    "randomstring": "*",
+    "xlsx": "^0.8.0"
   },
   "devDependencies": {
     "blanket": "^1.2.1",

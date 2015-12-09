@@ -17,7 +17,6 @@ function isAuthorizatedWithRoles(uid, authkey, roles, onSuccess, onError){
     client.query(query, [uid, authkey], function(err, result){
         if(err){
             onError(err);
-            throw err;
         } else {
             if(result.length){
                 onSuccess(true);
