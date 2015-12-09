@@ -530,7 +530,7 @@ router.post('/api/problem/create/excel', multipartyMiddleware, function(request,
         function(data, callback){
             setPids(data, function(pids){
                 setPclinksArrayForQueryFromPCids(pids, categories, function(results){
-                    client.query('INSERT INTO PcLinks (pid, cid) VALUES ?', results, function(err){
+                    client.query('INSERT INTO PcLinks (pid, cid) VALUES ?', [results], function(err){
                         if(err){
                             callback({message: err.code, error: err, statusCode: 400});
                         }else{
