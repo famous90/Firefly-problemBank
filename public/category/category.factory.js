@@ -48,7 +48,6 @@
                 var item = data[k];
                 var paths = '';
                 if(item.path){
-                    console.log(item.path);
                     paths = JSON.parse(item.path);   
                 }
                 var theCategory = new Category(item.cid, item.name, paths);

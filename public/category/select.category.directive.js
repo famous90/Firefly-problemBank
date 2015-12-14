@@ -9,34 +9,34 @@
         return {
             restrict: 'E',
             templateUrl: 'category/select.category.html',
-            scope: {
+            bindToController: {
                 type: '=',
                 selections: '=',
                 alters: '='
             },
             controller: selectCategoryController,
-            controllerAs: 'selCateCtrl'
+            controllerAs: 'selCateVm'
         };
     }
     
-    selectCategoryController.$inject = ['$scope', 'categoryFactory', '$modal', 'arrayFactory'];
+    selectCategoryController.$inject = ['categoryFactory', '$modal', 'arrayFactory'];
     
-    function selectCategoryController($scope, categoryFactory, $modal, arrayFactory){
-        $scope.categories = [];
-        $scope.selections = [];
+    function selectCategoryController(categoryFactory, $modal, arrayFactory){
+        var vm = this;
+        vm.categories = [];
         categoryFactory.getCategories.then(function(data){
-            $scope.categories = data.masterCategory.categories;
+            vm.categories = data.masterCategory.categories;
         }, function(data){
             alert('카테고리를 불러오지 못했습니다. 다시 시도해 주세요.');
         });
 
-        $scope.addBroCategory = addBroCategory;
-        $scope.addChildCategory = addChildCategory;
-        $scope.deleteCategory = deleteCategory;
-        $scope.selectCategory = selectCategory;
-        $scope.isSelected = isSelected;
-        $scope.clickedAddChildCategory = clickedAddChildCategory;
-        $scope.clickedAddBroCategory = clickedAddBroCategory;
+        vm.addBroCategory = addBroCategory;
+        vm.addChildCategory = addChildCategory;
+        vm.deleteCategory = deleteCategory;
+        vm.selectCategory = selectCategory;
+        vm.isSelected = isSelected;
+        vm.clickedAddChildCategory = clickedAddChildCategory;
+        vm.clickedAddBroCategory = clickedAddBroCategory;
         
         function addBroCategory(item){
             var name = item.newBroCategoryName;
@@ -92,29 +92,35 @@
         }
         
         function selectCategory(cid){
-            var theIndex = $scope.selections.indexOf(cid);
+            if(!vm.selections){
+                return;
+            }
+            var theIndex = vm.selections.indexOf(cid);
              
             if(theIndex != -1){
                 // already has category
-                $scope.selections.splice(theIndex, 1);
-                if($scope.alters){
-                    arrayFactory.removeCidOf($scope.alters.new, cid);
-                    arrayFactory.removeCidOf($scope.alters.delete, cid);
-                    $scope.alters.delete.push(cid);    
+                vm.selections.splice(theIndex, 1);
+                if(vm.alters){
+                    arrayFactory.removeCidOf(vm.alters.new, cid);
+                    arrayFactory.removeCidOf(vm.alters.delete, cid);
+                    vm.alters.delete.push(cid);    
                 }
 
             }else{
                 // not have category
-                $scope.selections.push(cid);
-                if($scope.alters){
-                    arrayFactory.removeCidOf($scope.alters.delete, cid);
-                    $scope.alters.new.push(cid);   
+                vm.selections.push(cid);
+                if(vm.alters){
+                    arrayFactory.removeCidOf(vm.alters.delete, cid);
+                    vm.alters.new.push(cid);   
                 }
             }
         }
         
         function isSelected(cid){
-            return $scope.selections.indexOf(cid);
+            if(!vm.selections){
+                return;
+            }
+            return vm.selections.indexOf(cid);
         }
         
         function clickedAddChildCategory(item){

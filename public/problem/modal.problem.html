@@ -4,11 +4,12 @@
 
 <div class="modal-body">
     <div style="margin-left:10px; margin-right:10px;">
-        <insert-problem></insert-problem>
+        <h2>{{ProblemModalVm.problem.selections.length}}, {{ProblemModalVm.problem.pid}}</h2>
+        <insert-problem problem=ProblemModalVm.problem></insert-problem>
     </div>
 </div>
 
 <div class="modal-footer">
-    <button class="btn btn-primary" ng-click="update(problem)">저장</button>
-    <button class="btn btn-warning" ng-click="cancel()">취소</button>
+    <button class="btn btn-primary" ng-click="ProblemModalVm.update(ProblemModalVm.problem)">저장</button>
+    <button class="btn btn-warning" ng-click="ProblemModalVm.cancel()">취소</button>
 </div>

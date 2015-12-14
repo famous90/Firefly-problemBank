@@ -7,48 +7,127 @@ var client = require('../mysql-client');
 var FileDataController = require('../controller/FileDataController');
 var AuthController = require('../controller/AuthController');
 var StringController = require('../controller/StringController');
+var Problem = require('../model/Problem');
 
 
-router.get('/problems', function(request, response){
-    client.query('select * from Problems', function(error, data){
-        if(error){
-            response.statusCode = 400;
-            response.end(error);
-            console.error(error);
-        }else {
+router.get('/api/problems', function(request, response){
+    var user;
+    
+    async.waterfall([
+        
+        // check parameter
+        function(callback){
+            if(!request.body.user){
+                callback({message:'no parameter', error:{}, statusCode:400});
+            }
+
+            user = request.body.user;
+            
+            callback(null);
+        },
+        
+        // is authorized
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(user.uid, user.authkey, ['admin'], function(result){
+                if(result){
+                    callback(null);
+                }else{
+                    callback({message:'not authorized', statusCode:401});
+                }
+            }, function(err){
+                callback({message:err.code, error: err, statusCode:400});
+            });
+        }, 
+        
+        // get problems
+        function(callback){
+            client.query('select * from Problems', function(err, data){
+                if(err){
+                    callback({message:err.code, error: err, statusCode:400});
+                }else {
+                    callback(null, data);
+                }
+            });
+        }
+        
+    ], function(err, result){
+        if(err){
+            console.error(err);
+            response.statusCode = err.statusCode;
+            response.end(err.message);
+        } else {
             response.statusCode = 200;
-            response.send(data);
+            response.send(result);
             response.end();
         }
-    });
+    })
+});
+
+router.get('/api/problem/:pid', function(request, response){  
+    var user, pid;
+    
+    async.waterfall([
+        
+        // check parameter
+        function(callback){
+            if(!request.body.user || !request.params.pid){
+                callback({message:'no parameter', error:{}, statusCode:400});
+            }
+
+            user = request.body.user;
+            pid = request.params.pid;
+            
+            callback(null);
+        },
+        
+        // is authorized
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(user.uid, user.authkey, ['admin'], function(result){
+                if(result){
+                    callback(null);
+                }else{
+                    callback({message:'not authorized', statusCode:401});
+                }
+            }, function(err){
+                callback({message:err.code, error: err, statusCode:400});
+            });
+        }, 
+        
+        // get problems
+        function(callback){
+            client.query('SELECT * FROM Problems WHERE pid = ?', [pid], function(err, data){
+                if(err){
+                    callback({message:err.code, error: err, statusCode:400});
+                }else {
+                    callback(null, data);
+                }
+            });
+        }
+        
+    ], function(err, result){
+        if(err){
+            console.error(err);
+            response.statusCode = err.statusCode;
+            response.end(err.message);
+        } else {
+            response.statusCode = 200;
+            response.send(result);
+            response.end();
+        }
+    })
 });
 
 // create problem
 router.post('/api/problem/create', multipartyMiddleware, function(request, response){
     
-    var data = JSON.parse(request.body.data);
-    var parameters = data.problem;
-    var user = data.user;
-    var question = parameters.question;
-    var answer = parameters.answer;
-    var explanation = parameters.explanation;
-    var categories = parameters.selections;
-    var notAnswerExamples = JSON.stringify(parameters.notAnswerExamples);
-    var answerType = parameters.answerType;
-    
-    var stringController = new StringController();
+    var problem, user, pid;
 
     var hasQuestionImage = false;
     var hasExplanationImage = false;
     var insertId = {};
-    
-    console.log(JSON.parse(JSON.stringify(parameters)));
-    console.log(JSON.parse(JSON.stringify(user)));
     console.log(JSON.parse(JSON.stringify(request.files)));
-    
-    if(!(question && answer)){
-        return;
-    }
     
     // case for problem/explanation with image
     if(request.files.questionAttached){
@@ -68,6 +147,18 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
     
     async.waterfall([
         
+        // check parameter
+        function(callback){
+            var data = JSON.parse(request.body.data);
+            if(!data || !data.problem || !data.user){
+                callback({message:'no parameter', error:{}, statusCode: 400});
+            }
+            
+            problem = new Problem(data.problem);
+            user = data.user;
+            callback(null);
+        },
+        
         // check authorization
         function(callback){
             var authController = new AuthController();
@@ -75,56 +166,55 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
                 if(result){
                     callback(null);
                 }else{
-                    callback(401);
+                    callback({message:'not authorized', error:{}, statusCode: 401});
                 }
             }, function(err){
-                callback(400);
+                callback({message:JSON.stringify(err), error:err, statusCode: 400});
             });
         },
         
         // insert problem
         function(callback){
-            client.query('INSERT INTO Problems (question, answer, explanation, notAnswerExamples, answerType) VALUES(?, ?, ?, ?, ?)', [question, answer, explanation, notAnswerExamples, answerType], function(error, info){
+            var query = 'INSERT INTO Problems (question, answer, explanation, notAnswerExamples, answerType) VALUES(?, ?, ?, ?, ?)';
+            client.query(query, [problem.question, problem.answer, problem.explanation, problem.notAnswerExamples, problem.answerType], function(error, info){
                 if(error){
                     callback(error);
                 }else{
-                    insertId = info.insertId;    
-                    callback(null, info.insertId);
+                    pid = info.insertId;    
+                    callback(null);
                 }
             });        
         },
         
         // insert problem log
-        function(pid, callback){
-            var createLog = stringController.getUpdateLogWithUid(user.uid, 'create');
-            client.query('INSERT INTO ProblemLogs (pid, log, type) VALUES(?, ?, ?)', [pid, createLog, 'create'], function(error, result){
-                if(error){
-                    callback(error);
-                }else{
-                    callback(null, pid);
-                }
-            });        
+        function(callback){
+            var createLog = getProblemLogWithUid(user.uid, 'create');
+            insertProblemLogsWithLogs([[Number(pid), createLog, 'create']], function(result){
+                callback(null);
+            }, function(err){
+                callback(err);
+            });
         },
         
         // insert pclink and images
-        function(pid, callback){
+        function(callback){
             
             async.parallel([
                 
                 // insert pclink
                 function(subCallback){
-                    var pclinkQuery = 'INSERT INTO PcLinks (pid, cid) VALUES ';
-                    for(i=0; i<categories.length; i++){
+                    var query = 'INSERT INTO PcLinks (pid, cid) VALUES ';
+                    for(i=0; i<problem.categories.length; i++){
                         if(i != 0){
-                            pclinkQuery += ',';
+                            query += ',';
                         }
-                        var cid = categories[i];
-                        pclinkQuery += '('+pid+','+cid+')';
+                        var cid = problem.categories[i];
+                        query += '('+pid+','+cid+')';
                     }
 
-                    client.query(pclinkQuery, [pid, cid], function(cateError){
-                        if(cateError){
-                            subCallback(cateError);
+                    client.query(query, [pid, cid], function(err){
+                        if(err){
+                            subCallback(err);
                         }else{
                             subCallback(null);
                         }                
@@ -168,7 +258,8 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
         
         // increase user's createProblemCount
         function(callback){
-            client.query('UPDATE Users SET createProblemCount = createProblemCount+1 WHERE uid = ?', [user.uid], function(err, result){
+            var query = 'UPDATE Users SET createProblemCount = createProblemCount+1 WHERE uid = ?';
+            client.query(query, [user.uid], function(err, result){
                 if(err){
                     callback(400);
                 } else {
@@ -194,283 +285,345 @@ router.post('/api/problem/create', multipartyMiddleware, function(request, respo
 // update problem
 router.put('/problem/:pid', multipartyMiddleware, function(request, response){
     
-    var data = JSON.parse(request.body.data);
-    var parameters = data.problem;
-    var user = data.user;
-    var pid = request.params.pid;
-    var question = parameters.question;
-    var answer = parameters.answer;
-    var explanation = parameters.explanation;
-    var notAnswerExamples = JSON.stringify(parameters.notAnswerExamples);
-    var answerType = parameters.answerType;
-    var newCategories = parameters.alterSelections.new;
-    var deleteCategories = parameters.alterSelections.delete;
+//    var data = JSON.parse(request.body.data);
+//    var parameters = data.problem;
+//    var user = data.user;
+//    var pid = request.params.pid;
+//    var question = parameters.question;
+//    var answer = parameters.answer;
+//    var explanation = parameters.explanation;
+//    var notAnswerExamples = JSON.stringify(parameters.notAnswerExamples);
+//    var answerType = parameters.answerType;
+//    var newCategories = parameters.alterSelections.new;
+//    var deleteCategories = parameters.alterSelections.delete;
+//        
+//    console.log('pid : '+pid);
+//    console.log(JSON.parse(JSON.stringify(parameters)));
+//    console.log(JSON.parse(JSON. stringify(request.files)));
     
-    var stringController = new StringController();
+    var pid, problem, user;
     
-    console.log('pid : '+pid);
-    console.log(JSON.parse(JSON.stringify(parameters)));
-    console.log(JSON.parse(JSON.stringify(request.files)));
-    
-    async.parallel([
+    async.waterfall([
         
-        // update problem content
+        // check parameter
         function(callback){
+            var data = JSON.parse(request.body.data);
+            if(!data || !data.problem || !data.user || !request.params.pid){
+                callback({message:'no parameter', error:{}, statusCode: 400});
+            }
             
-            async.waterfall([
-                
-                // update problem
-                function(subCallback){
-                    var query = 'UPDATE Problems SET question = ?, answer = ?, explanation = ?, notAnswerExamples = ?, answerType = ? WHERE pid = ?';
-                    client.query(query, [question, answer, explanation, notAnswerExamples, answerType, pid], function(error, data){
-                        if(error){
-                            subCallback(error);
-                        }else {
-                            subCallback(null);
-                        }
-                    });
-                },
-                
-                // insert problem log
-                function(subCallback){
-                    var updateLog = stringController.getUpdateLogWithUid(user.uid, 'update');
-                    client.query('INSERT INTO ProblemLogs (pid, log, type) VALUES (?, ?, ?)', [pid, updateLog, 'update'], function(err, result){
-                        if(err){
-                            subCallback(err);
-                        } else {
-                            subCallback(null);
-                        }
-                    });
-                }
-                
-            ], function(err, result){
-                if(err){
-                    callback(err);
-                } else {
+            problem = new Problem(data.problem);
+            user = data.user;
+            pid = request.params.pid;
+            callback(null);
+        },
+        
+        // check authorization
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(user.uid, user.authkey, ['admin', 'editor'], function(result){
+                if(result){
                     callback(null);
-                }
-            });            
-        }, 
-        
-        // insert new category
-        function(callback){
-            if(newCategories.length){
-                var insertQuery = 'INSERT INTO PcLinks (pid, cid) VALUES ';
-                for(i=0; i<newCategories.length; i++){
-                    if(i != 0){
-                        insertQuery += ',';
-                    }
-                    var cid = newCategories[i];
-                    insertQuery += '('+pid+','+cid+')';
-                }
-                client.query(insertQuery, function(err, results){
-                    if(err){
-                        callback(err);
-                    }else {
-                        console.log('UPDATE PROBLEM : insert pclinks complete');
-                        callback(null, 'new category');
-                    }
-                });        
-            }else {
-                callback(null, 'new category');
-            }
-        }, 
-        
-        // delete exist category
-        function(callback){
-            if(deleteCategories.length){
-                var deleteQuery = 'DELETE FROM PcLinks WHERE ';
-                for(i=0; i<deleteCategories.length; i++){
-                    if(i != 0){
-                        deleteQuery += '||';
-                    }
-                    var cid = deleteCategories[i];
-                    deleteQuery += '(pid='+pid+'&&cid='+cid+')';
-                }
-                client.query(deleteQuery, function(err, results){
-                    if(err){
-                        callback(err);
-                    }else {
-                        console.log('UPDATE PROBLEM : delete pclinks complete');
-                        callback(null, 'delete category');
-                    }
-                });        
-            }else {
-                callback(null, 'delete category');
-            }
-        }, 
-        
-        // image file update
-        function(callback){
-            if(request.files.questionAttached || request.files.explanationAttached){
-                var fileDataController = new FileDataController();
-                var newFiles = new Array();
-                var imageTypes = new Array();
-
-                if(request.files.questionAttached){
-                    var qstnImages = fileDataController.getImageDataSet(request.files.questionAttached, 'question', pid);
-                    newFiles.push.apply(newFiles, qstImages);
-                    imageTypes.push('question');
-                }
-                if(request.files.explanationAttached){
-                    var explnImages = fileDataController.getImageDataSet(request.files.explanationAttached, 'explanation', pid);
-                    newFiles.push.apply(newFiles, explnImages);
-                    imageTypes.push('explanation');
-                }
-                console.log('new files');
-                console.log(JSON.parse(JSON.stringify(newFiles)));
-                console.log(JSON.parse(JSON.stringify(imageTypes)));
-                
-                // change images
-                async.waterfall([    
-                    // get images
-                    function(subCallback){
-                        var getQuery = 'select * from ProblemImages where (pid = ?)';
-                        if(imageTypes.length == 1){
-                            getQuery += ' && (imageType = "' + imageTypes[0] + '")'; 
-                        }
-                        client.query(getQuery, [pid], function(err, results){
-                            if(err){
-                                subCallback(err);
-                            }else {
-                                subCallback(null, results);
-                            }
-                        });
-                        
-                    },
-                    
-                    // delete images
-                    function(results, subCallback){
-                        if(results && results.length > 0){
-                            fileDataController.deleteImageFromS3andDB(results, pid, imageTypes, function(){
-                                subCallback(null);
-                            }, function(error){
-                                subCallback(error);
-                            });        
-                        }else {
-                            subCallback(null);
-                        }
-                    },
-                    
-                    // insert images
-                    function(subCallback){
-                        fileDataController.writeImageData(newFiles, pid, function(){
-                            subCallback(null);
-                        }, function(error){
-                            subCallback(error);
-                        });    
-                    }
-                    
-                    // after call back
-                ], function(err, result){
-                    if(err){
-                        callback(err);
-                    }else {
-                        callback(null, 'file insert', newFiles);   
-                    }
-                });
-            }else {
-                callback(null, 'file insert');
-            }
-        }
-        
-        //  callback result
-    ], function(err, results){
-        if(err){
-            response.statusCode = 400;
-            response.end(err);
-        }else {
-            if(results[3].length > 1){
-                var fileData = results[3][1];
-                var jsonFileData = JSON.stringify(fileData);
-                response.send({
-                    'files': jsonFileData
-                });
-            }
-            response.end('updated');   
-        }
-    });
-});
-
-router.delete('/problem/:pid', function(request, response){
-        
-    var pid = request.params.pid;
-    
-    async.parallel([
-        
-        // delete pclinks
-        function(callback){
-            client.query('DELETE FROM PcLinks WHERE pid = ?', [pid], function(error, results){
-                if(error){
-                    callback(error);
                 }else{
-                    console.log('DELETE PROBLEM : delete pclinks complete');
+                    callback({message:'not authorized', error:{}, statusCode: 401});
+                }
+            }, function(err){
+                callback({message:JSON.stringify(err), error:err, statusCode: 400});
+            });
+        },
+        
+        // update problem
+        function(callback){
+            var query = 'UPDATE Problems SET question = ?, answer = ?, explanation = ?, notAnswerExamples = ?, answerType = ? WHERE pid = ?';
+            client.query(query, [problem.question, problem.answer, problem.explanation, problem.notAnswerExamples, problem.answerType, pid], function(err, data){
+                if(err){
+                    callback({message:err.code, error:err, statusCode:400});
+                }else {
                     callback(null);
                 }
             });
         },
+
+        // insert problem log
+        function(callback){
+            var updateLog = getProblemLogWithUid(user.uid, 'update');
+            insertProblemLogsWithLogs([[Number(pid), updateLog, 'update']], function(result){
+                callback(null);
+            }, function(err){
+                callback({message:err.code, error:err, statusCode:400});
+            });
+        },
         
-        // delete images
         function(callback){
             
-            async.waterfall([
-                
-                // find images
+            async.parallel([
+                // insert new category
                 function(subCallback){
-                    var queryForProblemImages = 'SELECT * FROM ProblemImages WHERE pid = ?';
-                    client.query(queryForProblemImages, [pid], function(error, results){
-                        if(error){
-                            subCallback(error);
-                        }else{
-                            console.log('DELETE PROBLEM : select problemImages complete');
-                            subCallback(null, results);
+                    if(problem.newCategories.length){
+                        var insertQuery = 'INSERT INTO PcLinks (pid, cid) VALUES ';
+                        for(i=0; i<problem.newCategories.length; i++){
+                            if(i != 0){
+                                insertQuery += ',';
+                            }
+                            var cid = problem.newCategories[i];
+                            insertQuery += '('+pid+','+cid+')';
                         }
-                    });    
-                },
-                
-                // delete image files
-                function(results, subCallback){
-                    if(results.length){
-                        var fileDataController = new FileDataController();
-                        fileDataController.deleteImageFromS3andDB(results, pid, '', function(){
-                            subCallback(null);
-                        }, function(error){
-                            subCallback(error);
-                        });
-                    }else{
+                        client.query(insertQuery, function(err, results){
+                            if(err){
+                                subCallback(err);
+                            }else {
+                                subCallback(null, 'new category');
+                            }
+                        });        
+                    }else {
                         subCallback(null);
                     }
-                        
+                }, 
+
+                // delete exist category
+                function(subCallback){
+                    if(problem.deleteCategories.length){
+                        var deleteQuery = 'DELETE FROM PcLinks WHERE ';
+                        for(i=0; i<problem.deleteCategories.length; i++){
+                            if(i != 0){
+                                deleteQuery += '||';
+                            }
+                            var cid = problem.deleteCategories[i];
+                            deleteQuery += '(pid='+pid+'&&cid='+cid+')';
+                        }
+                        client.query(deleteQuery, function(err, results){
+                            if(err){
+                                subCallback(err);
+                            }else {
+                                subCallback(null);
+                            }
+                        });        
+                    }else {
+                        subCallback(null);
+                    }
+                }, 
+
+                // image file update
+                function(subCallback){
+                    if(request.files.questionAttached || request.files.explanationAttached){
+                        var fileDataController = new FileDataController();
+                        var newFiles = new Array();
+                        var imageTypes = new Array();
+
+                        if(request.files.questionAttached){
+                            var qstnImages = fileDataController.getImageDataSet(request.files.questionAttached, 'question', pid);
+                            newFiles.push.apply(newFiles, qstImages);
+                            imageTypes.push('question');
+                        }
+                        if(request.files.explanationAttached){
+                            var explnImages = fileDataController.getImageDataSet(request.files.explanationAttached, 'explanation', pid);
+                            newFiles.push.apply(newFiles, explnImages);
+                            imageTypes.push('explanation');
+                        }
+                        console.log('new files');
+                        console.log(JSON.parse(JSON.stringify(newFiles)));
+                        console.log(JSON.parse(JSON.stringify(imageTypes)));
+
+                        // change images
+//                        async.waterfall([    
+//                            // get images
+//                            function(subCallback){
+//                                var getQuery = 'select * from ProblemImages where (pid = ?)';
+//                                if(imageTypes.length == 1){
+//                                    getQuery += ' && (imageType = "' + imageTypes[0] + '")'; 
+//                                }
+//                                client.query(getQuery, [pid], function(err, results){
+//                                    if(err){
+//                                        subCallback(err);
+//                                    }else {
+//                                        subCallback(null, results);
+//                                    }
+//                                });
+//
+//                            },
+//
+//                            // delete images
+//                            function(results, subCallback){
+//                                if(results && results.length > 0){
+//                                    fileDataController.deleteImageFromS3andDB(results, pid, imageTypes, function(){
+//                                        subCallback(null);
+//                                    }, function(error){
+//                                        subCallback(error);
+//                                    });        
+//                                }else {
+//                                    subCallback(null);
+//                                }
+//                            },
+//
+//                            // insert images
+//                            function(subCallback){
+//                                fileDataController.writeImageData(newFiles, pid, function(){
+//                                    subCallback(null);
+//                                }, function(error){
+//                                    subCallback(error);
+//                                });    
+//                            }
+//
+//                            // after call back
+//                        ], function(err, result){
+//                            if(err){
+//                                subCallback(err);
+//                            }else {
+                                subCallback(null);   
+//                            }
+//                        });
+                    }else {
+                        subCallback(null);
+                    }
                 }
+
+                //  callback result
             ], function(err, results){
                 if(err){
                     callback(err);
+                }else {
+                    callback(null);
+//                    if(results[3].length > 1){
+//                        var fileData = results[3][1];
+//                        var jsonFileData = JSON.stringify(fileData);
+//                        response.send({
+//                            'files': jsonFileData
+//                        });
+//                    }
+//                    response.end('updated');   
+                }
+            });
+            
+        }
+                
+        // callback result
+    ], function(err, results){
+        if(err){
+            response.statusCode = 400;
+            response.end(err.message);
+            console.error(err);
+        }else {
+            response.statusCode = 200;
+            response.end();  
+        }
+    });
+});
+
+router.post('/api/problem/delete', function(request, response){
+        
+    var pid, user;
+    
+    async.waterfall([
+        
+        // check parameters
+        function(callback){
+            if(!request.body.pid || !request.body.user){
+                callback({message:'no parameter', error:{}, statusCode:401});
+            }
+            pid = request.body.pid;
+            user = request.body.user;
+            console.log(user);
+    
+            callback(null);
+        },
+        
+        // check authorization
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(user.uid, user.authkey, ['admin'], function(result){
+                if(result){
+                    callback(null);
                 }else{
-                    callback(null);   
+                    callback({message:'not authorized', error:{}, statusCode:401});
+                }
+            }, function(err){
+                callback({message:err.code, error:err, statusCode:400});
+            });
+        },
+        
+        // find images
+        function(callback){
+            var query = 'SELECT * FROM ProblemImages WHERE pid = ?';
+            client.query(query, [pid], function(error, results){
+                if(error){
+                    callback({message:error.code, error:error, statusCode:400});
+                }else{
+                    callback(null, results);
+                }
+            });    
+        },
+
+        // delete image files
+        function(results, callback){
+            if(results.length){
+                var fileDataController = new FileDataController();
+                fileDataController.deleteImageFromS3andDB(results, pid, '', function(){
+                    callback(null);
+                }, function(error){
+                    callback({message:JSON.stringify(error), error:error, statusCode:400});
+                });
+            }else{
+                callback(null);
+            }
+
+        },
+        
+        // find problem creater
+        function(callback){
+            var query = 'SELECT * FROM ProblemLogs WHERE (pid = ? AND type="create")';
+            client.query(query, [pid], function(err, result){
+                if(err){
+                    callback({message: err.code, error: err, statusCode:400});
+                } else{
+                    var log = JSON.parse(result.log);
+                    callback(null, log);
+                }
+            });
+        },
+        
+        // decrease creater's insertProblemCount
+        function(log, callback){
+            var query = 'UPDATE Users SET createProblemCount = createProblemCount - 1 WHERE uid = ?';
+            client.query(query, [log.createdAt], function(err, result){
+                if(err){
+                    callback({message: err.code, error: err, statusCode:400});
+                } else {
+                    callback(null);
                 }
             });
         },
         
         // delete problem
         function(callback){
-            client.query('DELETE FROM Problems WHERE pid = ?', [pid], function(error, results){
+            var query = 'DELETE FROM Problems WHERE pid = ?';
+            client.query(query, [pid], function(error, results){
                 if(error){
-                    callback(error);
+                    callback({message:error.code, error:error, statusCode:400});
                 }else{
-                    console.log('DELETE PROBLEM : delete problem complete');
                     callback(null);
                 }
             });
+        },
+        
+        // update problem log
+        function(callback){
+            var deleteLog = getProblemLogWithUid(user.uid, 'delete');
+            insertProblemLogsWithLogs([[Number(pid), deleteLog, 'delete']], function(result){
+                callback(null);
+            }, function(err){
+                callback({message:err.code, error:err, statusCode:400});
+            });
         }
-    ], function(err){
+        
+    ], function(err, results){
         if(err){
-            response.statusCode = 400;
-            response.end(err);
             console.error(err);
+            response.statusCode = err.statusCode;
+            response.end();
+//            response.end(err.message);
         }else {
-            console.log('DELETE PROBLEM : delete problem transaction complete');
             response.statusCode = 200;
-            response.end('deleted');   
+            response.end();   
         }
     });
 });
@@ -546,12 +699,10 @@ router.post('/api/problem/create/excel', multipartyMiddleware, function(request,
         // insert problem log
         function(pids, callback){
             setUpdateLogArrayForQueryFromPids(pids, user.uid, 'create', function(results){
-                client.query('INSERT INTO ProblemLogs (pid, log, type) VALUES ?', [results], function(err, result){
-                    if(err){
-                        callback({error: err, message:err.code, statusCode:400});
-                    }else{
-                        callback(null);
-                    }
+                insertProblemLogsWithLogs(results, function(result){
+                    callback(null);
+                }, function(err){
+                    callback({error: err, message:err.code, statusCode:400});
                 });
             });
         }
@@ -570,8 +721,9 @@ router.post('/api/problem/create/excel', multipartyMiddleware, function(request,
 
 router.post('/load_problems', function(request, response){
     
-    var categories = JSON.parse(request.body.categories);
-    var problemNumber = request.body.problemNumber;
+    var categories = request.body.categories;
+//    var categories = JSON.parse(request.body.categories);
+    var numberOfProblems = request.body.numberOfProblems;
     var responseResults = {
         problems: [],
         pcLinks: [],
@@ -581,7 +733,7 @@ router.post('/load_problems', function(request, response){
     
     async.waterfall([
         
-        // load problems
+        // get problems with categories
         function(callback){
             var query = 'SELECT DISTINCT Problems.* FROM Problems RIGHT JOIN PcLinks ON Problems.pid = PcLinks.pid';
             
@@ -590,8 +742,8 @@ router.post('/load_problems', function(request, response){
                 query += ' WHERE PcLinks.cid in ';
                 query += stringController.getQueryForMultiCondition(categories, 'integer');
             }
-//            query += ' ORDER BY RAND() LIMIT ' + problemNumber;
-            query += ' ORDER BY pid LIMIT ' + problemNumber;
+//            query += ' ORDER BY RAND() LIMIT ' + numberOfProblems;
+            query += ' ORDER BY pid LIMIT ' + numberOfProblems;
 
             client.query(query, function(err, results){
                 if(err){
@@ -786,14 +938,38 @@ function setPclinksArrayForQueryFromPCids(pids, cids, callback){
     callback(theArray);
 }
 
+function getProblemLogWithUid(uid, type){
+    var now = new Date();
+    var updateInfo = {};
+    if(type == 'create'){
+        updateInfo = {createdAt:now.getTime(), createdBy:uid};   
+    }else if(type == 'delete') {
+        updateInfo = {deletedAt:now.getTime(), deletedBy:uid};
+    }else {
+        updateInfo = {updatedAt:now.getTime(), updatedBy:uid};
+    }
+    var updatedLog = JSON.stringify(updateInfo);
+    
+    return updatedLog;
+}
+
 function setUpdateLogArrayForQueryFromPids(pids, uid, type, callback){
-    var stringController = new StringController();
     var theArray = new Array();
     
     for(var i=0; i<pids.length; i++){
-        var updateLog = stringController.getUpdateLogWithUid(uid, type);
+        var updateLog = getProblemLogWithUid(uid, type);
         theArray.push([pids[i], updateLog, type]);
     }
     
     callback(theArray);
+}
+
+function insertProblemLogsWithLogs(logs, onSuccess, onError){
+    client.query('INSERT INTO ProblemLogs (pid, log, type) VALUES ?', [logs], function(err, result){
+        if(err){
+            onError(err);
+        }else{
+            onSuccess(result);
+        }
+    });
 }

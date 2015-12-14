@@ -8,8 +8,13 @@
     function insertProblem(){
         return {
             restrict: 'EA',
+            bindToController: {
+//                categories: '=',
+                problem: '='
+            },
             templateUrl: 'problem/insert.problem.html',
-            controller: 'insertProblemController'
+            controller: 'insertProblemController',
+            controllerAs: 'InsertProblemVm'
         };
     }
 

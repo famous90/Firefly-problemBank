@@ -2,28 +2,26 @@
     <label class="col-md-1">카테고리:</label>
     <div class="col-md-11">
         <div style="margin-left: 20px; margin-right: 20px;">
-        <select-category type=0 selections="problem.selections" alters="problem.alterSelections"></select-category>
+        <select-category type=InsertProblemVm.categoryType selections="InsertProblemVm.problem.selections" alters="InsertProblemVm.problem.alterSelections"></select-category>
         </div>
     </div>
 </div>
 
-<div class="row" ng-show="problem.question || problem.answer || problem.explanation">
+<div class="row">
     <label for="problemPreview" class="col-md-1">미리보기:</label>
     <div id="problemPreview" class="col-md-11">
-        <show-problem item="problem" type="'New'"></show-problem>
+        <show-problem item="InsertProblemVm.problem" type="'New'"></show-problem>
     </div>
 </div>
-
 
 <div class="row">
     <form>
         <fieldset class="form-group">
             <label for="question" class="col-md-1">문제:</label>
             <div class="col-md-11">
-                <textarea ng-model="problem.question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text" placeholder="문제를 입력해주세요" title="question" required></textarea>
-                <label for="questionImages">문제에<span ng-if="problem.type != 'new'"> 새롭게</span> 첨부할 이미지를 넣어주세요</label>
-<!--                <input type="file" ng-model="problem.questions" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(questionImages, 'question')" accept="image/*" class="btn">-->
-                <input type="file" ng-model="questionImages" id="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(questionImages, 'question')" accept="image/*" class="btn">
+                <textarea ng-model="InsertProblemVm.problem.question" style="padding: 10px; margin-bottom:10px;" name="question" class="form-control text" placeholder="문제를 입력해주세요" title="question" required></textarea>
+                <label for="questionImages">문제에<span ng-if="InsertProblemVm.problem.type != 'new'"> 새롭게</span> 첨부할 이미지를 넣어주세요</label>
+                <input type="file" ng-model="InsertProblemVm.questionImages" id="questionImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="InsertProblemVm.setImageFiles(InsertProblemVm.questionImages, 'question')" accept="image/*" class="btn">
             </div>
         </fieldset>
 
@@ -31,13 +29,13 @@
             <label for="answer" class="col-md-1">정답:</label>
             <div class="col-md-11">
                 <div class="btn-group" style="margin-bottom: 10px">
-                    <label class="btn btn-primary" ng-model="problem.answerType" ng-click="answerTypeButtonTapped('single')" btn-radio="'single'">주관식</label>
-                    <label class="btn btn-primary" ng-model="problem.answerType" ng-click="answerTypeButtonTapped('multiple')" btn-radio="'multiple'">객관식</label>
+                    <label class="btn btn-primary" ng-model="InsertProblemVm.problem.answerType" ng-click="InsertProblemVm.answerTypeButtonTapped('single')" btn-radio="'single'">주관식</label>
+                    <label class="btn btn-primary" ng-model="InsertProblemVm.problem.answerType" ng-click="InsertProblemVm.answerTypeButtonTapped('multiple')" btn-radio="'multiple'">객관식</label>
                 </div>
-                <textarea ng-model="problem.answer" style="padding: 10px; margin-bottom:10px;" class="form-control text" placeholder="{{problem.answerPlaceholder}}" rows="1" title="answer" required></textarea>
-                <div ng-show="problem.answerType == 'multiple'">
+                <textarea ng-model="InsertProblemVm.problem.answer" style="padding: 10px; margin-bottom:10px;" class="form-control text" placeholder="{{InsertProblemVm.problem.answerPlaceholder}}" rows="1" title="answer" required></textarea>
+                <div ng-show="InsertProblemVm.problem.answerType == 'multiple'">
                     <hr/>
-                    <div ng-repeat="example in problem.notAnswerExamples">
+                    <div ng-repeat="example in InsertProblemVm.problem.notAnswerExamples">
                         <textarea ng-model="example.content" style="padding: 10px; margin-bottom:10px;" class="form-control text" placeholder="정답이 아닌 보기({{$index+1}})를 입력해주세요" rows="1" title="example" required></textarea>
                     </div>
                 </div>
@@ -46,24 +44,24 @@
         <fieldset class="form-group">
             <label for="explanation" class="col-md-1">해설:</label>
             <div class="col-md-11">
-                <textarea ng-model="problem.explanation" style="padding: 10px; margin-bottom:10px;" rows="5" name="explanation" class="form-control text" placeholder="해설을 입력해주세요" title="explanation" required></textarea>
-                <label for="explanationImages">해설에<span ng-if="problem.type != 'new'"> 새롭게</span> 첨부할 이미지를 넣어주세요</label>
-                <input type="file" ng-model="explanationImages" id="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="setImageFiles(explanationImages, 'explanation')" accept="image/*" class="btn">
+                <textarea ng-model="InsertProblemVm.problem.explanation" style="padding: 10px; margin-bottom:10px;" rows="5" name="explanation" class="form-control text" placeholder="해설을 입력해주세요" title="explanation" required></textarea>
+                <label for="explanationImages">해설에<span ng-if="InsertProblemVm.problem.type != 'new'"> 새롭게</span> 첨부할 이미지를 넣어주세요</label>
+                <input type="file" ng-model="InsertProblemVm.explanationImages" id="explanationImages" ngf-select="true" ngf-multiple="true" ngf-keep="false" ngf-change="InsertProblemVm.setImageFiles(InsertProblemVm.explanationImages, 'explanation')" accept="image/*" class="btn">
             </div>
         </fieldset>
-        <fieldset class="form-group" ng-if="problem.type == 'new'">
-            <button type="button" class="btn btn-primary pull-right" ng-click="submitForm(questionImages, explanationImages)">문제 올리기</button>
+        <fieldset class="form-group" ng-if="InsertProblemVm.problem.type == 'new'">
+            <button type="button" class="btn btn-primary pull-right" ng-click="InsertProblemVm.submitForm(InsertProblemVm.questionImages, InsertProblemVm.explanationImages)">문제 올리기</button>
         </fieldset>
 
     </form>
 </div>
 
-<div ng-if="problem.type == 'new'">
+<div ng-if="InsertProblemVm.problem.type == 'new'">
     <fieldset class="form-group">
-        <label for="">엑셀 파일을 선택해주세요(이미지는 첨부할 수 없습니다)</label>
-        <input type="file" ng-model="problemsExcel" id="problemsExcel" ngf-select="true" ngf-multiple="false" ngf-keep="false" ngf-change="setExcelFile(problemsExcel)" accept=".xlsx">
+        <label for="problemsExcel">엑셀 파일을 선택해주세요(이미지는 첨부할 수 없습니다)</label>
+        <input type="file" ng-model="InsertProblemVm.problemsExcel" id="problemsExcel" ngf-select="true" ngf-multiple="false" ngf-keep="false" ngf-change="InsertProblemVm.setExcelFile(InsertProblemVm.problemsExcel)" accept=".xlsx">
     </fieldset>
     <fieldset class="form-group">
-        <button type="button" class="btn btn-primary pull-right" ng-click="submitExcelFile(problemsExcel)">파일 올리기</button>
+        <button type="button" class="btn btn-primary pull-right" ng-click="InsertProblemVm.submitExcelFile(InsertProblemVm.problemsExcel)">파일 올리기</button>
     </fieldset>
 </div>

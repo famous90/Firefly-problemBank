@@ -5,13 +5,14 @@
         .module('problemBank')
         .controller('ModalInstanceCtrl', ModalInstanceCtrl);
         
-    ModalInstanceCtrl.$inject = ['$scope', '$modalInstance', 'item', 'arrayFactory', '$window', 'dataFactory'];
+    ModalInstanceCtrl.$inject = ['$modalInstance', 'item', 'arrayFactory', '$window', 'dataFactory'];
     
-    function ModalInstanceCtrl($scope, $modalInstance, item, arrayFactory, $window, dataFactory) {
-        $scope.problem = item;
+    function ModalInstanceCtrl($modalInstance, item, arrayFactory, $window, dataFactory) {
+        var vm = this;
+        vm.problem = item;
         
-        $scope.update = updateProblem; 
-        $scope.cancel = cancel;
+        vm.update = updateProblem; 
+        vm.cancel = cancel;
         
         function updateProblem(item) {
             
@@ -39,16 +40,14 @@
                 }                        
             }
 
-            dataFactory
-                .updateProblem(item.pid, item, imageFiles, formDataNames)
+            dataFactory.updateProblem(item.pid, item, imageFiles, formDataNames)
                 .success(function(response){
                     if(imageFiles.length){
                         $window.alert(imageFiles.length + '개 이미지와 문제를 성공적으로 수정하였습니다.');
                     }else {
                         $window.alert('이미지 없는 문제를 성공적으로 수정하였습니다.');
                     }
-                    $modalInstance.close($scope.problem);
-                    $scope.problem = new Problem();
+                    $modalInstance.close(vm.problem);
             }).error(function(response){
                 console.log('Modal update error ' +response);
                 $window.alert('문제 수정에 실패했습니다. 다시 시도해 주세요.');

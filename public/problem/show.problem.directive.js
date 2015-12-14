@@ -26,7 +26,9 @@
         
         function getCategoryName(cid){
             var theCategory = categoryFactory.getCategoryWithCid(cid);
-            return theCategory.name;
+            if(theCategory){
+                return theCategory.name;
+            }else return 'NO category';
         };
 
         function getExampleNumber(index){

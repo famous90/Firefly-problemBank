@@ -9,47 +9,48 @@
     
     function problemMasterFactory(dataFactory, arrayFactory) {
         
-        var problemMaster = new ProblemMaster();
+        var masterData = [];
         
         return {
             getMasterProblem: getMasterProblem,
-            setMasterProblem: setMasterProblem,
             loadProblemsWithCount: loadProblemsWithCount,
             deleteProlblemWithPid: deleteProblemWithPid,
-            changeProblem: changeProblem,
-            getMasterDataLength: getMasterDataLength
+            changeProblem: changeProblem
         };
         
         function getMasterProblem(){
-            return problemMaster;
-        }
-        
-        function setMasterProblem(data){
-            
-            var problemData = data.problems;
-            var pcdata = data.pcLinks;
-            var imagedata = data.problemImages;
-
-            // bind pclink along pid
-            var pcLinkArray = arrayFactory.bindPCLinksWithPid(pcdata);
-
-            // bind image along pid
-            var problemImageArray = arrayFactory.bindImagesWithPid(imagedata);
-
-            // bind pclinks and images with problems
-            var problems = arrayFactory.bindProblemsWithPid(problemData, pcLinkArray, problemImageArray);
-            
-            problemMaster.masterData = problems;
+            return masterData;
         }
         
         function loadProblemsWithCount(categories, count, onSuccess, onError) {
             dataFactory.getProblems(categories, count).then(function(response){
-                var data = response.data;
-                setMasterProblem(data);
-                onSuccess();
+                setMasterProblemWithData(response.data, function(){
+                    onSuccess(masterData);
+                }, function(err){
+                    onError(err);
+                });
             }, function(response){
-                console.error(response);
-                onError();
+                onError(response);
+            });
+        }
+        
+        function setMasterProblemWithData(data, onSuccess, onError){
+            var problems = data.problems;
+            var pcdata = data.pcLinks;
+            var imagedata = data.problemImages;
+                        
+            if(!pcdata || !pcdata.length){
+                console.error('not pclinks');
+                onError('no pcLinks');
+            }
+            if(!problems || !problems.length){
+                console.error('no problems');
+                onError('no problems');
+            }
+                        
+            bindProblemsWithPid(problems, pcdata, imagedata, function(results){
+                masterData = results;
+                onSuccess();
             });
         }
         
@@ -66,23 +67,21 @@
         function deleteProblem(pid){
             var indexOfObjectWithPid = getIndexOfPid(pid);
             if(indexOfObjectWithPid){
-                problemMaster.masterData.splice(indexOfObjectWithPid, 1);
+                masterData.splice(indexOfObjectWithPid, 1);
             }
         }
         
         function changeProblem(item) {
             var indexOfObjectWithPid = getIndexOfPid(item.pid);
-            if(indexOfObjectWithPid){
-                problemMaster.masterData[indexOfObjectWithPid] = item;    
-            }
+            masterData[indexOfObjectWithPid] = item; 
         }
         
         function getIndexOfPid(pid) {
-            if(problemMaster.masterData.length == 0){
+            if(masterData.length == 0){
                 return null;
             }else{
-                for(var i=0; i<problemMaster.masterData.length; i++){
-                    if(problemMaster.masterData[i].pid == pid){
+                for(var i=0; i<masterData.length; i++){
+                    if(masterData[i].pid == pid){
                         return i;
                     }
                 }
@@ -90,12 +89,32 @@
             }
         }
         
-        function getMasterDataLength() {
-            return problemMaster.masterData.length;
+        function bindProblemsWithPid(problemData, pclinks, pImages, callback) {
+            var problems = [];
+            for(var j=0; j<problemData.length; j++){
+                var theProblem = new Problem(problemData[j]);
+                theProblem.type = 'load';
+                
+                var i=0;
+                while(i<pclinks.length){
+                    if(pclinks[i].pid == theProblem.pid){
+                        var pclink = pclinks.splice(i, 1)[0];
+                        theProblem.selections.push(pclink.cid);
+                    }else i++;
+                }
+                
+                var k=0;
+                while(k<pImages.length){
+                    if(pImages[k].pid == theProblem.pid){
+                        var image = pImages.splice(k, 1)[0];
+                        theProblem.addImage(image);
+                    }else k++;
+                }
+                
+                problems.push(theProblem);
+            }
+            
+            callback(problems);
         }
     }
 })();
-
-function ProblemMaster () {
-    this.masterData = new Array();
-}

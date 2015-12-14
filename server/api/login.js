@@ -14,7 +14,7 @@ router.post('/api/authenticate', function(request, response){
         // check parameter
         function(callback){
             if(!request.body.username || !request.body.password){
-                callback(400);
+                callback({message: 'no parameter', statusCode: 400, error:{}});
             }
 
             username = request.body.username;
@@ -27,12 +27,12 @@ router.post('/api/authenticate', function(request, response){
         function(callback){
             client.query('SELECT uid, name, role, createProblemCount, balance FROM Users WHERE name = ? AND password = ?', [username, password], function (err, results){
                 if(err){
-                    callback(400);
+                    callback({message: err.code, statusCode: 400, error:err});
                 }else {
                     if(results.length){
                         callback(null, results[0]);
                     }else{
-                        callback(401);
+                        callback({message: 'not authenticated', statusCode: 401, error:{}});
                     }
                 }
             });
@@ -55,7 +55,7 @@ router.post('/api/authenticate', function(request, response){
                 function (hashkey, subCallback){
                     client.query('UPDATE Users SET authkey = ? WHERE uid = ?', [hashkey, theUser.uid], function(err, results){
                        if(err){
-                           subCallback(400);
+                           subCallback({message: err.code, statusCode: 400, error:err});
                        } else {
                            subCallback(null);
                        }
@@ -64,7 +64,7 @@ router.post('/api/authenticate', function(request, response){
                 
             ], function(err, result){
                 if(err){
-                    callback(400);
+                    callback(err);
                 }else {
                     callback(null, theUser);
                 }
@@ -73,8 +73,9 @@ router.post('/api/authenticate', function(request, response){
         
     ], function(err, result){
         if(err){
-            response.statusCode = err;
-            response.end('authentication error');
+            response.statusCode = err.statusCode;
+            response.end(err.message);
+            console.log(err);
         }else {
             response.statusCode = 200;
             response.send({user: result});

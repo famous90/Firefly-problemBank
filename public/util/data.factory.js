@@ -117,11 +117,11 @@
             });
         }
         
-        function getProblems(categories, count){
+        function getProblems(categories, numberOfProblems){
             console.log(categories);
             return $http.post('/load_problems', {
                 categories: categories, 
-                problemNumber: count
+                numberOfProblems: numberOfProblems
             });
         }
         
@@ -142,7 +142,10 @@
         }
         
         function deleteProblem(pid) {
-            return $http.delete('/problem/'+pid);
+            return $http.post('/api/problem/delete', {
+                pid: pid,
+                user: $rootScope.globals.currentUser
+            });
         }
     }
     

@@ -46,6 +46,8 @@ function getUpdateLogWithUid(uid, type){
     var updateInfo = {};
     if(type == 'create'){
         updateInfo = {createdAt:now.getTime(), createdBy:uid};   
+    }else if(type == 'delete') {
+        updateInfo = {deletedAt:now.getTime(), deletedBy:uid};
     }else {
         updateInfo = {updatedAt:now.getTime(), updatedBy:uid};
     }

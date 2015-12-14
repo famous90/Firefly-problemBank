@@ -5,47 +5,46 @@
 <div class="row no_print">
     <div class="col-md-10 col-md-offset-1">
         <div style="margin-left: 20px; margin-right: 20px;">
-            <select-category type=0 selections="category.selections" alters=""></select-category>
+            <select-category type=LoadProblemVm.categoryType selections="LoadProblemVm.selectedCategories"></select-category>
         </div>
     </div>
 </div>
 
 <form name="loadProblemsForm" style="padding-top:10px;" class="no_print row">
     <fieldset class="form-group col-md-8 col-md-offset-2" >
-        <input type="text" ng-model="problemNumber" placeholder="불러올 문제 수를 입력해주세요" class="col-md-6 col-md-offset-3 form-control pull-right" style="margin-bottom:10px;">
-        <input type="button" class="btn btn-primary pull-right" value="문제 불러오기" ng-click="loadProblems()">
+        <input type="text" ng-model="LoadProblemVm.numberOfProblems" placeholder="불러올 문제 수를 입력해주세요" class="col-md-6 col-md-offset-3 form-control pull-right" style="margin-bottom:10px;">
+        <input type="button" class="btn btn-primary pull-right" value="문제 불러오기" ng-click="LoadProblemVm.loadProblems()">
     </fieldset>
     <fieldset class="form-group col-md-8 col-md-offset-2" >
-        <input type="button" class="btn btn-primary pull-right" value="출력" ng-click="printProblems()">
+        <input type="button" class="btn btn-primary pull-right" value="출력" ng-click="LoadProblemVm.printProblems()">
         <div class="btn-group pull-right" style="margin-right:10px;">
-            <label class="btn btn-success" ng-model="problemType" btn-radio="'Question'">문제</label>
-            <label class="btn btn-success" ng-model="problemType" btn-radio="'Answer'">정답</label>
-            <label class="btn btn-success" ng-model="problemType" btn-radio="'Explanation'">해설</label>
-            <label class="btn btn-success" ng-model="problemType" btn-radio="'all'">전체보기</label>
+            <label class="btn btn-success" ng-model="LoadProblemVm.problemType" btn-radio="'Question'">문제</label>
+            <label class="btn btn-success" ng-model="LoadProblemVm.problemType" btn-radio="'Answer'">정답</label>
+            <label class="btn btn-success" ng-model="LoadProblemVm.problemType" btn-radio="'Explanation'">해설</label>
+            <label class="btn btn-success" ng-model="LoadProblemVm.problemType" btn-radio="'all'">전체보기</label>
         </div>
     </fieldset>
 </form>
 
-<h4 class="text-center no_print" ng-show="masterProblem.getMasterDataLength()">총 {{masterProblem.getLength()}}문제</h4>
-<h5 ng-show="masterProblem.getMasterDataLength()" class="no_print">* 문제 업데이트 가능, 카테고리 수정 가능, 첨부 그림 수정 가능</h5>
+<h4 class="text-center no_print" ng-show="LoadProblemVm.loadedNumberOfProblems">총 {{LoadProblemVm.loadedNumberOfProblems}}문제</h4>
 <div class="print_problems">
-    <div ng-repeat="problem in masterProblem.masterData">
-        <div class="row problem_for_print" ng-show="problemType != 'Answer'">
-            <h4 class="col-md-1 text-center no_print">{{problem.pid}}</h4>
+    <div ng-repeat="theProblem in LoadProblemVm.masterProblem">
+        <div class="row problem_for_print" ng-show="LoadProblemVm.problemType != 'Answer'">
+            <h4 class="col-md-1 text-center no_print">{{theProblem.pid}}</h4>
             <div class="col-md-10">
-                <show-problem item="problem" index="$index" type="problemType"></show-problem>
+                <show-problem item="theProblem" index="$index" type="LoadProblemVm.problemType"></show-problem>
             </div>
             <div class="col-md-1 no_print">
-                <a class="pull-right btn btn-primary btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="updateProblem(problem)">
+                <a class="pull-right btn btn-primary btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="LoadProblemVm.update(theProblem)">
                     <span class="glyphicon glyphicon-pencil"></span>
                 </a>
-                <a class="pull-right btn btn-danger btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="deleteProblem(problem)" ng-if=false>
+                <a class="pull-right btn btn-danger btn-sm" style="margin-left: 8px; margin-bottom: 8px;" ng-click="LoadProblemVm.deleteProblem(theProblem)" ng-if="$root.globals.currentUser.role == 'admin'">
                     <span class="glyphicon glyphicon-trash"></span>
                 </a>
             </div>
         </div>
         <div style="margin-left: 30px;">
-            <span ng-show="problemType == 'Answer'"><span style="font-size:25px;"><strong>{{$index+1}} </strong></span><span ng-if="problem.answerType == 'multiple'" style="font-size:13pt;">{{getExampleNumber(problem.answerOfMultiple)}} </span><span mathjax-bind="problem.answer"></span></span>
+            <span ng-show="LoadProblemVm.problemType == 'Answer'"><span style="font-size:25px;"><strong>{{$index+1}} </strong></span><span ng-if="problem.answerType == 'multiple'" style="font-size:13pt;">{{getExampleNumber(theProblem.answerOfMultiple)}} </span><span mathjax-bind="theProblem.answer"></span></span>
         </div>
     </div>
 </div>

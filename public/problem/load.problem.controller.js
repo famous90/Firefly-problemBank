@@ -3,33 +3,36 @@
     
     angular
         .module('problemBank')
-        .controller('loadProblemController', loadProblemController);
+        .controller('LoadProblemController', LoadProblemController);
     
-    loadProblemController.$inject = ['$scope', '$modal', '$log', '$window', 'stringFactory', 'problemMasterFactory'];
+    LoadProblemController.$inject = ['$modal', '$window', 'stringFactory', 'problemMasterFactory', '$rootScope', 'dataFactory', 'CATEGORY_TYPES'];
     
-    function loadProblemController($scope, $modal, $log, $window, stringFactory, problemMasterFactory){                
-        $scope.category = {};
-        $scope.category.selections = new Array();
-        $scope.masterProblem = [];
-        $scope.problemType = 'Question';
+    function LoadProblemController($modal, $window, stringFactory, problemMasterFactory, $rootScope, dataFactory, CATEGORY_TYPES){
+        var vm = this;
+        vm.categoryType = CATEGORY_TYPES.ONLY_SELECT;
+        vm.selectedCategories = [];
+        vm.masterProblem = [];
+        vm.loadedNumberOfProblems;
+        vm.problemType = 'Question';
 
-        $scope.loadProblems = loadProblems; 
-        $scope.deleteProblem = deleteProblem;
-        $scope.updateProblem = updateProblem;
-        $scope.printProblems = printProblems;
-        $scope.getExampleNumber = getExampleNumber;
+        vm.loadProblems = loadProblems; 
+        vm.deleteProblem = deleteProblem;
+        vm.update = update;
+        vm.printProblems = printProblems;
+        vm.getExampleNumber = getExampleNumber;
         
         function loadProblems(){
-            var categoriesWithJSON = angular.toJson($scope.category.selections);
-            var problemNumber = $scope.problemNumber;
+            var numberOfProblems = vm.numberOfProblems;
             // default problem Number
-            if(problemNumber<=0 || problemNumber== null) {
-                problemNumber = 20;
+            if(numberOfProblems<=0 || numberOfProblems== null) {
+                numberOfProblems = 20;
             }
 
-            problemMasterFactory.loadProblemsWithCount(categoriesWithJSON, problemNumber, function(){
-               $scope.masterProblem = problemMasterFactory.getMasterProblem(); 
-            }, function(){
+            problemMasterFactory.loadProblemsWithCount(vm.selectedCategories, numberOfProblems, function(problemMaster){
+                vm.masterProblem = problemMaster;
+                vm.loadedNumberOfProblems = problemMaster.length;
+            }, function(error){
+                console.error(error);
                 alert('문제를 불러오지 못했습니다. 다시 시도해 주세요.');
             });
         };
@@ -42,25 +45,26 @@
             });
         };
 
-        function updateProblem(item) {
-            var newProblem = new Problem(item);
+        function update(theProblem) {
+            
+            // problem object insert
             var modalInstance = $modal.open({
                 animation: true,
                 templateUrl: 'problem/modal.problem.html',
                 controller: 'ModalInstanceCtrl',
+                controllerAs: 'ProblemModalVm',
                 size: 'lg',
                 resolve: {
                     item: function () {
+                        var newProblem = new Problem(theProblem);
                         return newProblem;
                     }
                 }
             });
 
-            modalInstance.result.then(function (selectedItem) {
-                $log.info('Modal success');
-                problemMasterFactory.changeProblem(selectedItem);
+            modalInstance.result.then(function (theProblem) {
+                problemMasterFactory.changeProblem(theProblem);
             }, function () {
-                $log.info('Modal dismissed at: ' + new Date());
             });
         };
 
@@ -71,7 +75,6 @@
         function getExampleNumber(number){
             return stringFactory.getCircleNumber(number);
         };
-
     }
     
 })();
