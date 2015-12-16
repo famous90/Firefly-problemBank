@@ -30,6 +30,7 @@
                 dataFactory.createUser(user).then(function (response) {
                     alert('성공적으로 가입했습니다. 로그인하고 서비스를 이용해주세요.');
                     $location.path('/home');
+                    vm.dataLoading = false;
                 }, function(response){
                     console.error(response.data);
                     if(response.data == 'username duplication'){

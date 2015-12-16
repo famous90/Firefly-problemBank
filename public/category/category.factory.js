@@ -132,6 +132,6 @@ function Category(cid, name, path) {
     this.cid = cid;
     this.name = name;
     this.path = path;
-    this.selectedCategorySet = [];
+//    this.selectedCategorySet = [];
     this.categories = [];
 }

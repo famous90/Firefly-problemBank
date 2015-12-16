@@ -91,28 +91,49 @@
             });
         }
         
-        function selectCategory(cid){
+        function selectCategory(theCategory){
+            var cid = theCategory.cid;
             if(!vm.selections){
                 return;
             }
             var theIndex = vm.selections.indexOf(cid);
-             
-            if(theIndex != -1){
-                // already has category
+
+            if(isSelected(cid)>=0){
+                removeCategoryFromSelections(theCategory);
+            }else{
+                // not selected category
+                addCategoryToSelections(theCategory);
+            }
+        }
+        
+        function addCategoryToSelections(theCategory){
+            var cid = theCategory.cid;
+            if(isSelected(cid)<0){
+                vm.selections.push(cid);
+                if(vm.alters){
+                    arrayFactory.removeCidOf(vm.alters.delete, cid);
+                    vm.alters.new.push(cid);
+                }
+            }
+                
+            for(var i=0; i<theCategory.categories.length; i++){
+                addCategoryToSelections(theCategory.categories[i]);   
+            }
+        }
+        
+        function removeCategoryFromSelections(theCategory){
+            var cid = theCategory.cid;
+            var theIndex = vm.selections.indexOf(cid);
+            if(theIndex>=0){
                 vm.selections.splice(theIndex, 1);
                 if(vm.alters){
                     arrayFactory.removeCidOf(vm.alters.new, cid);
                     arrayFactory.removeCidOf(vm.alters.delete, cid);
                     vm.alters.delete.push(cid);    
-                }
-
-            }else{
-                // not have category
-                vm.selections.push(cid);
-                if(vm.alters){
-                    arrayFactory.removeCidOf(vm.alters.delete, cid);
-                    vm.alters.new.push(cid);   
-                }
+                }                
+            }
+            for(var i=0; i<theCategory.categories.length; i++){
+                removeCategoryFromSelections(theCategory.categories[i]);
             }
         }
         

@@ -22,13 +22,13 @@
             insertProblemsWithExcel: insertProblemsWithExcel,
             getProblems: getProblems,
             updateProblem: updateProblem,
-            deleteProblem: deleteProblem
+            deleteProblem: deleteProblem,
+            recharge: recharge
         };
         
         // http header
         function setHeaderAuthorization(authdata){
             $http.defaults.headers.common['Authorization'] = 'Basic';   // jshint ignore:line  
-//            $http.defaults.headers.common['Authorization'] = 'Basic ' + authdata; // jshint ignore:line  
         };
         
         
@@ -93,9 +93,6 @@
             return Upload.upload({
                 url: '/api/problem/create',
                 method: 'POST',
-//                headers: {
-//                    'Content-Type': undefined
-//                },
                 data: {
                     problem: problem,
                     user: $rootScope.globals.currentUser
@@ -129,9 +126,6 @@
             return Upload.upload({
                 url: '/problem/'+pid,
                 method: 'PUT',
-//                headers: {
-//                    'Content-Type': undefined
-//                },
                 data: {
                     problem: problem,
                     user: $rootScope.globals.currentUser
@@ -145,6 +139,15 @@
             return $http.post('/api/problem/delete', {
                 pid: pid,
                 user: $rootScope.globals.currentUser
+            });
+        }
+        
+        
+        // payment
+        function recharge(amount){
+            return $http.post('/api/recharge', {
+                user: $rootScope.globals.currentUser,
+                amount: amount
             });
         }
     }

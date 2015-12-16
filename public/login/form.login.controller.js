@@ -23,6 +23,7 @@
             vm.dataLoading = true;
             authenticationFactory.login(vm.username, vm.password, function(response){
                 $location.path('/home');
+                vm.dataLoading = false;
             }, function(response){
                 console.error(response);
                 vm.error = '로그인 중 오류가 발생했습니다. 이름과 비밀번호를 확인하고 다시 시도해주세요.';
