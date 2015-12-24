@@ -9,20 +9,23 @@
         return {
             restrict: 'EA',
             templateUrl: 'problem/show.problem.html',
-            scope: {
-                problem: '=item',
-                problemIndex: '=index',
-                type: '='
+            bindToController: {
+                problem: '=item',       // problem
+                problemIndex: '=index', // the number of the problem
+                type: '='               // new, question_only, answer_only, with explanation, all
             },
-            controller: showProblemController
+            controller: ShowProblemController,
+            controllerAs: 'ShowProblemVm'
         };
     }
     
-    showProblemController.$inject = ['$scope', 'categoryFactory', 'stringFactory'];
+    ShowProblemController.$inject = ['categoryFactory', 'stringFactory'];
     
-    function showProblemController($scope, categoryFactory, stringFactory){
-        $scope.getCategoryName = getCategoryName;
-        $scope.getExampleNumber = getExampleNumber;
+    function ShowProblemController(categoryFactory, stringFactory){
+        var vm = this;
+        
+        vm.getCategoryName = getCategoryName;
+        vm.getExampleNumber = getExampleNumber;
         
         function getCategoryName(cid){
             var theCategory = categoryFactory.getCategoryWithCid(cid);

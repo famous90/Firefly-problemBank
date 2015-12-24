@@ -23,6 +23,8 @@
             getProblems: getProblems,
             updateProblem: updateProblem,
             deleteProblem: deleteProblem,
+            getStartProblemToSolve: getStartProblemToSolve,
+            getProblemToSolveWithLastIsCorrect: getProblemToSolveWithLastIsCorrect,
             recharge: recharge
         };
         
@@ -138,6 +140,26 @@
         function deleteProblem(pid) {
             return $http.post('/api/problem/delete', {
                 pid: pid,
+                user: $rootScope.globals.currentUser
+            });
+        }
+        
+        
+        // solve problem
+        function getStartProblemToSolve(cid){
+            return $http.post('/api/problem/solve/start', {
+                cid: cid,
+                user: $rootScope.globals.currentUser
+            });
+        }
+        
+        function getProblemToSolveWithLastIsCorrect(isCorrect, pid, tdiff){
+            return $http.post('/api/problem/solve', {
+                solveInfo: {
+                    pid: pid,
+                    isCorrect: isCorrect,
+                    timeDifference: tdiff
+                },
                 user: $rootScope.globals.currentUser
             });
         }

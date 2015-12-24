@@ -12,7 +12,8 @@
             bindToController: {
                 type: '=',
                 selections: '=',
-                alters: '='
+                alters: '=',
+                maxSel: '='
             },
             controller: selectCategoryController,
             controllerAs: 'selCateVm'
@@ -24,6 +25,7 @@
     function selectCategoryController(categoryFactory, $modal, arrayFactory){
         var vm = this;
         vm.categories = [];
+
         categoryFactory.getCategories.then(function(data){
             vm.categories = data.masterCategory.categories;
         }, function(data){
@@ -37,6 +39,8 @@
         vm.isSelected = isSelected;
         vm.clickedAddChildCategory = clickedAddChildCategory;
         vm.clickedAddBroCategory = clickedAddBroCategory;
+        vm.unfoldAllCategory = unfoldAllCategory;
+        vm.foldAllCategory = foldAllCategory;
         
         function addBroCategory(item){
             var name = item.newBroCategoryName;
@@ -101,6 +105,10 @@
             if(isSelected(cid)>=0){
                 removeCategoryFromSelections(theCategory);
             }else{
+                if(!checkSelectionLimit()){
+                    alert('더 이상 선택할 수 없습니다.');
+                    return;
+                }
                 // not selected category
                 addCategoryToSelections(theCategory);
             }
@@ -115,10 +123,21 @@
                     vm.alters.new.push(cid);
                 }
             }
-                
-            for(var i=0; i<theCategory.categories.length; i++){
-                addCategoryToSelections(theCategory.categories[i]);   
+            
+            if(checkSelectionLimit()){
+                for(var i=0; i<theCategory.categories.length; i++){
+                    addCategoryToSelections(theCategory.categories[i]);   
+                }                
             }
+        }
+        
+        function checkSelectionLimit(){
+            if((typeof vm.maxSel == 'undefined') || (vm.maxSel == 0)){
+                return true;
+            }
+            if(vm.selections.length >= vm.maxSel){
+                return false;
+            }else return true;
         }
         
         function removeCategoryFromSelections(theCategory){
@@ -160,6 +179,14 @@
                 item.isChildCollapsed = !item.isChildCollapsed; 
             }
         } 
+        
+        function unfoldAllCategory(){
+            categoryFactory.setCategoryFoldingCondition('unfolding');
+        }
+        
+        function foldAllCategory(){
+            categoryFactory.setCategoryFoldingCondition('folding');
+        }
     }
     
 })();

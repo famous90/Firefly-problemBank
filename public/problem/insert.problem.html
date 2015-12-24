@@ -32,7 +32,7 @@
                     <label class="btn btn-primary" ng-model="InsertProblemVm.problem.answerType" ng-click="InsertProblemVm.answerTypeButtonTapped('single')" btn-radio="'single'">주관식</label>
                     <label class="btn btn-primary" ng-model="InsertProblemVm.problem.answerType" ng-click="InsertProblemVm.answerTypeButtonTapped('multiple')" btn-radio="'multiple'">객관식</label>
                 </div>
-                <textarea ng-model="InsertProblemVm.problem.answer" style="padding: 10px; margin-bottom:10px;" class="form-control text" placeholder="{{InsertProblemVm.problem.answerPlaceholder}}" rows="1" title="answer" required></textarea>
+                <textarea ng-model="InsertProblemVm.problem.answer" style="padding: 10px; margin-bottom:10px;" class="form-control text" placeholder="{{InsertProblemVm.answerTypePlaceholder[InsertProblemVm.problem.answerType]}}" rows="1" title="answer" required></textarea>
                 <div ng-show="InsertProblemVm.problem.answerType == 'multiple'">
                     <hr/>
                     <div ng-repeat="example in InsertProblemVm.problem.notAnswerExamples">

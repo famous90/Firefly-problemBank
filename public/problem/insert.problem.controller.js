@@ -14,6 +14,14 @@
             vm.problem = new Problem();
         }
         
+        // set answer type
+        setAnswerTypeWithType(vm.problem.answerType);  
+        vm.answerTypePlaceholder = {
+            single: '정답을 입력해 주세요',
+            multiple: '정답인 보기를 입력해 주세요'
+        }
+        
+        // set category type
         vm.categoryType = CATEGORY_TYPES.ONLY_SELECT;
         
         vm.setImageFiles = setImageFiles; 
@@ -21,6 +29,10 @@
         vm.submitForm = submitForm; 
         vm.setExcelFile = setExcelFile;
         vm.submitExcelFile = submitExcelFile;
+        
+        function setAnswerTypeWithType(type){
+            vm.answerType = type;
+        }
          
         function setImageFiles(files, type){
             var imageArray = [];
@@ -44,8 +56,10 @@
         };
          
         function answerTypeButtonTapped(type){
-            if(type != vm.problem.answerType){
-                vm.problem.changeAnswerType();
+            if(type == vm.problem.answerType){
+                return;
+            } else {
+                setAnswerTypeWithType(type);
             }
         };
          

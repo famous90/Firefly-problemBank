@@ -33,6 +33,13 @@
                 controllerAs: 'LoadProblemVm'
             })
 
+        // route for the setting exam problem page
+            .when('/problem/solve', {
+                templateUrl : 'problem/solve.problem.html',
+                controller: 'SolveProblemController',
+                controllerAs: 'SolveProblemVm'
+            })
+        
         // route for the user management page
             .when('/user/manage', {
                 templateUrl : 'user/manage.user.html',

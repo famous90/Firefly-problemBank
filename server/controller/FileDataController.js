@@ -18,7 +18,6 @@ function writeImageData (fileDataArray, pid, onSuccess, onError) {
     for(var i=0; i<fileDataArray.length; i++){        
         (function(i){
             var fileData = fileDataArray[i];
-            console.log('file data');
             console.log(fileData);
             var filename = fileData.fileName;
             var key = 'images/' + filename;
@@ -89,21 +88,20 @@ function writeImageData (fileDataArray, pid, onSuccess, onError) {
 function getImageDataSet (data, imageType, pid){
     
     var theImageDataArray = new Array();
+    var filePath, fileName, theFileDataSet;
     
     // if data is array
     if(data.length){
         for(var i=0; i<data.length; i++){
-            var filePath = data[i].path;
-            var fileName = imageType.substring(0, 2).toUpperCase() + '_' + pid + '_' + i + '_' + randomString.generate(20) + fspath.extname(filePath);
-            var theFileDataSet = new File(filePath, imageType, fileName);
-            theImageDataArray.push(theFileDataSet);
+            filePath = data[i].path;
+            fileName = imageType.substring(0, 2).toUpperCase() + '_' + pid + '_' + i + '_' + randomString.generate(20) + fspath.extname(filePath);
         }                                
     }else{
-        var filePath = data.path;
-        var fileName = imageType.substring(0, 2).toUpperCase() + '_' + pid + '_' + randomString.generate(20) + fspath.extname(filePath);
-        var theFileDataSet = new File(filePath, imageType, fileName);
-        theImageDataArray.push(theFileDataSet);
+        filePath = data.path;
+        fileName = imageType.substring(0, 2).toUpperCase() + '_' + pid + '_' + randomString.generate(20) + fspath.extname(filePath);
     }
+    theFileDataSet = new File(filePath, imageType, fileName);
+    theImageDataArray.push(theFileDataSet);
     
     return theImageDataArray;
 };

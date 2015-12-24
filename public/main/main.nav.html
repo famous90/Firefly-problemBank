@@ -7,6 +7,7 @@
             <li><a href="#login" ng-show="!$root.globals.currentUser">로그인</a></li>
             <li><a ng-click="vm.logout()" ng-show="$root.globals.currentUser">로그아웃</a></li>
             <li><a href="#register" ng-show="!$root.globals.currentUser">회원가입</a></li>
+            <li><a href="#problem/solve" ng-show="(vm.user.role == 'admin')">문제풀기</a></li>
             <li><a href="#problem/load" ng-show="(vm.user.role == 'admin') || (vm.user.role == 'editor') || (vm.user.role == 'user')">문제 불러오기</a></li>
             <li><a href="#problem/insert" ng-show="(vm.user.role == 'admin') || (vm.user.role == 'editor')">문제 입력하기</a></li>
             <li><a href="#category/edit" ng-show="(vm.user.role == 'admin')">카테고리 편집</a></li>

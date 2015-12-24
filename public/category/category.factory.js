@@ -14,7 +14,6 @@
         var deferred = $q.defer();
                 
         dataFactory.getCategories().then(function(response){
-            rowCategories = response.data;
             makeCategoryTree(response.data);
             deferred.resolve({
                 rowCategories: rowCategories,
@@ -29,7 +28,8 @@
             getCategories: deferred.promise,
             insertCategory: insertCategory,
             deleteCategory: deleteCategory,
-            getCategoryWithCid: getCategoryWithCid
+            getCategoryWithCid: getCategoryWithCid,
+            setCategoryFoldingCondition: setCategoryFoldingCondition
         };
         
         function getCategories(onSuccess, onError) {
@@ -51,6 +51,7 @@
                     paths = JSON.parse(item.path);   
                 }
                 var theCategory = new Category(item.cid, item.name, paths);
+                rowCategories.push(theCategory);
                 insertCategory(theCategory);
             }
         }
@@ -123,6 +124,17 @@
                 }
             }
             return null;
+        }
+        
+        function setCategoryFoldingCondition(condition){
+            var unfolding;
+            if(condition == 'unfolding'){
+                unfolding = true;
+            }else unfolding = false;
+            
+            for(var i=0; i<rowCategories.length; i++){
+                rowCategories[i].nodeCollapsed = unfolding;   
+            }
         }
     }
     

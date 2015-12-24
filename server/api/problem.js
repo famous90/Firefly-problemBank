@@ -9,7 +9,7 @@ var AuthController = require('../controller/AuthController');
 var StringController = require('../controller/StringController');
 var Problem = require('../model/Problem');
 
-
+// get all problems
 router.get('/api/problems', function(request, response){
     var user;
     
@@ -64,6 +64,7 @@ router.get('/api/problems', function(request, response){
     })
 });
 
+// get problem with pid
 router.get('/api/problem/:pid', function(request, response){  
     var user, pid;
     
@@ -509,6 +510,7 @@ router.put('/problem/:pid', multipartyMiddleware, function(request, response){
     });
 });
 
+// delete problem
 router.post('/api/problem/delete', function(request, response){
         
     var pid, user;
@@ -568,6 +570,18 @@ router.post('/api/problem/delete', function(request, response){
 
         },
         
+        // delete pclinks
+        function(callback){
+            var query = 'DELETE FROM pcLinks WHERE pid = ?';
+            client.query(query, [pid], function(err){
+                if(err){
+                    callback({message: err.code, error: err, statusCode:400});
+                } else{
+                    callback(null);
+                } 
+            });
+        },
+        
         // find problem creater
         function(callback){
             var query = 'SELECT * FROM ProblemLogs WHERE (pid = ? AND type="create")';
@@ -575,7 +589,7 @@ router.post('/api/problem/delete', function(request, response){
                 if(err){
                     callback({message: err.code, error: err, statusCode:400});
                 } else{
-                    var log = JSON.parse(result.log);
+                    var log = JSON.parse(result[0].log);
                     callback(null, log);
                 }
             });
@@ -628,6 +642,7 @@ router.post('/api/problem/delete', function(request, response){
     });
 });
 
+// create problems from excel
 router.post('/api/problem/create/excel', multipartyMiddleware, function(request, response){
     
     var file = {};
@@ -719,6 +734,7 @@ router.post('/api/problem/create/excel', multipartyMiddleware, function(request,
     })
 });
 
+// load problems with categories
 router.post('/load_problems', function(request, response){
     
     var categories = request.body.categories;
@@ -744,7 +760,7 @@ router.post('/load_problems', function(request, response){
             }
 //            query += ' ORDER BY RAND() LIMIT ' + numberOfProblems;
             query += ' ORDER BY pid LIMIT ' + numberOfProblems;
-
+            console.log(query);
             client.query(query, function(err, results){
                 if(err){
                     callback({message: err, statusCode: 400});
@@ -818,6 +834,124 @@ router.post('/load_problems', function(request, response){
         }
     });
     
+});
+
+
+//
+// set exam problem
+//
+// set start problem
+router.post('/api/problem/solve/start', function(request, response){
+    var category, user;
+    
+    async.waterfall([
+        
+        // check parameter
+        function(callback){
+            if(!request.body.cid || !request.body.user){
+                callback({message:'missing parameter', error:{}, statusCode:400});
+            }
+            cid = request.body.cid;
+            user = request.body.user;
+            
+            callback(null);
+        },
+        
+        // is authorized
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(user.uid, user.authkey, ['admin', 'editor', 'user'], function(result){
+                if(result){
+                    callback(null);
+                }else{
+                    callback({message:'not authorized', error:{}, statusCode: 401});
+                }
+            }, function(err){
+                callback({message:JSON.stringify(err), error:err, statusCode: 400});
+            });        
+        },
+        
+        function(callback){
+            var query = 'SELECT pid, question, answer, notAnswerExamples, answerType FROM Problems ORDER BY RAND() LIMIT 1';
+            client.query(query, function(err, result){
+                if(err){
+                    callback({message:err.code, error:err, statusCode: 400});
+                }else {
+                    callback(null, result);
+                }
+            })
+        }
+        
+    ], function(err, result){
+        if(err){
+            response.statusCode = err.statusCode;
+            response.end(err.message);
+            console.error(err);
+        } else {
+            response.statusCode = 200;
+            response.send(result);
+            response.end();
+            console.log(result);
+        }
+    });
+});
+
+// set next problem
+router.post('/api/problem/solve', function(request, response){
+    var solveInfo, user;
+    
+    async.waterfall([
+        
+        // check parameter
+        function(callback){
+            for(object in request.body){
+                if(typeof object == undefined){
+                    callback({message:'missing parameter', error:{}, statusCode:400});    
+                }
+            }
+            solveInfo = request.body.solveInfo;
+            user = request.body.user;
+            
+            callback(null);
+        },
+        
+        // is authorized
+        function(callback){
+            var authController = new AuthController();
+            authController.isAuthorizatedWithRoles(user.uid, user.authkey, ['admin', 'editor', 'user'], function(result){
+                if(result){
+                    callback(null);
+                }else{
+                    callback({message:'not authorized', error:{}, statusCode: 401});
+                }
+            }, function(err){
+                callback({message:JSON.stringify(err), error:err, statusCode: 400});
+            });        
+        },
+        
+        function(callback){
+            var query = 'SELECT pid, question, answer, notAnswerExamples, answerType FROM Problems ORDER BY RAND() LIMIT 1';
+            client.query(query, function(err, result){
+                if(err){
+                    callback({message:err.code, error:err, statusCode: 400});
+                }else {
+                    callback(null, result);
+                }
+            })
+        }
+        
+    ], function(err, result){
+        if(err){
+            response.statusCode = err.statusCode;
+            response.end(err.message);
+            console.error(err);
+        } else {
+            response.statusCode = 200;
+            response.send(result);
+            response.end();
+            console.log(result);
+        }
+    });
 });
 
 module.exports = router;

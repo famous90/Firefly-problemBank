@@ -1,7 +1,7 @@
 
 function Problem (){
         
-    this.pid = '', this.question = '', this.answer = '', this.explanation = '', this.answerType = 'single', this.answerPlaceholder = '정답을 입력해 주세요', this.examples = [], this.notAnswerExamples = [];
+    this.pid = '', this.question = '', this.answer = '', this.explanation = '', this.answerType = 'single', this.examples = [], this.notAnswerExamples = [];
     this.type = 'new';
     this.selections = [];
     this.alterSelections = {
@@ -46,11 +46,11 @@ Problem.prototype.addImage = addImage;
 
 function setNotAnswerExamples(jsonExamples) {
     if(this.answerType == 'multiple'){
-        this.answerPlaceholder = '정답인 보기를 입력해 주세요';
         this.notAnswerExamples = angular.fromJson(jsonExamples);
         this.setExamples();
     }else{
         this.notAnswerExamples = [{content:''}, {content:''}, {content:''}, {content:''}];
+//        this.notAnswerExamples = [{}, {}, {}, {}];
     }
 };
 
@@ -63,6 +63,7 @@ function setExamples() {
 
 function insertAnswerToExamples() {
     var countOfExamples = this.notAnswerExamples.length + 1;
+    // set example randomly
     var answerIndex = Math.floor(Math.random() * countOfExamples);
 
     this.answerOfMultiple = answerIndex + 1;
@@ -76,10 +77,8 @@ function insertAnswerToExamples() {
 function changeAnswerType(){
     if(this.answerType == 'single'){
         this.answerType == 'multiple';
-        this.answerPlaceholder = '정답인 보기를 입력해 주세요';        
     }else {
         this.answerType == 'single';
-        this.answerPlaceholder = '정답을 입력해 주세요';        
     }  
 };
 
