@@ -5,4 +5,5 @@
 <select-category ng-show="SolveProblemVm.step == 'second'" type="SELECT_ONLY" selections="SolveProblemVm.selections" max-sel=1></select-category>
 <show-problem item="SolveProblemVm.problem" type="'Question'" ng-show="SolveProblemVm.step == 'third'"></show-problem>
 <input type="text" class="col-md-12 form-control" ng-model="SolveProblemVm.replyForSingle" placeholder="답을 입력해 주세요." ng-show="SolveProblemVm.problem.answerType == 'single'" />
+<button class="btn btn-success" ng-class="{active:SolveProblemVm.noReply}" ng-click="SolveProblemVm.idontknow()" ng-model="SolveProblemVm.noReply" ng-show="SolveProblemVm.step == 'third'" uib-btn-checkbox>모름</button>
 <button class="btn btn-primary" ng-click="SolveProblemVm.submitReply()" ng-show="SolveProblemVm.step == 'third'">답 제출</button>

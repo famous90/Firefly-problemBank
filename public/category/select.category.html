@@ -1,6 +1,6 @@
-<button class="btn btn-primary" ng-click="selCateVm.unfoldAllCategory()" style="margin-bottom:5px;">모두 펼치기</button>
-<button class="btn btn-primary" ng-click="selCateVm.foldAllCategory()" style="margin-bottom:5px;">모두 접기</button>
-<ol ng-model="selCateVm.categories" style="padding-left: 10px; padding-right: 10px; margin-bottom:10px; list-style-type:none;">
+<button class="btn btn-primary" ng-click="selCateVm.unfoldAllCategory()">모두 펼치기</button>
+<button class="btn btn-primary" ng-click="selCateVm.foldAllCategory()">모두 접기</button>
+<ol ng-model="selCateVm.categories" style="padding-left: 10px; padding-right: 10px; margin-bottom:10px; margin-top:5px; list-style-type:none;">
     <li ng-repeat="item in selCateVm.categories">
         <nodes-renderer></nodes-renderer>
     </li>

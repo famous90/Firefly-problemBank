@@ -15,6 +15,7 @@
         vm.isCorrect = {};
         vm.startTime = {};
         vm.replyForSingle = {};
+        vm.noReply = false;
         
         vm.showCategory = showCategory;
         vm.startSolveProblem = startSolveProblem;
@@ -22,6 +23,7 @@
         vm.isSelectedExample = isSelectedExample;
         vm.submitReply = submitReply;
         vm.goToPrevious = goToPrevious;
+        vm.idontknow = idontknow;
         
         function showCategory(){
             vm.step = 'second';
@@ -87,8 +89,13 @@
                     vm.isCorrect = true;
                 }else vm.isCorrect = false;
             }
+            
+            // I dont know
+            if(vm.noReply){
+                vm.isCorrect = false;
+            }
                         
-            dataFactory.getProblemToSolveWithLastIsCorrect(vm.isCorrect, vm.problem.pid, timeDifference).then(function(response){
+            dataFactory.getProblemToSolveWithLastIsCorrect(vm.isCorrect, vm.problem.pid, timeDifference, vm.noReply).then(function(response){
                 setProblemWithData(response.data[0]);           
             }, function(response){
                 console.error(response);
@@ -98,6 +105,14 @@
         
         function goToPrevious(){
             console.log('go to previous');
+        }
+        
+        function idontknow(){
+            if(!vm.noReply){
+                vm.replyForSingle = '모름';   
+            }else vm.replyForSingle = '';
+            
+            vm.noReply = !vm.noReply;
         }
     }
                   

@@ -911,6 +911,7 @@ router.post('/api/problem/solve', function(request, response){
             }
             solveInfo = request.body.solveInfo;
             user = request.body.user;
+            console.log(solveInfo);
             
             callback(null);
         },

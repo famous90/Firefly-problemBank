@@ -153,12 +153,13 @@
             });
         }
         
-        function getProblemToSolveWithLastIsCorrect(isCorrect, pid, tdiff){
+        function getProblemToSolveWithLastIsCorrect(isCorrect, pid, tdiff, noReply){
             return $http.post('/api/problem/solve', {
                 solveInfo: {
                     pid: pid,
                     isCorrect: isCorrect,
-                    timeDifference: tdiff
+                    timeDifference: tdiff,
+                    noReply: noReply
                 },
                 user: $rootScope.globals.currentUser
             });
